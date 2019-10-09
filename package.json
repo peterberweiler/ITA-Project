@@ -1,0 +1,57 @@
+{
+	"name": "terrain-editor",
+	"version": "1.0.0",
+	"description": "",
+	"main": " ",
+	"scripts": {
+		"makedirs": "shx mkdir -p ./public/",
+		"prebuild": "npm install && npm run makedirs",
+		"prewatch": "npm install && npm run makedirs",
+		"build": "run-p build:html build:css build:js",
+		"build:html": "shx cp src/html/*.html public/",
+		"build:css": "sass --no-source-map src/styles/main.scss public/main.css",
+		"build:js": "browserify -t brfs -p [ tsify ] src/js/main.ts > public/main.js",
+		"release": "npm run build && run-p minify:css minify:js",
+		"minify:css": "purifycss public/main.css public/*.html public/main.js --min --info --out public/main.css",
+		"minify:js": "minify public/main.js --out-file public/main.js",
+		"watch": "run-p watch:html watch:css watch:js",
+		"watch:html": "watch \"npm run build:html\" src/html --interval=2",
+		"watch:css": "watch \"npm run build:css\" src/styles --interval=2",
+		"watch:js": "watch \"npm run build:js\" src/js --interval=2",
+		"start": "live-server public/"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/peterberweiler/ITA-Project.git"
+	},
+	"author": "",
+	"license": "ISC",
+	"bugs": {
+		"url": "https://github.com/peterberweiler/ITA-Project/issues"
+	},
+	"homepage": "https://github.com/peterberweiler/ITA-Project#readme",
+	"dependencies": {
+		"gl-matrix": "^3.0.0"
+	},
+	"devDependencies": {
+		"@babel/core": "^7.5.5",
+		"@types/gl-matrix": "^2.4.5",
+		"@types/node": "^12.7.3",
+		"@typescript-eslint/eslint-plugin": "^2.0.0",
+		"@typescript-eslint/parser": "^2.0.0",
+		"acorn": "^6.0.0",
+		"babel-minify": "^0.5.0",
+		"babelify": "^10.0.0",
+		"brfs": "^2.0.2",
+		"browserify": "^16.2.2",
+		"eslint": "^6.3.0",
+		"live-server": "^1.2.1",
+		"npm-run-all": "^4.1.3",
+		"purify-css": "^1.2.5",
+		"sass": "^1.14.1",
+		"shx": "^0.3.2",
+		"tsify": "^4.0.1",
+		"typescript": "^3.6.2",
+		"watch": "^1.0.2"
+	}
+}
