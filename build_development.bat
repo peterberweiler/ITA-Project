@@ -1,4 +1,4 @@
-call npm run build
+call npm run build:development
 
 IF %ERRORLEVEL% NEQ 0 (
 	PAUSE
