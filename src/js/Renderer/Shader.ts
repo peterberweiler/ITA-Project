@@ -1,12 +1,10 @@
-import { mat4 } from "gl-matrix";
+import { mat2, mat3, mat4, vec2, vec3, vec4 } from "gl-matrix";
 import Global from "./Global";
 
 let gl: WebGL2RenderingContext;
 
 export default class Shader {
-	program: WebGLProgram;
-	attribLocations: any;
-	uniformLocations: any;
+	programId: WebGLProgram;
 
 	constructor(vertexShaderSource: string, fragmentShaderSource: string) {
 		gl = Global.gl;
@@ -17,42 +15,72 @@ export default class Shader {
 
 		if (!program) { throw new Error("Couldn't create program."); }
 
-		this.program = program;
+		this.programId = program;
 
-		gl.attachShader(this.program, vertexShader);
-		gl.attachShader(this.program, fragmentShader);
-		gl.linkProgram(this.program);
+		gl.attachShader(this.programId, vertexShader);
+		gl.attachShader(this.programId, fragmentShader);
+		gl.linkProgram(this.programId);
 
-		if (!gl.getProgramParameter(this.program, gl.LINK_STATUS)) {
+		if (!gl.getProgramParameter(this.programId, gl.LINK_STATUS)) {
 			throw new Error("Linking of shaderprogram failed.");
 		}
+	}
 
-		this.use();
-
-		this.attribLocations = {
-			vertexPosition: gl.getAttribLocation(this.program, "aVertexPosition"),
-			// vertexNormal: gl.getAttribLocation(this.program, "aVertexNormal"),
-		};
-
-		this.uniformLocations = {
-			// color: gl.getUniformLocation(this.program, "uColor"),
-			// shadowIntensity: gl.getUniformLocation(this.program, "uShadowIntensity"),
-			projectionMatrix: gl.getUniformLocation(this.program, "uProjectionMatrix"),
-			viewMatrix: gl.getUniformLocation(this.program, "uViewMatrix"),
-			modelMatrix: gl.getUniformLocation(this.program, "uModelMatrix"),
-
-		};
+	getAttributeLocation(name: string) {
+		return gl.getAttribLocation(this.programId, name);
 	}
 
 	getUniformLocation(name: string) {
-		return gl.getUniformLocation(this.program, name);
+		let loc = gl.getUniformLocation(this.programId, name);
+		if (!loc) { throw new Error("Couldn't retrieve uniform location."); }
+		return loc;
+	}
+
+	setUniformF(location: WebGLUniformLocation, value: number) {
+		gl.uniform1f(location, value);
+	}
+
+	setUniformI(location: WebGLUniformLocation, value: number) {
+		gl.uniform1i(location, value);
+	}
+
+	setUniformUi(location: WebGLUniformLocation, value: number) {
+		gl.uniform1ui(location, value);
+	}
+
+	setUniformVec2(location: WebGLUniformLocation, value: vec2 | number[]) {
+		gl.uniform2fv(location, value);
+	}
+
+	setUniformVec3(location: WebGLUniformLocation, value: vec3) {
+		gl.uniform3fv(location, value);
+	}
+
+	setUniformVec4(location: WebGLUniformLocation, value: vec4) {
+		gl.uniform4fv(location, value);
+	}
+
+	setUniformMat2(location: WebGLUniformLocation, value: mat2) {
+		gl.uniformMatrix2fv(location, false, value);
+	}
+
+	setUniformMat3(location: WebGLUniformLocation, value: mat3) {
+		gl.uniformMatrix3fv(location, false, value);
+	}
+
+	setUniformMat4(location: WebGLUniformLocation, value: mat4) {
+		gl.uniformMatrix4fv(location, false, value);
+	}
+
+	use() {
+		gl.useProgram(this.programId);
 	}
 
 	/**
 	 * @param {string} source
 	 * @param {number} type gl.FRAGMENT_SHADER or gl.VERTEX_SHADER
 	 */
-	compileShader(source: string, type: number): WebGLShader {
+	private compileShader(source: string, type: number): WebGLShader {
 		let shader = gl.createShader(type);
 
 		if (!shader) { throw new Error("Couldn't create shader"); }
@@ -66,35 +94,5 @@ export default class Shader {
 			if (!shader) { throw new Error("Couldn't compile shader: " + info); }
 		}
 		return shader;
-	}
-
-	use() {
-		gl.useProgram(this.program);
-	}
-
-	bind() {
-		// gl.vertexAttribPointer(this.attribLocations.vertexPosition, 3, gl.FLOAT, false, 6 * 4, 0);
-		// gl.vertexAttribPointer(this.attribLocations.vertexNormal, 3, gl.FLOAT, false, 6 * 4, 3 * 4);
-
-		// gl.enableVertexAttribArray(this.attribLocations.vertexPosition);
-		// gl.enableVertexAttribArray(this.attribLocations.vertexNormal);
-
-		gl.vertexAttribPointer(this.attribLocations.vertexPosition, 3, gl.FLOAT, false, 12, 0);
-		gl.enableVertexAttribArray(this.attribLocations.vertexPosition);
-	}
-
-	setProjectionMatrix(projectionMatrix: mat4) {
-		this.use();
-		gl.uniformMatrix4fv(this.uniformLocations.projectionMatrix, false, projectionMatrix);
-	}
-
-	setViewMatrix(viewMatrix: mat4) {
-		this.use();
-		gl.uniformMatrix4fv(this.uniformLocations.viewMatrix, false, viewMatrix);
-	}
-
-	setModelMatrix(modelMatrix: mat4) {
-		this.use();
-		gl.uniformMatrix4fv(this.uniformLocations.modelMatrix, false, modelMatrix);
 	}
 }

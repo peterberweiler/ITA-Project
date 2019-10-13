@@ -1,28 +1,28 @@
 /*
  * Renderer
  */
+import { mat4 } from "gl-matrix";
 import { Camera } from "./Cameras";
 import Global from "./Global";
-import Shader from "./Shader";
+import Terrain from "./Terrain";
 
 let gl: WebGL2RenderingContext;
 
 export default class Renderer {
 	private canvas: HTMLCanvasElement;
 	public camera: Camera;
-	private shaders: Shader[] = [];
+	private terrain: Terrain;
 
 	constructor(canvas: HTMLCanvasElement, camera: Camera) {
 		const context = canvas.getContext("webgl2");
-		this.canvas = canvas;
-		this.camera = camera;
-
 		if (!context) {
-			alert("Unable to initialize WebGL. Please use a different or newer browser.");
-			return;
+			throw new Error("Unable to initialize WebGL. Please use a different or newer browser.");
 		}
 		gl = context;
 		Global.gl = gl;
+		this.canvas = canvas;
+		this.camera = camera;
+		this.terrain = new Terrain();
 
 		gl.getExtension("OES_element_index_uint");
 		gl.getExtension("OES_texture_float");
@@ -40,19 +40,6 @@ export default class Renderer {
 		}
 
 		this.resized();
-	}
-
-	createShader(vertexShaderSource: string, fragmentShaderSource: string) {
-		const shader = new Shader(vertexShaderSource, fragmentShaderSource);
-		this.addShader(shader);
-	}
-
-	addShader(shader: Shader) {
-		this.shaders.push(shader);
-	}
-
-	removeShader(shader: Shader) {
-		this.shaders.splice(this.shaders.indexOf(shader), 1);
 	}
 
 	checkGLError(name?: string) {
@@ -83,17 +70,11 @@ export default class Renderer {
 		}
 	}
 
-	beforeRender(currentTime: number, deltaTime: number) {
+	render(currentTime: number, deltaTime: number) {
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-		for (const shader of this.shaders) {
-			shader.setViewMatrix(this.camera.viewMatrix);
-			shader.setProjectionMatrix(this.camera.projectionMatrix);
-		}
-	}
-
-	afterRender(currentTime: number, deltaTime: number) {
-		//
+		let viewProjection = mat4.create();
+		mat4.multiply(viewProjection, this.camera.projectionMatrix, this.camera.viewMatrix);
+		this.terrain.draw(viewProjection);
 	}
 
 	resized() {

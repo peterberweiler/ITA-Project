@@ -1,16 +1,11 @@
-import { mat4 } from "gl-matrix";
 import { OrbitCamera } from "./Renderer/Cameras";
-import Mesh from "./Renderer/Mesh";
-import Model from "./Renderer/Model";
 import MouseOrbitCameraController from "./Renderer/MouseCameraController";
 import Renderer from "./Renderer/Renderer";
-import Shader from "./Renderer/Shader";
 
 const fragSource = require("./Shader/base.fs").default;
 const vertSource = require("./Shader/base.vs").default;
 
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
-let model: Model;
 let renderer: Renderer;
 let camera: OrbitCamera;
 let mouseController: MouseOrbitCameraController;
@@ -33,18 +28,17 @@ function setupRenderer() {
 	window.onresize = () => renderer.resized();
 	renderer.resized();
 
-	const shader = new Shader(vertSource, fragSource);
-	const mesh = new Mesh(
-		[
-			-1, -1, 0,
-			-1, 1, 0,
-			1, -1, 0,
-			1, 1, 0,
-		], [0, 3, 2, 0, 1, 3]
-	);
-	model = new Model(mesh, shader);
+	//const shader = new Shader(vertSource, fragSource);
+	//const mesh = new Mesh(
+	//	[
+	//		-1, -1, 0,
+	//		-1, 1, 0,
+	//		1, -1, 0,
+	//		1, 1, 0,
+	//	], [0, 3, 2, 0, 1, 3]
+	//);
+	//model = new Model(mesh, shader);
 
-	renderer.addShader(shader);
 	requestAnimationFrame(main);
 }
 
@@ -54,16 +48,16 @@ function setupUI() {
 }
 
 function update(now: number, deltaTime: number) {
-	if (autorotate) {
-		mat4.rotateZ(model.transformation, model.transformation, 0.005);
-		mat4.rotateY(model.transformation, model.transformation, 0.003);
-		mat4.rotateX(model.transformation, model.transformation, 0.002);
-	}
+	//if (autorotate) {
+	//	mat4.rotateZ(model.transformation, model.transformation, 0.005);
+	//	mat4.rotateY(model.transformation, model.transformation, 0.003);
+	//	mat4.rotateX(model.transformation, model.transformation, 0.002);
+	//}
 }
 
-function render(now: number, deltaTime: number) {
-	model.draw();
-}
+//function render(now: number, deltaTime: number) {
+//	model.draw();
+//}
 
 let lastRenderTime: number | null = null;
 
@@ -72,10 +66,11 @@ function main(now: number) {
 	lastRenderTime = now;
 	// fps = ((1000 / deltaTime * 0.4) + (fps * 0.6));
 
-	update(now, deltaTime);
-	renderer.beforeRender(now, deltaTime);
-	render(now, deltaTime);
-	renderer.afterRender(now, deltaTime);
+	renderer.render(now, deltaTime);
+	//update(now, deltaTime);
+	//renderer.beforeRender(now, deltaTime);
+	//render(now, deltaTime);
+	//renderer.afterRender(now, deltaTime);
 
 	requestAnimationFrame(main);
 	renderer.checkGLError();
