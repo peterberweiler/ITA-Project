@@ -1,19 +1,12 @@
 # Terrain Editor
 
-## Build
 ```
-debug build
-> npm run build
+production build
+> npm run build:production
 
-release build
-> npm run release
-```
+development build
+> npm run build:development
 
-## Development
-```
-start live compilation
-> npm run watch
-
-start live server
-> npm run start
+start live compilation and server
+> npm run start:development
 ```
