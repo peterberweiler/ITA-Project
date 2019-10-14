@@ -2,8 +2,10 @@
 
 precision mediump float;
 
+uniform vec3 uColor;
+
 out vec4 color;
 
 void main(void) {
-	color = vec4(1.0);
+	color = vec4(uColor, 1.0);
 }

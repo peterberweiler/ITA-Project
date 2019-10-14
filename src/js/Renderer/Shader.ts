@@ -52,23 +52,23 @@ export default class Shader {
 		gl.uniform2fv(location, value);
 	}
 
-	setUniformVec3(location: WebGLUniformLocation, value: vec3) {
+	setUniformVec3(location: WebGLUniformLocation, value: vec3 | number[]) {
 		gl.uniform3fv(location, value);
 	}
 
-	setUniformVec4(location: WebGLUniformLocation, value: vec4) {
+	setUniformVec4(location: WebGLUniformLocation, value: vec4 | number[]) {
 		gl.uniform4fv(location, value);
 	}
 
-	setUniformMat2(location: WebGLUniformLocation, value: mat2) {
+	setUniformMat2(location: WebGLUniformLocation, value: mat2 | number[]) {
 		gl.uniformMatrix2fv(location, false, value);
 	}
 
-	setUniformMat3(location: WebGLUniformLocation, value: mat3) {
+	setUniformMat3(location: WebGLUniformLocation, value: mat3 | number[]) {
 		gl.uniformMatrix3fv(location, false, value);
 	}
 
-	setUniformMat4(location: WebGLUniformLocation, value: mat4) {
+	setUniformMat4(location: WebGLUniformLocation, value: mat4 | number[]) {
 		gl.uniformMatrix4fv(location, false, value);
 	}
 
