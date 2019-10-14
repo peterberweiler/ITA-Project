@@ -1,5 +1,5 @@
 import { Camera } from "./Renderer/Cameras";
-import MouseCameraController from "./Renderer/MouseCameraController";
+import InputController from "./Renderer/InputController";
 import Renderer from "./Renderer/Renderer";
 
 const fragSource = require("./Shader/base.fs").default;
@@ -8,7 +8,7 @@ const vertSource = require("./Shader/base.vs").default;
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
 let renderer: Renderer;
 let camera: Camera;
-let mouseController: MouseCameraController;
+let inputController: InputController;
 
 function setupRenderer() {
 	camera = new Camera(
@@ -20,7 +20,7 @@ function setupRenderer() {
 		1000,
 	);
 
-	mouseController = new MouseCameraController(camera, canvas);
+	inputController = new InputController(camera, canvas);
 	renderer = new Renderer(canvas, camera);
 	window.onresize = () => renderer.resized();
 	renderer.resized();
@@ -41,7 +41,7 @@ function setupRenderer() {
 
 function setupUI() {
 	const cameraButton = <HTMLButtonElement>document.querySelector("#cameraButton");
-	cameraButton.onclick = () => mouseController.toggleFpsMode();
+	cameraButton.onclick = () => inputController.toggleFpsMode();
 }
 
 function update(now: number, deltaTime: number) {
@@ -50,7 +50,7 @@ function update(now: number, deltaTime: number) {
 	//	mat4.rotateY(model.transformation, model.transformation, 0.003);
 	//	mat4.rotateX(model.transformation, model.transformation, 0.002);
 	//}
-	mouseController.update(now, deltaTime);
+	inputController.update(now, deltaTime);
 }
 
 //function render(now: number, deltaTime: number) {

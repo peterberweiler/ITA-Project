@@ -18,7 +18,7 @@ const FPS_TRANSLATION_CONTROL_KEYS = {
 	"32": [0.0, 0.1, 0.0], // space
 };
 
-export default class MouseCameraController {
+export default class InputController {
 	camera: Camera;
 	cameraController: CameraController
 	canvas: HTMLCanvasElement;
