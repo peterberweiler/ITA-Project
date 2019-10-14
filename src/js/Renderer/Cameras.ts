@@ -1,104 +1,93 @@
-/*
- * This file contains a general camera and an orbit camera.
- *
- * The camera generates the view and projection matricies.
- *
- */
-
-import { mat4, vec3 } from "gl-matrix";
-
-// max angle for looking up/down
-const maxVerticalAngle = Math.PI / 2 * 0.9;
-
-type CameraOptions = {
-	center?: vec3 | number[],
-	eye?: vec3 | number[],
-	up?: vec3 | number[],
-	zNear?: number,
-	zFar?: number,
-	aspectRatio?: number,
-	fieldOfView?: number,
-};
+import { mat4, quat, vec3 } from "gl-matrix";
 
 export class Camera {
-	public center: vec3;
-	public eye: vec3;
-	public up: vec3;
+	public position: vec3;
+	public orientation: quat;
+
+	public aspectRatio: number;
+	public fovy: number;
 
 	public zNear: number;
 	public zFar: number;
 
-	public aspectRatio: number;
-	public fieldOfView: number;
-
 	public viewMatrix: mat4;
 	public projectionMatrix: mat4;
 
-	constructor(options: CameraOptions) {
-		this.center = vec3.clone(options.center || [0, 0, 0]);
-		this.eye = vec3.clone(options.eye || [0, 10, 0]);
-		this.up = vec3.normalize(vec3.create(), options.up || [0, 1, 0]);
-
-		this.zNear = options.zNear || 0;
-		this.zFar = options.zFar || 1000;
-
-		this.aspectRatio = options.aspectRatio || (16 / 9);
-		this.fieldOfView = (options.fieldOfView || 60) * Math.PI / 180;
-
-		this.viewMatrix = mat4.create();
+	constructor(position: vec3 | [number, number, number], orientation: [number, number, number], aspectRatio: number, fovy: number, near: number, far: number) {
+		this.position = vec3.clone(position);
+		this.orientation = quat.fromEuler(quat.create(), orientation[0], orientation[1], orientation[2]);
+		this.aspectRatio = aspectRatio;
+		this.fovy = fovy;
+		this.zNear = near;
+		this.zFar = far;
+		this.viewMatrix = mat4.identity(mat4.create());
 		this.projectionMatrix = mat4.create();
-
-		setTimeout(() => {
-			this.updateViewMatrix();
-			this.updateProjectionMatrix();
-		});
+		mat4.lookAt(this.viewMatrix, this.position, [0, 0, 0], [0, 1, 0]);
+		this.updateProjectionMatrix();
 	}
 
-	updateViewMatrix() {
-		mat4.lookAt(this.viewMatrix, this.eye, this.center, this.up);
+	getForwardDirection() {
+		return vec3.clone([this.viewMatrix[2], this.viewMatrix[4 + 2], this.viewMatrix[8 + 2]]);
+	}
+
+	getPosition() {
+		return this.position;
 	}
 
 	updateProjectionMatrix() {
-		mat4.perspective(
-			this.projectionMatrix,
-			this.fieldOfView,
-			this.aspectRatio,
-			this.zNear,
-			this.zFar
-		);
+		this.projectionMatrix = mat4.perspective(mat4.create(), this.fovy, this.aspectRatio, this.zNear, this.zFar);
 	}
 }
 
-type OrbitCameraOptions = CameraOptions & {
-	viewDirecton?: vec3 | number[],
-	distance?: number,
-	hAngle?: number,
-	vAngle?: number
-};
-
-export class OrbitCamera extends Camera {
-	public viewDirecton: vec3;
+export class CameraController {
+	public camera: Camera;
+	public center: vec3;
 	public distance: number;
-	public hAngle: number; // horizontal
-	public vAngle: number; // vertical
+	public theta: number;
+	public phi: number;
 
-	constructor(options: OrbitCameraOptions) {
-		super(options);
-		this.viewDirecton = vec3.clone(options.viewDirecton || [0, 1, 0]);
-		this.distance = options.distance || 10;
-		this.hAngle = options.hAngle || 0;
-		this.vAngle = options.vAngle || 0;
+	constructor(camera: Camera, center: vec3 | [number, number, number] = [0, 0, 0], distance: number = 10, theta: number = 0, phi: number = (Math.PI * 0.5)) {
+		this.camera = camera;
+		this.center = vec3.clone(center);
+		this.distance = distance;
+		this.theta = theta;
+		this.phi = phi;
+		this.updateFPS([0, 0, 0], 0, 0);
 	}
 
-	updateViewMatrix() {
-		this.vAngle = Math.min(maxVerticalAngle, Math.max(-maxVerticalAngle, this.vAngle));
-		this.distance = Math.max(Number.EPSILON, this.distance);
+	updateArcBall(angleDelta: [number, number], distanceDelta: number) {
+		this.distance += distanceDelta * this.distance;
+		this.distance = Math.max(0.0, this.distance);
 
-		vec3.scale(this.eye, this.viewDirecton, -this.distance);
+		this.theta = Math.min(Math.max(this.theta + angleDelta[1], 0.0001), Math.PI - 0.0001);
+		this.phi += angleDelta[0];
 
-		vec3.add(this.eye, this.eye, this.center);
-		vec3.rotateX(this.eye, this.eye, this.center, this.vAngle);
-		vec3.rotateY(this.eye, this.eye, this.center, this.hAngle);
-		super.updateViewMatrix();
+		quat.fromEuler(this.camera.orientation, this.phi, this.theta, 0);
+
+		this.camera.position[0] = this.center[0] + (this.distance * Math.sin(this.theta) * Math.sin(this.phi));
+		this.camera.position[1] = this.center[1] + (this.distance * Math.cos(this.theta));
+		this.camera.position[2] = this.center[2] + (this.distance * Math.sin(this.theta) * Math.cos(this.phi));
+
+		mat4.lookAt(this.camera.viewMatrix, this.camera.position, this.center, [0, 1, 0]);
+	}
+
+	updateFPS(translationOffset: vec3 | [number, number, number], pitchOffset: number, yawOffset: number) {
+		let tmp = quat.fromEuler(quat.create(), (pitchOffset / Math.PI) * 180, 0, 0); // euler angles are expected to be in degrees
+		let tmp1 = quat.setAxisAngle(quat.create(), [0, 1, 0], yawOffset);
+		quat.multiply(tmp, tmp, this.camera.orientation);
+		quat.multiply(this.camera.orientation, tmp, tmp1);
+		quat.normalize(this.camera.orientation, this.camera.orientation);
+
+		let orientation = mat4.fromQuat(mat4.create(), this.camera.orientation);
+
+		let forward = vec3.clone([orientation[2], orientation[4 + 2], orientation[8 + 2]]);
+		let up = vec3.clone([orientation[1], orientation[4 + 1], orientation[8 + 1]]);
+		let right = vec3.clone([orientation[0], orientation[4 + 0], orientation[8 + 0]]);
+
+		vec3.add(this.camera.position, this.camera.position, [forward[0] * translationOffset[2], forward[1] * translationOffset[2], forward[2] * translationOffset[2]]);
+		vec3.add(this.camera.position, this.camera.position, [up[0] * translationOffset[1], up[1] * translationOffset[1], up[2] * translationOffset[1]]);
+		vec3.add(this.camera.position, this.camera.position, [right[0] * translationOffset[0], right[1] * translationOffset[0], right[2] * translationOffset[0]]);
+
+		mat4.multiply(this.camera.viewMatrix, orientation, mat4.translate(mat4.create(), mat4.create(), [-this.camera.position[0], -this.camera.position[1], -this.camera.position[2]]));
 	}
 }

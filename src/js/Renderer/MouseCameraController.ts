@@ -1,4 +1,4 @@
-import { OrbitCamera } from "./Cameras";
+import { Camera, CameraController } from "./Cameras";
 
 type Mouse = {
 	lastX: number;
@@ -8,13 +8,17 @@ type Mouse = {
 	down: boolean,
 }
 
-export default class MouseOrbitCameraController {
-	camera: OrbitCamera;
+let fpsMode = true;
+
+export default class MouseCameraController {
+	camera: Camera;
+	cameraController: CameraController
 	canvas: HTMLCanvasElement;
 	mouse: Mouse;
 
-	constructor(camera: OrbitCamera, canvas: HTMLCanvasElement) {
+	constructor(camera: Camera, canvas: HTMLCanvasElement) {
 		this.camera = camera;
+		this.cameraController = new CameraController(this.camera);
 		this.canvas = canvas;
 		this.mouse = {
 			lastX: 0,
@@ -40,13 +44,36 @@ export default class MouseOrbitCameraController {
 		canvas.addEventListener("touchcancel", mouseUp);
 
 		canvas.addEventListener("wheel", (event: WheelEvent) => {
-			const d = Math.sign(event.deltaY);
-			this.camera.distance += (d * 0.1) * this.camera.distance;
-			this.camera.updateViewMatrix();
-
+			if (!fpsMode) {
+				this.cameraController.updateArcBall([0, 0], event.deltaY * 0.01);
+			}
 			event.preventDefault();
 			event.stopPropagation();
 		});
+
+		let cameraController = this.cameraController;
+		document.addEventListener("keydown", function (event) {
+			if (fpsMode) {
+				if (event.keyCode === 87) { // W
+					cameraController.updateFPS([0.0, 0.0, -0.1], 0, 0);
+				}
+				if (event.keyCode === 65) { // A
+					cameraController.updateFPS([-0.1, 0.0, 0.0], 0, 0);
+				}
+				if (event.keyCode === 83) { // S
+					cameraController.updateFPS([0.0, 0.0, 0.1], 0, 0);
+				}
+				if (event.keyCode === 68) { // D
+					cameraController.updateFPS([0.1, 0.0, 0.0], 0, 0);
+				}
+				if (event.keyCode === 67) { // C
+					cameraController.updateFPS([0.0, -0.1, 0.0], 0, 0);
+				}
+				if (event.keyCode === 32) { // space
+					cameraController.updateFPS([0.0, 0.1, 0.0], 0, 0);
+				}
+			}
+		}, false);
 	}
 
 	mouseDown(event: any) {
@@ -68,9 +95,12 @@ export default class MouseOrbitCameraController {
 			// if (this.mouse.lastButton === 1) {
 			const dx = this.mouse.lastX - x;
 			const dy = this.mouse.lastY - y;
-			this.camera.hAngle += dx * 0.0075;
-			this.camera.vAngle += dy * 0.0075;
-			this.camera.updateViewMatrix();
+			if (!fpsMode) {
+				this.cameraController.updateArcBall([dx * 0.0075, dy * 0.0075], 0);
+			}
+			else {
+				this.cameraController.updateFPS([0, 0, 0], dy * -0.0075, dx * -0.0075);
+			}
 			// }
 
 			this.mouse.lastX = x;

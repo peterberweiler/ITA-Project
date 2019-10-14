@@ -1,5 +1,5 @@
-import { OrbitCamera } from "./Renderer/Cameras";
-import MouseOrbitCameraController from "./Renderer/MouseCameraController";
+import { Camera } from "./Renderer/Cameras";
+import MouseCameraController from "./Renderer/MouseCameraController";
 import Renderer from "./Renderer/Renderer";
 
 const fragSource = require("./Shader/base.fs").default;
@@ -7,23 +7,22 @@ const vertSource = require("./Shader/base.vs").default;
 
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
 let renderer: Renderer;
-let camera: OrbitCamera;
-let mouseController: MouseOrbitCameraController;
+let camera: Camera;
+let mouseController: MouseCameraController;
 
 let autorotate = true;
 
 function setupRenderer() {
-	camera = new OrbitCamera({
-		viewDirecton: [0, 0, 100],
-		center: [0, 0, 0],
-		up: [0, 1, 0],
-		distance: 0.1,
-		fieldOfView: 45,
-		zNear: 0.001,
-		zFar: 1000,
-	});
+	camera = new Camera(
+		[0, 10, 0],
+		[0, 0, 0],
+		16 / 9,
+		(45 / 180) * Math.PI,
+		0.001,
+		1000,
+	);
 
-	mouseController = new MouseOrbitCameraController(camera, canvas);
+	mouseController = new MouseCameraController(camera, canvas);
 	renderer = new Renderer(canvas, camera);
 	window.onresize = () => renderer.resized();
 	renderer.resized();
