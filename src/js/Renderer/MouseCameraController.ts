@@ -1,3 +1,4 @@
+import { vec3 } from "gl-matrix";
 import { Camera, CameraController } from "./Cameras";
 
 type Mouse = {
@@ -8,13 +9,22 @@ type Mouse = {
 	down: boolean,
 }
 
-let fpsMode = true;
+const FPS_TRANSLATION_CONTROL_KEYS = {
+	"87": [0.0, 0.0, -0.1], // W
+	"65": [-0.1, 0.0, 0.0], // A
+	"83": [0.0, 0.0, 0.1], // S
+	"68": [0.1, 0.0, 0.0], // D
+	"67": [0.0, -0.1, 0.0], // C
+	"32": [0.0, 0.1, 0.0], // space
+};
 
 export default class MouseCameraController {
 	camera: Camera;
 	cameraController: CameraController
 	canvas: HTMLCanvasElement;
 	mouse: Mouse;
+	keyDown: any = {}
+	fpsMode = true;
 
 	constructor(camera: Camera, canvas: HTMLCanvasElement) {
 		this.camera = camera;
@@ -44,36 +54,29 @@ export default class MouseCameraController {
 		canvas.addEventListener("touchcancel", mouseUp);
 
 		canvas.addEventListener("wheel", (event: WheelEvent) => {
-			if (!fpsMode) {
-				this.cameraController.updateArcBall([0, 0], event.deltaY * 0.01);
+			if (!this.fpsMode) {
+				this.cameraController.updateArcBall([0, 0], Math.sign(event.deltaY) * 0.01);
 			}
 			event.preventDefault();
 			event.stopPropagation();
 		});
 
-		let cameraController = this.cameraController;
-		document.addEventListener("keydown", function (event) {
-			if (fpsMode) {
-				if (event.keyCode === 87) { // W
-					cameraController.updateFPS([0.0, 0.0, -0.1], 0, 0);
-				}
-				if (event.keyCode === 65) { // A
-					cameraController.updateFPS([-0.1, 0.0, 0.0], 0, 0);
-				}
-				if (event.keyCode === 83) { // S
-					cameraController.updateFPS([0.0, 0.0, 0.1], 0, 0);
-				}
-				if (event.keyCode === 68) { // D
-					cameraController.updateFPS([0.1, 0.0, 0.0], 0, 0);
-				}
-				if (event.keyCode === 67) { // C
-					cameraController.updateFPS([0.0, -0.1, 0.0], 0, 0);
-				}
-				if (event.keyCode === 32) { // space
-					cameraController.updateFPS([0.0, 0.1, 0.0], 0, 0);
-				}
+		window.addEventListener("keydown", this.keyboardChange.bind(this, true));
+		window.addEventListener("keyup", this.keyboardChange.bind(this, false));
+
+		// window loses focus => release all keys
+		window.addEventListener("blur", () => { this.keyDown = {}; });
+	}
+
+	// the state of any keyboard key changed
+	keyboardChange(isDown: boolean, event: KeyboardEvent) {
+		if (this.fpsMode) {
+			if (event.keyCode in FPS_TRANSLATION_CONTROL_KEYS) {
+				this.keyDown[event.keyCode] = isDown;
+				event.stopPropagation();
+				event.preventDefault();
 			}
-		}, false);
+		}
 	}
 
 	mouseDown(event: any) {
@@ -95,7 +98,7 @@ export default class MouseCameraController {
 			// if (this.mouse.lastButton === 1) {
 			const dx = this.mouse.lastX - x;
 			const dy = this.mouse.lastY - y;
-			if (!fpsMode) {
+			if (!this.fpsMode) {
 				this.cameraController.updateArcBall([dx * 0.0075, dy * 0.0075], 0);
 			}
 			else {
@@ -121,5 +124,28 @@ export default class MouseCameraController {
 
 		event.preventDefault();
 		event.stopPropagation();
+	}
+
+	update(now: number, deltaTime: number) {
+		if (this.fpsMode) {
+			for (const key in FPS_TRANSLATION_CONTROL_KEYS) {
+				if (this.keyDown[key]) {
+					//@ts-ignore
+					const translationOffset = vec3.scale([0, 0, 0], FPS_TRANSLATION_CONTROL_KEYS[key], deltaTime * 0.15);
+					this.cameraController.updateFPS(translationOffset, 0, 0);
+				}
+			}
+		}
+	}
+
+	toggleFpsMode() {
+		this.fpsMode = !this.fpsMode;
+
+		if (this.fpsMode) {
+			this.cameraController.updateFPS([0, 0, 0], 0, 0);
+		}
+		else {
+			this.cameraController.updateArcBall([0, 0], 0);
+		}
 	}
 }

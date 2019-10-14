@@ -10,8 +10,6 @@ let renderer: Renderer;
 let camera: Camera;
 let mouseController: MouseCameraController;
 
-let autorotate = true;
-
 function setupRenderer() {
 	camera = new Camera(
 		[0, 10, 0],
@@ -42,8 +40,8 @@ function setupRenderer() {
 }
 
 function setupUI() {
-	const autorotatationButton = <HTMLButtonElement>document.querySelector("#autorotationButton");
-	autorotatationButton.onclick = () => { autorotate = !autorotate; };
+	const cameraButton = <HTMLButtonElement>document.querySelector("#cameraButton");
+	cameraButton.onclick = () => mouseController.toggleFpsMode();
 }
 
 function update(now: number, deltaTime: number) {
@@ -52,6 +50,7 @@ function update(now: number, deltaTime: number) {
 	//	mat4.rotateY(model.transformation, model.transformation, 0.003);
 	//	mat4.rotateX(model.transformation, model.transformation, 0.002);
 	//}
+	mouseController.update(now, deltaTime);
 }
 
 //function render(now: number, deltaTime: number) {
@@ -65,8 +64,8 @@ function main(now: number) {
 	lastRenderTime = now;
 	// fps = ((1000 / deltaTime * 0.4) + (fps * 0.6));
 
+	update(now, deltaTime);
 	renderer.render(now, deltaTime);
-	//update(now, deltaTime);
 	//renderer.beforeRender(now, deltaTime);
 	//render(now, deltaTime);
 	//renderer.afterRender(now, deltaTime);
