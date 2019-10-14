@@ -3,7 +3,7 @@ import Global from "./Global";
 import Shader from "./Shader";
 
 let gl: WebGL2RenderingContext;
-const TILE_RESOLUTION: number = 8;
+const TILE_RESOLUTION: number = 32;
 const TILE_VERTEX_RESOLUTION: number = TILE_RESOLUTION + 1;
 const CLIPMAP_RESOLUTION = (TILE_RESOLUTION * 4) + 1;
 const CLIPMAP_VERTEX_RESOLUTION = CLIPMAP_RESOLUTION + 1;
@@ -18,10 +18,9 @@ export default class Terrain {
 	private uBiasLocation: WebGLUniformLocation;
 	private uRotationLocation: WebGLUniformLocation;
 	private uColorLocation: WebGLUniformLocation;
-	private tileBuffers: WebGLBuffer[];
-	private fillerBuffers: WebGLBuffer[];
-	private crossBuffers: WebGLBuffer[];
-	private trimBuffers: WebGLBuffer[];
+	private vao: WebGLBuffer;
+	private vbo: WebGLBuffer;
+	private ibo: WebGLBuffer;
 	private tileIndexCount: number = 0;
 	private fillerIndexCount: number = 0;
 	private crossIndexCount: number = 0;
@@ -58,11 +57,15 @@ export default class Terrain {
 		const crossVertexCount = TILE_VERTEX_RESOLUTION * 8;
 		const trimVertexCount = ((CLIPMAP_VERTEX_RESOLUTION * 2) + 1) * 2;
 
+		let vertexData = new Float32Array((tileVertexCount + fillerVertexCount + crossVertexCount + trimVertexCount) * 2);
+		let indexData = new Uint16Array(this.tileIndexCount + this.fillerIndexCount + this.crossIndexCount + this.trimIndexCount);
+
+		let currentVertexOffset = 0;
+		let currentIndexOffset = 0;
+		let currentVertexBaseOffset = 0;
+
 		// tile
 		{
-			let vertexData = new Float32Array(tileVertexCount * 2);
-
-			let currentVertexOffset = 0;
 			// generate vertex buffer data for tiles
 			for (let y = 0; y < TILE_VERTEX_RESOLUTION; ++y) {
 				for (let x = 0; x < TILE_VERTEX_RESOLUTION; ++x) {
@@ -71,9 +74,6 @@ export default class Terrain {
 				}
 			}
 
-			let indexData = new Uint16Array(this.tileIndexCount);
-
-			let currentIndexOffset = 0;
 			// generate index buffer data for tiles
 			for (let y = 0; y < TILE_RESOLUTION; ++y) {
 				for (let x = 0; x < TILE_RESOLUTION; ++x) {
@@ -86,15 +86,12 @@ export default class Terrain {
 					indexData[currentIndexOffset++] = (y * TILE_VERTEX_RESOLUTION) + x + 1;
 				}
 			}
-
-			this.tileBuffers = this.createBuffers(vertexData, indexData);
 		}
+
+		currentVertexBaseOffset += tileVertexCount;
 
 		// filler
 		{
-			let vertexData = new Float32Array(fillerVertexCount * 2);
-
-			let currentVertexOffset = 0;
 			// generate vertex buffer data for filler mesh
 			for (let i = 0; i < TILE_VERTEX_RESOLUTION; ++i) {
 				vertexData[currentVertexOffset++] = TILE_RESOLUTION + i + 1;
@@ -121,9 +118,6 @@ export default class Terrain {
 				vertexData[currentVertexOffset++] = (TILE_RESOLUTION + i) * -1;
 			}
 
-			let indexData = new Uint16Array(this.fillerIndexCount);
-
-			let currentIndexOffset = 0;
 			// generate index buffer data for filler mesh
 			for (let i = 0; i < TILE_RESOLUTION * 4; ++i) {
 				let arm = Math.floor(i / TILE_RESOLUTION);
@@ -134,31 +128,28 @@ export default class Terrain {
 				let tr = ((arm + i) * 2) + 3;
 
 				if (arm % 2 === 0) {
-					indexData[currentIndexOffset++] = br;
-					indexData[currentIndexOffset++] = bl;
-					indexData[currentIndexOffset++] = tr;
-					indexData[currentIndexOffset++] = bl;
-					indexData[currentIndexOffset++] = tl;
-					indexData[currentIndexOffset++] = tr;
+					indexData[currentIndexOffset++] = br + currentVertexBaseOffset;
+					indexData[currentIndexOffset++] = bl + currentVertexBaseOffset;
+					indexData[currentIndexOffset++] = tr + currentVertexBaseOffset;
+					indexData[currentIndexOffset++] = bl + currentVertexBaseOffset;
+					indexData[currentIndexOffset++] = tl + currentVertexBaseOffset;
+					indexData[currentIndexOffset++] = tr + currentVertexBaseOffset;
 				}
 				else {
-					indexData[currentIndexOffset++] = br;
-					indexData[currentIndexOffset++] = bl;
-					indexData[currentIndexOffset++] = tl;
-					indexData[currentIndexOffset++] = br;
-					indexData[currentIndexOffset++] = tl;
-					indexData[currentIndexOffset++] = tr;
+					indexData[currentIndexOffset++] = br + currentVertexBaseOffset;
+					indexData[currentIndexOffset++] = bl + currentVertexBaseOffset;
+					indexData[currentIndexOffset++] = tl + currentVertexBaseOffset;
+					indexData[currentIndexOffset++] = br + currentVertexBaseOffset;
+					indexData[currentIndexOffset++] = tl + currentVertexBaseOffset;
+					indexData[currentIndexOffset++] = tr + currentVertexBaseOffset;
 				}
 			}
-
-			this.fillerBuffers = this.createBuffers(vertexData, indexData);
 		}
+
+		currentVertexBaseOffset += fillerVertexCount;
 
 		// cross
 		{
-			let vertexData = new Float32Array(crossVertexCount * 2);
-
-			let currentVertexOffset = 0;
 			// generate vertex buffer data for cross mesh
 
 			// horizontal vertices
@@ -169,7 +160,7 @@ export default class Terrain {
 				vertexData[currentVertexOffset++] = 1;
 			}
 
-			const startOfVertical = currentVertexOffset / 2;
+			const startOfVertical = TILE_VERTEX_RESOLUTION * 4;
 
 			// vertical vertices
 			for (let i = 0; i < TILE_VERTEX_RESOLUTION * 2; ++i) {
@@ -179,9 +170,6 @@ export default class Terrain {
 				vertexData[currentVertexOffset++] = i - TILE_RESOLUTION;
 			}
 
-			let indexData = new Uint16Array(this.crossIndexCount);
-
-			let currentIndexOffset = 0;
 			// generate index buffer data for filler mesh
 
 			// horizontal indices
@@ -191,12 +179,12 @@ export default class Terrain {
 				let tl = (i * 2) + 2;
 				let tr = (i * 2) + 3;
 
-				indexData[currentIndexOffset++] = br;
-				indexData[currentIndexOffset++] = bl;
-				indexData[currentIndexOffset++] = tr;
-				indexData[currentIndexOffset++] = bl;
-				indexData[currentIndexOffset++] = tl;
-				indexData[currentIndexOffset++] = tr;
+				indexData[currentIndexOffset++] = br + currentVertexBaseOffset;
+				indexData[currentIndexOffset++] = bl + currentVertexBaseOffset;
+				indexData[currentIndexOffset++] = tr + currentVertexBaseOffset;
+				indexData[currentIndexOffset++] = bl + currentVertexBaseOffset;
+				indexData[currentIndexOffset++] = tl + currentVertexBaseOffset;
+				indexData[currentIndexOffset++] = tr + currentVertexBaseOffset;
 			}
 
 			// vertical indices
@@ -210,22 +198,19 @@ export default class Terrain {
 				let tl = (i * 2) + 2 + startOfVertical;
 				let tr = (i * 2) + 3 + startOfVertical;
 
-				indexData[currentIndexOffset++] = br;
-				indexData[currentIndexOffset++] = bl;
-				indexData[currentIndexOffset++] = tr;
-				indexData[currentIndexOffset++] = bl;
-				indexData[currentIndexOffset++] = tl;
-				indexData[currentIndexOffset++] = tr;
+				indexData[currentIndexOffset++] = br + currentVertexBaseOffset;
+				indexData[currentIndexOffset++] = bl + currentVertexBaseOffset;
+				indexData[currentIndexOffset++] = tr + currentVertexBaseOffset;
+				indexData[currentIndexOffset++] = bl + currentVertexBaseOffset;
+				indexData[currentIndexOffset++] = tl + currentVertexBaseOffset;
+				indexData[currentIndexOffset++] = tr + currentVertexBaseOffset;
 			}
-
-			this.crossBuffers = this.createBuffers(vertexData, indexData);
 		}
+
+		currentVertexBaseOffset += crossVertexCount;
 
 		// trim
 		{
-			let vertexData = new Float32Array(trimVertexCount * 2);
-
-			let currentVertexOffset = 0;
 			// generate vertex buffer data for trim
 
 			// vertical part of L
@@ -236,7 +221,7 @@ export default class Terrain {
 				vertexData[currentVertexOffset++] = CLIPMAP_VERTEX_RESOLUTION - i;
 			}
 
-			const startOfHorizontal = currentVertexOffset / 2;
+			const startOfHorizontal = (CLIPMAP_VERTEX_RESOLUTION + 1) * 2;
 
 			// horizontal part of L
 			for (let i = 0; i < CLIPMAP_VERTEX_RESOLUTION; ++i) {
@@ -246,45 +231,42 @@ export default class Terrain {
 				vertexData[currentVertexOffset++] = 1;
 			}
 
-			let indexData = new Uint16Array(this.trimIndexCount);
-
-			let currentIndexOffset = 0;
 			// generate index buffer data for tiles
 			for (let i = 0; i < CLIPMAP_VERTEX_RESOLUTION; ++i) {
-				indexData[currentIndexOffset++] = ((i + 0) * 2) + 1;
-				indexData[currentIndexOffset++] = ((i + 0) * 2) + 0;
-				indexData[currentIndexOffset++] = ((i + 1) * 2) + 0;
+				indexData[currentIndexOffset++] = ((i + 0) * 2) + 1 + currentVertexBaseOffset;
+				indexData[currentIndexOffset++] = ((i + 0) * 2) + 0 + currentVertexBaseOffset;
+				indexData[currentIndexOffset++] = ((i + 1) * 2) + 0 + currentVertexBaseOffset;
 
-				indexData[currentIndexOffset++] = ((i + 1) * 2) + 1;
-				indexData[currentIndexOffset++] = ((i + 0) * 2) + 1;
-				indexData[currentIndexOffset++] = ((i + 1) * 2) + 0;
+				indexData[currentIndexOffset++] = ((i + 1) * 2) + 1 + currentVertexBaseOffset;
+				indexData[currentIndexOffset++] = ((i + 0) * 2) + 1 + currentVertexBaseOffset;
+				indexData[currentIndexOffset++] = ((i + 1) * 2) + 0 + currentVertexBaseOffset;
 			}
 			for (let i = 0; i < CLIPMAP_VERTEX_RESOLUTION - 1; ++i) {
-				indexData[currentIndexOffset++] = ((i + 0) * 2) + 1 + startOfHorizontal;
-				indexData[currentIndexOffset++] = ((i + 0) * 2) + 0 + startOfHorizontal;
-				indexData[currentIndexOffset++] = ((i + 1) * 2) + 0 + startOfHorizontal;
+				indexData[currentIndexOffset++] = ((i + 0) * 2) + 1 + startOfHorizontal + currentVertexBaseOffset;
+				indexData[currentIndexOffset++] = ((i + 0) * 2) + 0 + startOfHorizontal + currentVertexBaseOffset;
+				indexData[currentIndexOffset++] = ((i + 1) * 2) + 0 + startOfHorizontal + currentVertexBaseOffset;
 
-				indexData[currentIndexOffset++] = ((i + 1) * 2) + 1 + startOfHorizontal;
-				indexData[currentIndexOffset++] = ((i + 0) * 2) + 1 + startOfHorizontal;
-				indexData[currentIndexOffset++] = ((i + 1) * 2) + 0 + startOfHorizontal;
+				indexData[currentIndexOffset++] = ((i + 1) * 2) + 1 + startOfHorizontal + currentVertexBaseOffset;
+				indexData[currentIndexOffset++] = ((i + 0) * 2) + 1 + startOfHorizontal + currentVertexBaseOffset;
+				indexData[currentIndexOffset++] = ((i + 1) * 2) + 0 + startOfHorizontal + currentVertexBaseOffset;
 			}
-
-			this.trimBuffers = this.createBuffers(vertexData, indexData);
 		}
-	}
 
-	private createBuffers(vertexData: Float32Array, indexData: Uint16Array) {
 		const vaoBuffer = gl.createVertexArray();
 		const vertexBuffer = gl.createBuffer();
 		const indexBuffer = gl.createBuffer();
 
 		if (!vertexBuffer || !indexBuffer || !vaoBuffer) { throw new Error("Couldn't create vertex or indexbuffer."); }
 
-		gl.bindVertexArray(vaoBuffer);
+		this.vao = vaoBuffer;
+		this.vbo = vertexBuffer;
+		this.ibo = indexBuffer;
 
-		gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+		gl.bindVertexArray(this.vao);
+
+		gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo);
 		gl.bufferData(gl.ARRAY_BUFFER, vertexData, gl.STATIC_DRAW);
-		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.ibo);
 		gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indexData, gl.STATIC_DRAW);
 
 		// vertex positions
@@ -292,32 +274,59 @@ export default class Terrain {
 		gl.vertexAttribPointer(this.terrainShader.getAttributeLocation("aPosition"), 2, gl.FLOAT, false, 8, 0);
 
 		gl.bindVertexArray(null);
-
-		return [vaoBuffer, vertexBuffer, indexBuffer];
 	}
 
 	draw(viewProjection: mat4, camPos: vec3) {
-		let drawMode = gl.TRIANGLES;
+		let drawMode = gl.LINES;
 
 		this.terrainShader.use();
+
+		gl.bindVertexArray(this.vao);
+
 		this.terrainShader.setUniformMat4(this.uTransformLocation, viewProjection);
 
-		this.terrainShader.setUniformMat2(this.uRotationLocation, this.rotations[0]);
-
-		// draw tiles
-		gl.bindVertexArray(this.tileBuffers[0]);
-		this.terrainShader.setUniformVec3(this.uColorLocation, [0, 0, 1]);
 		for (let level = 0; level < NUM_CLIPMAP_LEVELS; ++level) {
-			let scale = 1 << level;
-			this.terrainShader.setUniformF(this.uScaleLocation, 1 << level);
+			const scale = 1 << level;
+			this.terrainShader.setUniformF(this.uScaleLocation, scale);
 
-			let snappedPosX = Math.floor(camPos[0] / scale) * scale;
-			let snappedPosY = Math.floor(camPos[2] / scale) * scale;
+			const snappedPosX = Math.floor(camPos[0] / scale) * scale;
+			const snappedPosY = Math.floor(camPos[2] / scale) * scale;
 
-			let tileSize = TILE_RESOLUTION << level;
-			let baseX = snappedPosX - (TILE_RESOLUTION << (level + 1));
-			let baseY = snappedPosY - (TILE_RESOLUTION << (level + 1));
+			const tileSize = TILE_RESOLUTION << level;
+			const baseX = snappedPosX - (TILE_RESOLUTION << (level + 1));
+			const baseY = snappedPosY - (TILE_RESOLUTION << (level + 1));
 
+			// draw trim
+			{
+				const nextScale = scale * 2;
+				const nextSnappedPosX = Math.floor(camPos[0] / nextScale) * nextScale;
+				const nextSnappedPosY = Math.floor(camPos[2] / nextScale) * nextScale;
+
+				let offsetX = baseX - scale;
+				let offsetY = baseY - scale;
+				let dX = camPos[0] - nextSnappedPosX;
+				let dY = camPos[2] - nextSnappedPosY;
+				let r = 0;
+				if (dX < scale) {
+					r |= 2;
+					offsetX += scale * (CLIPMAP_RESOLUTION + 2);
+				}
+				if (dY < scale) {
+					r |= 1;
+					offsetY += scale * (CLIPMAP_RESOLUTION + 2);
+				}
+
+				this.terrainShader.setUniformVec3(this.uColorLocation, [0, 1, 0]);
+				this.terrainShader.setUniformMat2(this.uRotationLocation, this.rotations[r]);
+				this.terrainShader.setUniformVec2(this.uBiasLocation, [offsetX, offsetY]);
+				gl.drawElements(drawMode, this.trimIndexCount, gl.UNSIGNED_SHORT, (this.tileIndexCount + this.fillerIndexCount + this.crossIndexCount) * 2);
+			}
+
+			// all following drawcalls dont need a rotation
+			this.terrainShader.setUniformMat2(this.uRotationLocation, this.rotations[0]);
+
+			// draw tiles
+			this.terrainShader.setUniformVec3(this.uColorLocation, [0, 0, 1]);
 			for (let y = 0; y < 4; ++y) {
 				for (let x = 0; x < 4; ++x) {
 					if (level !== 0 && x > 0 && x < 3 && y > 0 && y < 3) {
@@ -332,59 +341,22 @@ export default class Terrain {
 					gl.drawElements(drawMode, this.tileIndexCount, gl.UNSIGNED_SHORT, 0);
 				}
 			}
-		}
 
-		// draw filler
-		this.terrainShader.setUniformVec3(this.uColorLocation, [1, 0, 0]);
-		gl.bindVertexArray(this.fillerBuffers[0]);
-		for (let level = 0; level < NUM_CLIPMAP_LEVELS; ++level) {
-			let scale = 1 << level;
-
-			let snappedPosX = Math.floor(camPos[0] / scale) * scale;
-			let snappedPosY = Math.floor(camPos[2] / scale) * scale;
-
-			this.terrainShader.setUniformF(this.uScaleLocation, 1 << level);
-			this.terrainShader.setUniformVec2(this.uBiasLocation, [snappedPosX, snappedPosY]);
-			gl.drawElements(drawMode, this.fillerIndexCount, gl.UNSIGNED_SHORT, 0);
+			// draw filler
+			{
+				this.terrainShader.setUniformVec3(this.uColorLocation, [1, 0, 0]);
+				this.terrainShader.setUniformVec2(this.uBiasLocation, [snappedPosX, snappedPosY]);
+				gl.drawElements(drawMode, this.fillerIndexCount, gl.UNSIGNED_SHORT, (this.tileIndexCount) * 2);
+			}
 		}
 
 		// draw cross
-		gl.bindVertexArray(this.crossBuffers[0]);
-		this.terrainShader.setUniformF(this.uScaleLocation, 1);
-		this.terrainShader.setUniformVec2(this.uBiasLocation, [Math.floor(camPos[0]), Math.floor(camPos[2])]);
-		gl.drawElements(drawMode, this.crossIndexCount, gl.UNSIGNED_SHORT, 0);
-
-		// draw trim
-		this.terrainShader.setUniformVec3(this.uColorLocation, [0, 1, 0]);
-		gl.bindVertexArray(this.trimBuffers[0]);
-		for (let level = 0; level < NUM_CLIPMAP_LEVELS; ++level) {
-			let scale = 1 << level;
-
-			let snappedPosX = Math.floor(camPos[0] / scale) * scale;
-			let snappedPosY = Math.floor(camPos[2] / scale) * scale;
-
-			let nextScale = scale * 2;
-			let nextSnappedPosX = Math.floor(camPos[0] / nextScale) * nextScale;
-			let nextSnappedPosY = Math.floor(camPos[2] / nextScale) * nextScale;
-
-			let offsetX = snappedPosX - (TILE_RESOLUTION << (level + 1)) - scale;
-			let offsetY = snappedPosY - (TILE_RESOLUTION << (level + 1)) - scale;
-			let dX = camPos[0] - nextSnappedPosX;
-			let dY = camPos[2] - nextSnappedPosY;
-			let r = 0;
-			if (dX < scale) {
-				r |= 2;
-				offsetX += scale * (CLIPMAP_RESOLUTION + 2);
-			}
-			if (dY < scale) {
-				r |= 1;
-				offsetY += scale * (CLIPMAP_RESOLUTION + 2);
-			}
-
-			this.terrainShader.setUniformMat2(this.uRotationLocation, this.rotations[r]);
-			this.terrainShader.setUniformF(this.uScaleLocation, scale);
-			this.terrainShader.setUniformVec2(this.uBiasLocation, [offsetX, offsetY]);
-			gl.drawElements(drawMode, this.trimIndexCount, gl.UNSIGNED_SHORT, 0);
+		{
+			// color is still set from drawing filler
+			// rotation is still set from everything after drawing trim
+			this.terrainShader.setUniformF(this.uScaleLocation, 1);
+			this.terrainShader.setUniformVec2(this.uBiasLocation, [Math.floor(camPos[0]), Math.floor(camPos[2])]);
+			gl.drawElements(drawMode, this.crossIndexCount, gl.UNSIGNED_SHORT, (this.tileIndexCount + this.fillerIndexCount) * 2);
 		}
 
 		gl.bindVertexArray(null);
