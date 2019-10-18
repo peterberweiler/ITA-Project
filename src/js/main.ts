@@ -1,3 +1,4 @@
+import HeightmapRenderer from "./HeightmapRenderer/HeightmapRenderer";
 import { Camera } from "./Renderer/Cameras";
 import InputController from "./Renderer/InputController";
 import Renderer from "./Renderer/Renderer";
@@ -9,11 +10,12 @@ const canvas = document.getElementById("canvas") as HTMLCanvasElement;
 let renderer: Renderer;
 let camera: Camera;
 let inputController: InputController;
+let heightmapRenderer: HeightmapRenderer;
 
 function setupRenderer() {
 	camera = new Camera(
-		[0, 10, 0],
-		[0, 0, 0],
+		[-20, 10, -20],
+		[0, 135, 0],
 		16 / 9,
 		(45 / 180) * Math.PI,
 		0.001,
@@ -25,37 +27,27 @@ function setupRenderer() {
 	window.onresize = () => renderer.resized();
 	renderer.resized();
 
-	//const shader = new Shader(vertSource, fragSource);
-	//const mesh = new Mesh(
-	//	[
-	//		-1, -1, 0,
-	//		-1, 1, 0,
-	//		1, -1, 0,
-	//		1, 1, 0,
-	//	], [0, 3, 2, 0, 1, 3]
-	//);
-	//model = new Model(mesh, shader);
+	heightmapRenderer = new HeightmapRenderer(renderer.getTerrain().getHeightmapTexture());
 
 	requestAnimationFrame(main);
+}
+
+function testButtonPressed() {
+	//
+	heightmapRenderer.scheduleUpdate();
 }
 
 function setupUI() {
 	const cameraButton = <HTMLButtonElement>document.querySelector("#cameraButton");
 	cameraButton.onclick = () => inputController.toggleFpsMode();
+
+	const testButton = <HTMLButtonElement>document.querySelector("#testButton");
+	testButton.onclick = testButtonPressed;
 }
 
 function update(now: number, deltaTime: number) {
-	//if (autorotate) {
-	//	mat4.rotateZ(model.transformation, model.transformation, 0.005);
-	//	mat4.rotateY(model.transformation, model.transformation, 0.003);
-	//	mat4.rotateX(model.transformation, model.transformation, 0.002);
-	//}
 	inputController.update(now, deltaTime);
 }
-
-//function render(now: number, deltaTime: number) {
-//	model.draw();
-//}
 
 let lastRenderTime: number | null = null;
 
@@ -65,10 +57,8 @@ function main(now: number) {
 	// fps = ((1000 / deltaTime * 0.4) + (fps * 0.6));
 
 	update(now, deltaTime);
+	heightmapRenderer.render();
 	renderer.render(now, deltaTime);
-	//renderer.beforeRender(now, deltaTime);
-	//render(now, deltaTime);
-	//renderer.afterRender(now, deltaTime);
 
 	requestAnimationFrame(main);
 	renderer.checkGLError();

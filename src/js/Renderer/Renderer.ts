@@ -24,10 +24,8 @@ export default class Renderer {
 		this.camera = camera;
 		this.terrain = new Terrain();
 
-		gl.getExtension("OES_element_index_uint");
-		gl.getExtension("OES_texture_float");
 		gl.getExtension("OES_texture_float_linear");
-		gl.getExtension("WEBGL_color_buffer_float");
+		gl.getExtension("EXT_color_buffer_float");
 
 		gl.clearColor(0, 0, 0, 0);
 		gl.clearDepth(1.0);
@@ -87,5 +85,9 @@ export default class Renderer {
 		gl.viewport(0, 0, w, h);
 		this.camera.aspectRatio = w / h;
 		this.camera.updateProjectionMatrix();
+	}
+
+	getTerrain() {
+		return this.terrain;
 	}
 }

@@ -9,13 +9,24 @@ type Mouse = {
 	down: boolean,
 }
 
+//TODO: maybe capture mouse so that ctrl + w doesn't close the window
+
 const FPS_TRANSLATION_CONTROL_KEYS = {
-	"87": [0.0, 0.0, -0.1], // W
-	"65": [-0.1, 0.0, 0.0], // A
-	"83": [0.0, 0.0, 0.1], // S
-	"68": [0.1, 0.0, 0.0], // D
-	"67": [0.0, -0.1, 0.0], // C
-	"32": [0.0, 0.1, 0.0], // space
+	"87": [0.0, 0.0, -1], // W
+	"65": [-1, 0.0, 0.0], // A
+	"83": [0.0, 0.0, 1], // S
+	"68": [1, 0.0, 0.0], // D
+	"67": [0.0, -1, 0.0], // C
+	"17": [0.0, -1, 0.0], // ctrl
+	"32": [0.0, 1, 0.0], // space
+};
+
+const SHIFT_KEY = 16;
+
+// all keys that should be listened to
+const CONTROL_KEYS = {
+	...FPS_TRANSLATION_CONTROL_KEYS,
+	16: true,
 };
 
 export default class InputController {
@@ -71,7 +82,7 @@ export default class InputController {
 	// the state of any keyboard key changed
 	keyboardChange(isDown: boolean, event: KeyboardEvent) {
 		if (this.fpsMode) {
-			if (event.keyCode in FPS_TRANSLATION_CONTROL_KEYS) {
+			if (event.keyCode in CONTROL_KEYS) {
 				this.keyDown[event.keyCode] = isDown;
 				event.stopPropagation();
 				event.preventDefault();
@@ -130,8 +141,10 @@ export default class InputController {
 		if (this.fpsMode) {
 			for (const key in FPS_TRANSLATION_CONTROL_KEYS) {
 				if (this.keyDown[key]) {
+					let speed = deltaTime * 0.015;
+					if (this.keyDown[SHIFT_KEY]) { speed *= 10; } // run when shift is down
 					//@ts-ignore
-					const translationOffset = vec3.scale([0, 0, 0], FPS_TRANSLATION_CONTROL_KEYS[key], deltaTime * 0.15);
+					const translationOffset = vec3.scale([0, 0, 0], FPS_TRANSLATION_CONTROL_KEYS[key], speed);
 					this.cameraController.updateFPS(translationOffset, 0, 0);
 				}
 			}

@@ -22,7 +22,8 @@ export default class Shader {
 		gl.linkProgram(this.programId);
 
 		if (!gl.getProgramParameter(this.programId, gl.LINK_STATUS)) {
-			throw new Error("Linking of shaderprogram failed.");
+			const info = gl.getProgramInfoLog(this.programId);
+			throw new Error("Linking of shaderprogram failed: " + info);
 		}
 	}
 
@@ -91,7 +92,7 @@ export default class Shader {
 		if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
 			const info = gl.getShaderInfoLog(shader);
 			gl.deleteShader(shader);
-			if (!shader) { throw new Error("Couldn't compile shader: " + info); }
+			throw new Error("Couldn't compile shader: " + info);
 		}
 		return shader;
 	}

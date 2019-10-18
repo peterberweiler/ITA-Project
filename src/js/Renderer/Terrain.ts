@@ -1,6 +1,7 @@
 import { mat2, mat4, vec3 } from "gl-matrix";
 import Global from "./Global";
 import Shader from "./Shader";
+import Texture from "./Texture";
 
 let gl: WebGL2RenderingContext;
 const TILE_RESOLUTION: number = 32;
@@ -26,6 +27,8 @@ export default class Terrain {
 	private crossIndexCount: number = 0;
 	private trimIndexCount: number = 0;
 	private rotations: mat2[];
+	private uHeightmapTexture: WebGLUniformLocation;
+	private heightmapTexture: Texture;
 
 	constructor() {
 		gl = Global.gl;
@@ -36,12 +39,15 @@ export default class Terrain {
 		this.uBiasLocation = this.terrainShader.getUniformLocation("uBias");
 		this.uRotationLocation = this.terrainShader.getUniformLocation("uRotation");
 		this.uColorLocation = this.terrainShader.getUniformLocation("uColor");
+		this.uHeightmapTexture = this.terrainShader.getUniformLocation("uHeightmapTexture");
 
 		this.rotations = new Array(4);
 		for (let i = 0; i < 4; ++i) {
 			this.rotations[i] = mat2.create();
 			mat2.identity(this.rotations[i]);
 		}
+
+		this.heightmapTexture = new Texture(0);
 
 		mat2.rotate(this.rotations[1], this.rotations[1], (270 / 180) * Math.PI);
 		mat2.rotate(this.rotations[2], this.rotations[2], (90 / 180) * Math.PI);
@@ -285,6 +291,9 @@ export default class Terrain {
 
 		this.terrainShader.setUniformMat4(this.uTransformLocation, viewProjection);
 
+		this.heightmapTexture.bind();
+		this.terrainShader.setUniformI(this.uHeightmapTexture, this.heightmapTexture.unit);
+
 		for (let level = 0; level < NUM_CLIPMAP_LEVELS; ++level) {
 			const scale = 1 << level;
 			this.terrainShader.setUniformF(this.uScaleLocation, scale);
@@ -360,5 +369,9 @@ export default class Terrain {
 		}
 
 		gl.bindVertexArray(null);
+	}
+
+	getHeightmapTexture() {
+		return this.heightmapTexture;
 	}
 }
