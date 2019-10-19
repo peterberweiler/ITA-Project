@@ -5,8 +5,9 @@ type Mouse = {
 	lastX: number;
 	lastY: number;
 	lastButton: number,
-	moved: boolean,
-	down: boolean,
+	movedSinceButtonDown: boolean,
+	over: boolean,
+	buttonDown: boolean,
 }
 
 //TODO: maybe capture mouse
@@ -45,8 +46,9 @@ export default class InputController {
 			lastX: 0,
 			lastY: 0,
 			lastButton: 0,
-			moved: false,
-			down: false
+			movedSinceButtonDown: false,
+			over: false,
+			buttonDown: false
 		};
 
 		const mouseUp = this.mouseUp.bind(this);
@@ -63,6 +65,8 @@ export default class InputController {
 		canvas.addEventListener("mouseup", mouseUp);
 		canvas.addEventListener("touchend", mouseUp);
 		canvas.addEventListener("touchcancel", mouseUp);
+
+		canvas.addEventListener("mouseleave", () => { this.mouse.over = false; });
 
 		canvas.addEventListener("wheel", (event: WheelEvent) => {
 			if (!this.fpsMode) {
@@ -94,10 +98,10 @@ export default class InputController {
 	}
 
 	mouseDown(event: any) {
-		this.mouse.down = true;
+		this.mouse.buttonDown = true;
 		this.mouse.lastX = event.offsetX || event.layerX || (event.targetTouches && event.targetTouches[0].pageX) || this.mouse.lastX;
 		this.mouse.lastY = event.offsetY || event.layerY || (event.targetTouches && event.targetTouches[0].pageY) || this.mouse.lastY;
-		this.mouse.moved = false;
+		this.mouse.movedSinceButtonDown = false;
 		this.mouse.lastButton = event.button;
 
 		event.preventDefault();
@@ -105,10 +109,10 @@ export default class InputController {
 	}
 
 	mouseMove(event: any) {
-		if (this.mouse.down) {
-			const x = event.offsetX || event.layerX || (event.targetTouches && event.targetTouches[0].pageX) || this.mouse.lastX;
-			const y = event.offsetY || event.layerY || (event.targetTouches && event.targetTouches[0].pageY) || this.mouse.lastY;
+		const x = event.offsetX || event.layerX || (event.targetTouches && event.targetTouches[0].pageX) || this.mouse.lastX;
+		const y = event.offsetY || event.layerY || (event.targetTouches && event.targetTouches[0].pageY) || this.mouse.lastY;
 
+		if (this.mouse.buttonDown) {
 			// if (this.mouse.lastButton === 1) {
 			const dx = this.mouse.lastX - x;
 			const dy = this.mouse.lastY - y;
@@ -120,10 +124,12 @@ export default class InputController {
 			}
 			// }
 
-			this.mouse.lastX = x;
-			this.mouse.lastY = y;
-			this.mouse.moved = true;
+			this.mouse.movedSinceButtonDown = true;
 		}
+		this.mouse.lastX = x;
+		this.mouse.lastY = y;
+
+		this.mouse.over = true;
 
 		event.preventDefault();
 		event.stopPropagation();
@@ -134,7 +140,7 @@ export default class InputController {
 		// 	event.target === this.canvas && event.button === 0) {
 		// 	// single left click on canvas
 		// }
-		this.mouse.down = false;
+		this.mouse.buttonDown = false;
 
 		event.preventDefault();
 		event.stopPropagation();

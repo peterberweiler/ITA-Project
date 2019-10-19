@@ -100,4 +100,13 @@ export default class Renderer {
 	getHeightmapRenderer() {
 		return this.heightmapRenderer;
 	}
+
+	setCanvasMouseState(overCanvas: boolean, canvasMouseX: number, canvasMouseY: number) {
+		if (overCanvas) {
+			const screenSpaceMouseX = (canvasMouseX / gl.canvas.width * 2) - 1;
+			const screenSpaceMouseY = (canvasMouseY / gl.canvas.height * 2) - 1;
+
+			//TODO: mouse is currently over canvas => calculate world mouse position
+		}
+	}
 }

@@ -72,20 +72,6 @@ export default class HeightmapRenderer {
 		this.needsUpdate = true;
 	}
 
-	//TODO delete
-	applyDummyData() {
-		// create dummy heightmap data
-		const f = (x: number) => (Math.cos(x * 2) * 0.1) + (Math.sin(x * 0.005) * 4);
-		const data = new Float32Array(this.size[0] * this.size[1]);
-		for (let y = 0; y < this.size[1]; ++y) {
-			for (let x = 0; x < this.size[0]; ++x) {
-				const index = ((this.size[0] * y) + x);
-				data[index] = f(x) * f(y);
-			}
-		}
-		this.heightmapTexture.updateFloatRedData(this.size, data);
-	}
-
 	render() {
 		if (!this.needsUpdate) { return; }
 		this.needsUpdate = false;

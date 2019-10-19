@@ -40,6 +40,8 @@ function setupUI() {
 
 function update(now: number, deltaTime: number) {
 	inputController.update(now, deltaTime);
+
+	renderer.setCanvasMouseState(inputController.mouse.over, inputController.mouse.lastX, inputController.mouse.lastY);
 }
 
 let lastRenderTime: number | null = null;
