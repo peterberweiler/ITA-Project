@@ -18,8 +18,8 @@ function setupRenderer() {
 		[0, 135, 0],
 		16 / 9,
 		(45 / 180) * Math.PI,
-		0.001,
-		1000,
+		0.1,
+		10000,
 	);
 
 	inputController = new InputController(camera, canvas);

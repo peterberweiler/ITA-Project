@@ -8,7 +8,7 @@ const TILE_RESOLUTION: number = 32;
 const TILE_VERTEX_RESOLUTION: number = TILE_RESOLUTION + 1;
 const CLIPMAP_RESOLUTION = (TILE_RESOLUTION * 4) + 1;
 const CLIPMAP_VERTEX_RESOLUTION = CLIPMAP_RESOLUTION + 1;
-const NUM_CLIPMAP_LEVELS = 5;
+const NUM_CLIPMAP_LEVELS = 6;
 const fragSource = require("../Shader/terrain.fs").default;
 const vertSource = require("../Shader/terrain.vs").default;
 
@@ -18,7 +18,9 @@ export default class Terrain {
 	private uScaleLocation: WebGLUniformLocation;
 	private uBiasLocation: WebGLUniformLocation;
 	private uRotationLocation: WebGLUniformLocation;
-	private uColorLocation: WebGLUniformLocation;
+	private uTexelSizeInMetersLocation: WebGLUniformLocation;
+	private uHeightScaleInMetersLocation: WebGLUniformLocation;
+	//private uColorLocation: WebGLUniformLocation;
 	private vao: WebGLBuffer;
 	private vbo: WebGLBuffer;
 	private ibo: WebGLBuffer;
@@ -29,6 +31,8 @@ export default class Terrain {
 	private rotations: mat2[];
 	private uHeightmapTexture: WebGLUniformLocation;
 	private heightmapTexture: Texture;
+	private texelSizeInMeters: number = 1.0;
+	private heightScaleInMeters: number = 5.0;
 
 	constructor() {
 		gl = Global.gl;
@@ -38,7 +42,9 @@ export default class Terrain {
 		this.uScaleLocation = this.terrainShader.getUniformLocation("uScale");
 		this.uBiasLocation = this.terrainShader.getUniformLocation("uBias");
 		this.uRotationLocation = this.terrainShader.getUniformLocation("uRotation");
-		this.uColorLocation = this.terrainShader.getUniformLocation("uColor");
+		this.uTexelSizeInMetersLocation = this.terrainShader.getUniformLocation("uTexelSizeInMeters");
+		this.uHeightScaleInMetersLocation = this.terrainShader.getUniformLocation("uHeightScaleInMeters");
+		//this.uColorLocation = this.terrainShader.getUniformLocation("uColor");
 		this.uHeightmapTexture = this.terrainShader.getUniformLocation("uHeightmapTexture");
 
 		this.rotations = new Array(4);
@@ -283,13 +289,15 @@ export default class Terrain {
 	}
 
 	draw(viewProjection: mat4, camPos: vec3) {
-		let drawMode = gl.LINES;
+		const drawMode = gl.TRIANGLES;
 
 		this.terrainShader.use();
 
 		gl.bindVertexArray(this.vao);
 
 		this.terrainShader.setUniformMat4(this.uTransformLocation, viewProjection);
+		this.terrainShader.setUniformF(this.uTexelSizeInMetersLocation, this.texelSizeInMeters);
+		this.terrainShader.setUniformF(this.uHeightScaleInMetersLocation, this.heightScaleInMeters);
 
 		this.heightmapTexture.bind();
 		this.terrainShader.setUniformI(this.uHeightmapTexture, this.heightmapTexture.unit);
@@ -325,7 +333,7 @@ export default class Terrain {
 					offsetY += scale * (CLIPMAP_RESOLUTION + 2);
 				}
 
-				this.terrainShader.setUniformVec3(this.uColorLocation, [0, 1, 0]);
+				//this.terrainShader.setUniformVec3(this.uColorLocation, [0, 1, 0]);
 				this.terrainShader.setUniformMat2(this.uRotationLocation, this.rotations[r]);
 				this.terrainShader.setUniformVec2(this.uBiasLocation, [offsetX, offsetY]);
 				gl.drawElements(drawMode, this.trimIndexCount, gl.UNSIGNED_SHORT, (this.tileIndexCount + this.fillerIndexCount + this.crossIndexCount) * 2);
@@ -335,7 +343,7 @@ export default class Terrain {
 			this.terrainShader.setUniformMat2(this.uRotationLocation, this.rotations[0]);
 
 			// draw tiles
-			this.terrainShader.setUniformVec3(this.uColorLocation, [0, 0, 1]);
+			//this.terrainShader.setUniformVec3(this.uColorLocation, [0, 0, 1]);
 			for (let y = 0; y < 4; ++y) {
 				for (let x = 0; x < 4; ++x) {
 					if (level !== 0 && x > 0 && x < 3 && y > 0 && y < 3) {
@@ -353,7 +361,7 @@ export default class Terrain {
 
 			// draw filler
 			{
-				this.terrainShader.setUniformVec3(this.uColorLocation, [1, 0, 0]);
+				//this.terrainShader.setUniformVec3(this.uColorLocation, [1, 0, 0]);
 				this.terrainShader.setUniformVec2(this.uBiasLocation, [snappedPosX, snappedPosY]);
 				gl.drawElements(drawMode, this.fillerIndexCount, gl.UNSIGNED_SHORT, (this.tileIndexCount) * 2);
 			}

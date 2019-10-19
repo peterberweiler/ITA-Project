@@ -8,8 +8,11 @@ uniform mat4 uTransform;
 uniform float uScale;
 uniform vec2 uBias;
 uniform mat2 uRotation;
-
+uniform float uTexelSizeInMeters;
+uniform float uHeightScaleInMeters;
 uniform sampler2D uHeightmapTexture;
+
+out vec3 vWorldSpacePos;
 
 // A very simple, regular procedural terrain for debugging cracks etc.
 float debugSineHills(vec2 uv)
@@ -25,7 +28,7 @@ void main(void) {
 	position.xz = uRotation * position.xz;
 	position.xz = position.xz * uScale + uBias;
 	// position.y = debugSineHills(position.xz * 0.005);
-	position.y = texture(uHeightmapTexture, position.xz * 0.005).r;
-
+	position.y = texture(uHeightmapTexture, position.xz * uTexelSizeInMeters * (1.0 / vec2(textureSize(uHeightmapTexture, 0).xy))).r * uHeightScaleInMeters;
+	vWorldSpacePos = position;
 	gl_Position = uTransform * vec4(position, 1.0);
 }
