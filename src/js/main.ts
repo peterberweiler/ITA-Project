@@ -1,16 +1,11 @@
-import HeightmapRenderer from "./HeightmapRenderer/HeightmapRenderer";
 import { Camera } from "./Renderer/Cameras";
 import InputController from "./Renderer/InputController";
 import Renderer from "./Renderer/Renderer";
-
-const fragSource = require("./Shader/base.fs").default;
-const vertSource = require("./Shader/base.vs").default;
 
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
 let renderer: Renderer;
 let camera: Camera;
 let inputController: InputController;
-let heightmapRenderer: HeightmapRenderer;
 
 function setupRenderer() {
 	camera = new Camera(
@@ -27,14 +22,12 @@ function setupRenderer() {
 	window.onresize = () => renderer.resized();
 	renderer.resized();
 
-	heightmapRenderer = new HeightmapRenderer(renderer.getTerrain().getHeightmapTexture());
-
 	requestAnimationFrame(main);
 }
 
 function testButtonPressed() {
 	//
-	heightmapRenderer.scheduleUpdate();
+	renderer.getHeightmapRenderer().scheduleUpdate();
 }
 
 function setupUI() {
@@ -57,7 +50,6 @@ function main(now: number) {
 	// fps = ((1000 / deltaTime * 0.4) + (fps * 0.6));
 
 	update(now, deltaTime);
-	heightmapRenderer.render();
 	renderer.render(now, deltaTime);
 
 	requestAnimationFrame(main);

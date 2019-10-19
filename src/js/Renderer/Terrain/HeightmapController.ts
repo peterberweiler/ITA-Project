@@ -1,10 +1,10 @@
-import Framebuffer from "../Renderer/Framebuffer";
-import Global from "../Renderer/Global";
-import Shader from "../Renderer/Shader";
-import Texture from "../Renderer/Texture";
+import Framebuffer from "../Framebuffer";
+import Global from "../Global";
+import Shader from "../Shader";
+import Texture from "../Texture";
 
-const fullscreenVSSource = require("../Shader/fullscreenPass.vs").default;
-const perlinFSSource = require("../Shader/perlinPass.fs").default;
+const fullscreenVSSource = require("../../Shader/fullscreenPass.vs").default;
+const perlinFSSource = require("../../Shader/perlinPass.fs").default;
 
 let gl: WebGL2RenderingContext;
 

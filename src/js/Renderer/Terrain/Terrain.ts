@@ -1,7 +1,7 @@
 import { mat2, mat4, vec3 } from "gl-matrix";
-import Global from "./Global";
-import Shader from "./Shader";
-import Texture from "./Texture";
+import Global from "../Global";
+import Shader from "../Shader";
+import Texture from "../Texture";
 
 let gl: WebGL2RenderingContext;
 const TILE_RESOLUTION: number = 32;
@@ -9,8 +9,8 @@ const TILE_VERTEX_RESOLUTION: number = TILE_RESOLUTION + 1;
 const CLIPMAP_RESOLUTION = (TILE_RESOLUTION * 4) + 1;
 const CLIPMAP_VERTEX_RESOLUTION = CLIPMAP_RESOLUTION + 1;
 const NUM_CLIPMAP_LEVELS = 6;
-const fragSource = require("../Shader/terrain.fs").default;
-const vertSource = require("../Shader/terrain.vs").default;
+const fragSource = require("../../Shader/terrain.fs").default;
+const vertSource = require("../../Shader/terrain.vs").default;
 
 export default class Terrain {
 	private terrainShader: Shader;

@@ -9,7 +9,7 @@ type Mouse = {
 	down: boolean,
 }
 
-//TODO: maybe capture mouse so that ctrl + w doesn't close the window
+//TODO: maybe capture mouse
 
 const FPS_TRANSLATION_CONTROL_KEYS = {
 	"87": [0.0, 0.0, -1], // W

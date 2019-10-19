@@ -4,7 +4,8 @@
 import { mat4 } from "gl-matrix";
 import { Camera } from "./Cameras";
 import Global from "./Global";
-import Terrain from "./Terrain";
+import HeightmapRenderer from "./Terrain/HeightmapController";
+import Terrain from "./Terrain/Terrain";
 
 let gl: WebGL2RenderingContext;
 
@@ -12,6 +13,7 @@ export default class Renderer {
 	private canvas: HTMLCanvasElement;
 	public camera: Camera;
 	private terrain: Terrain;
+	private heightmapRenderer: HeightmapRenderer;
 
 	constructor(canvas: HTMLCanvasElement, camera: Camera) {
 		const context = canvas.getContext("webgl2");
@@ -22,7 +24,6 @@ export default class Renderer {
 		Global.gl = gl;
 		this.canvas = canvas;
 		this.camera = camera;
-		this.terrain = new Terrain();
 
 		gl.getExtension("OES_texture_float_linear");
 		gl.getExtension("EXT_color_buffer_float");
@@ -36,6 +37,9 @@ export default class Renderer {
 			gl.getParameter(gl.MAX_VERTEX_UNIFORM_VECTORS) < 256) {
 			alert("The website might not work correctly, please use a newer or different browser");
 		}
+
+		this.terrain = new Terrain();
+		this.heightmapRenderer = new HeightmapRenderer(this.terrain.getHeightmapTexture());
 
 		this.resized();
 	}
@@ -69,6 +73,8 @@ export default class Renderer {
 	}
 
 	render(currentTime: number, deltaTime: number) {
+		this.heightmapRenderer.render();
+
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 		let viewProjection = mat4.create();
 		mat4.multiply(viewProjection, this.camera.projectionMatrix, this.camera.viewMatrix);
@@ -89,5 +95,9 @@ export default class Renderer {
 
 	getTerrain() {
 		return this.terrain;
+	}
+
+	getHeightmapRenderer() {
+		return this.heightmapRenderer;
 	}
 }
