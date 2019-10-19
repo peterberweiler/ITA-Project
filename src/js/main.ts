@@ -14,8 +14,8 @@ let heightmapRenderer: HeightmapRenderer;
 
 function setupRenderer() {
 	camera = new Camera(
-		[-20, 10, -20],
-		[0, 135, 0],
+		[512, 768, -768],
+		[-30, 180, 0],
 		16 / 9,
 		(45 / 180) * Math.PI,
 		0.1,

@@ -33,7 +33,7 @@ export default class Terrain {
 	private uHeightmapTexture: WebGLUniformLocation;
 	private heightmapTexture: Texture;
 	private texelSizeInMeters: number = 1.0;
-	private heightScaleInMeters: number = 8.0;
+	private heightScaleInMeters: number = 1.0;
 
 	constructor() {
 		gl = Global.gl;

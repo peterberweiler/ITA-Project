@@ -23,8 +23,15 @@ void main(void) {
 	height = 0.0;
 
 	for (int i = 0; i < uLayerCount; ++i){
-		height += uAmplitude[i] * cnoise(vec3((pos + uOffset[i]) / uScale[i], uSeed[i]));
+		float h = (uAmplitude[i] * cnoise(vec3((pos + uOffset[i]) / uScale[i], uSeed[i])));
+	
+		// if ( i <= 4){
+			// height += -abs(h);
+		// }else{
+			height += h;
+		// }
 	}
+	height = -abs(height);
 }
 
 //////////////////////////////////////////////////////////

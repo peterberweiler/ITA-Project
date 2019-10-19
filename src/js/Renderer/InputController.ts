@@ -17,16 +17,15 @@ const FPS_TRANSLATION_CONTROL_KEYS = {
 	"83": [0.0, 0.0, 1], // S
 	"68": [1, 0.0, 0.0], // D
 	"67": [0.0, -1, 0.0], // C
-	"17": [0.0, -1, 0.0], // ctrl
 	"32": [0.0, 1, 0.0], // space
 };
 
-const SHIFT_KEY = 16;
+const R_KEY = 82;
 
 // all keys that should be listened to
 const CONTROL_KEYS = {
 	...FPS_TRANSLATION_CONTROL_KEYS,
-	16: true,
+	// 16: true,
 };
 
 export default class InputController {
@@ -36,6 +35,7 @@ export default class InputController {
 	mouse: Mouse;
 	keyDown: any = {}
 	fpsMode = true;
+	isRunning = false;
 
 	constructor(camera: Camera, canvas: HTMLCanvasElement) {
 		this.camera = camera;
@@ -86,6 +86,9 @@ export default class InputController {
 				this.keyDown[event.keyCode] = isDown;
 				event.stopPropagation();
 				event.preventDefault();
+			}
+			if (!isDown && event.keyCode === R_KEY) {
+				this.isRunning = !this.isRunning;
 			}
 		}
 	}
@@ -141,8 +144,8 @@ export default class InputController {
 		if (this.fpsMode) {
 			for (const key in FPS_TRANSLATION_CONTROL_KEYS) {
 				if (this.keyDown[key]) {
-					let speed = deltaTime * 0.015;
-					if (this.keyDown[SHIFT_KEY]) { speed *= 10; } // run when shift is down
+					let speed = deltaTime * 0.5;
+					if (this.isRunning) { speed *= 3; }
 					//@ts-ignore
 					const translationOffset = vec3.scale([0, 0, 0], FPS_TRANSLATION_CONTROL_KEYS[key], speed);
 					this.cameraController.updateFPS(translationOffset, 0, 0);

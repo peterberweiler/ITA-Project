@@ -27,11 +27,10 @@ class FullscreenMesh {
 
 		const vertexBufferArray = new Float32Array([
 			-1, -1, 0,
-			-1, 1, 0,
-			1, 1, 0,
-			1, -1, 0,
+			-1, 3, 0,
+			3, -1, 0,
 		]);
-		const indexBufferArray = new Uint32Array([0, 1, 2, 0, 2, 3]);
+		const indexBufferArray = new Uint32Array([0, 1, 2]);
 
 		gl.bufferData(gl.ARRAY_BUFFER, vertexBufferArray, gl.STATIC_DRAW);
 		gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indexBufferArray, gl.STATIC_DRAW);
@@ -44,7 +43,7 @@ class FullscreenMesh {
 
 	draw() {
 		this.bind();
-		gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_INT, 0);
+		gl.drawElements(gl.TRIANGLES, 3, gl.UNSIGNED_INT, 0);
 	}
 }
 
@@ -108,7 +107,7 @@ export default class HeightmapRenderer {
 		gl.vertexAttribPointer(attribute, 3, gl.FLOAT, false, 12, 0);
 
 		const seeds = [1, 200, 300, 0, 10, 0];
-		const amplitudes = [20 + (20 * Math.random()), 20, 5, 0.8, 0.1, 0.02];
+		const amplitudes = [300, 200, 50, 8, 1, 0.2];
 		const scales = [500, 330, 120, 40, 10, 1];
 		const offsets = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 		const layerCount = 6;
