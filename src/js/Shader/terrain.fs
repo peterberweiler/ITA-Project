@@ -1,21 +1,106 @@
 #version 300 es
 
+#ifndef PI
+#define PI (3.14159265359)
+#endif // PI
+
 precision mediump float;
 
 uniform sampler2D uHeightmapTexture;
 uniform vec3 uColor;
+uniform vec3 uCamPos;
 uniform float uTexelSizeInMeters;
 uniform float uHeightScaleInMeters;
 
 in vec3 vWorldSpacePos;
 
-out vec4 color;
+out vec4 oColor;
 
-vec3 minDiff(vec3 P, vec3 Pr, vec3 Pl)
+struct LightingParams {
+	vec3 albedo;
+	vec3 N;
+	vec3 V;
+	float metalness;
+	float roughness;
+};
+
+const float A = 0.15; // shoulder strength
+const float B = 0.50; // linear strength
+const float C = 0.10; // linear angle
+const float D = 0.20; // toe strength
+const float E = 0.02; // toe numerator
+const float F = 0.30; // toe denominator
+const vec3 W = vec3(11.2); // linear white point value
+
+vec3 uncharted2Tonemap(vec3 x)
 {
+   return ((x*(A*x+C*B)+D*E)/(x*(A*x+B)+D*F))-E/F;
+}
+
+vec3 accurateLinearToSRGB(in vec3 linearCol)
+{
+	vec3 sRGBLo = linearCol * 12.92;
+	vec3 sRGBHi = (pow(abs(linearCol), vec3(1.0/2.4)) * 1.055) - 0.055;
+	vec3 sRGB = mix(sRGBLo, sRGBHi, vec3(greaterThan(linearCol, vec3(0.0031308))));
+	return sRGB;
+}
+
+vec3 minDiff(vec3 P, vec3 Pr, vec3 Pl) {
     vec3 V1 = Pr - P;
     vec3 V2 = P - Pl;
     return (dot(V1, V1) < dot(V2, V2)) ? V1 : V2;
+}
+
+float DistributionGGX(vec3 N, vec3 H, float roughness) {
+    float a2 = roughness*roughness;
+    a2 *= a2;
+    float NdotH2 = max(dot(N, H), 0.0);
+    NdotH2 *= NdotH2;
+
+    float nom   = a2;
+    float denom = NdotH2 * (a2 - 1.0) + 1.0;
+
+    denom = PI * denom * denom;
+
+    return nom / max(denom, 0.0000001);
+}
+
+float GeometrySmith(float NdotV, float NdotL, float roughness) {
+	float r = (roughness + 1.0);
+    float k = (r*r) / 8.0;
+    float ggx2 =  NdotV / max(NdotV * (1.0 - k) + k, 0.0000001);
+    float ggx1 = NdotL / max(NdotL * (1.0 - k) + k, 0.0000001);
+
+    return ggx1 * ggx2;
+}
+
+
+vec3 fresnelSchlick(float HdotV, vec3 F0) {
+	float power = (-5.55473 * HdotV - 6.98316) * HdotV;
+	return F0 + (1.0 - F0) * pow(2.0, power);
+}
+
+vec3 cookTorranceSpecularBrdf(const LightingParams params, vec3 radiance, vec3 L) {
+	vec3 H = normalize(params.V + L);
+	float NdotL = max(dot(params.N, L), 0.0);
+	float NdotV = max(dot(params.N, params.V), 0.0);
+	
+	// Cook-Torrance BRDF
+	float NDF = DistributionGGX(params.N, H, params.roughness);
+	float G = GeometrySmith(NdotV, NdotL, params.roughness);
+	vec3 F0 = mix(vec3(0.04), params.albedo, params.metalness);
+	vec3 F = fresnelSchlick(max(dot(H, params.V), 0.0), F0);
+	
+	vec3 numerator = NDF * G * F;
+	float denominator = max(4.0 * NdotV * NdotL, 1e-6);
+
+	vec3 specular = numerator * (1.0 / denominator);
+	
+	// because of energy conversion kD and kS must add up to 1.0.
+	// multiply kD by the inverse metalness so if a material is metallic, it has no diffuse lighting (and otherwise a blend)
+	vec3 kD = (vec3(1.0) - F) * (1.0 - params.metalness);
+
+	return (kD * params.albedo * (1.0 / PI) + specular) * radiance * NdotL;
 }
 
 void main(void) {
@@ -44,5 +129,23 @@ void main(void) {
 	
 	vec3 N = normalize(cross(dPdu, dPdv));
 
-	color = vec4(dot(N, normalize(vec3(0.0, 1.0, 0.5))) * vec3(0.0, 0.5, 0.1), 1.0);
+	LightingParams lightingParams;
+	lightingParams.albedo = vec3(0.0, 0.2, 0.05);
+	lightingParams.N = N;
+	lightingParams.V = normalize(uCamPos - P);
+	lightingParams.metalness = 0.0;
+	lightingParams.roughness = 0.8;
+
+	vec3 color = cookTorranceSpecularBrdf(lightingParams, vec3(10.0), normalize(vec3(0.0, 1.0, 0.5)));
+
+	// ambient
+	color += 0.1 * lightingParams.albedo;
+
+	color = uncharted2Tonemap(1.0 * color);
+	vec3 whiteScale = 1.0/uncharted2Tonemap(W);
+	color *= whiteScale;
+    // gamma correct
+    color = accurateLinearToSRGB(color);//pow(color, vec3(1.0/2.2));
+
+	oColor = vec4(color, 1.0);
 }

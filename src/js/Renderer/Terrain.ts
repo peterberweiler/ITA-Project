@@ -20,6 +20,7 @@ export default class Terrain {
 	private uRotationLocation: WebGLUniformLocation;
 	private uTexelSizeInMetersLocation: WebGLUniformLocation;
 	private uHeightScaleInMetersLocation: WebGLUniformLocation;
+	private uCamPosLocation: WebGLUniformLocation;
 	//private uColorLocation: WebGLUniformLocation;
 	private vao: WebGLBuffer;
 	private vbo: WebGLBuffer;
@@ -32,7 +33,7 @@ export default class Terrain {
 	private uHeightmapTexture: WebGLUniformLocation;
 	private heightmapTexture: Texture;
 	private texelSizeInMeters: number = 1.0;
-	private heightScaleInMeters: number = 5.0;
+	private heightScaleInMeters: number = 8.0;
 
 	constructor() {
 		gl = Global.gl;
@@ -44,6 +45,7 @@ export default class Terrain {
 		this.uRotationLocation = this.terrainShader.getUniformLocation("uRotation");
 		this.uTexelSizeInMetersLocation = this.terrainShader.getUniformLocation("uTexelSizeInMeters");
 		this.uHeightScaleInMetersLocation = this.terrainShader.getUniformLocation("uHeightScaleInMeters");
+		this.uCamPosLocation = this.terrainShader.getUniformLocation("uCamPos");
 		//this.uColorLocation = this.terrainShader.getUniformLocation("uColor");
 		this.uHeightmapTexture = this.terrainShader.getUniformLocation("uHeightmapTexture");
 
@@ -298,6 +300,7 @@ export default class Terrain {
 		this.terrainShader.setUniformMat4(this.uTransformLocation, viewProjection);
 		this.terrainShader.setUniformF(this.uTexelSizeInMetersLocation, this.texelSizeInMeters);
 		this.terrainShader.setUniformF(this.uHeightScaleInMetersLocation, this.heightScaleInMeters);
+		this.terrainShader.setUniformVec3(this.uCamPosLocation, camPos);
 
 		this.heightmapTexture.bind();
 		this.terrainShader.setUniformI(this.uHeightmapTexture, this.heightmapTexture.unit);
