@@ -6,14 +6,12 @@ let gl: WebGL2RenderingContext;
 type Size = vec2 | [number, number];
 
 export default class Texture {
-	public unit: number;
 	public id: WebGLTexture;
 	public size: Size;
 
-	constructor(unit: number) {
+	constructor() {
 		gl = Global.gl;
 
-		this.unit = unit;
 		this.id = -1;
 		this.size = [0, 0];
 
@@ -22,7 +20,7 @@ export default class Texture {
 		if (!id) { throw new Error("Couldn't create texture."); }
 		this.id = id;
 
-		this.bind();
+		this.bind(0);
 
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
@@ -30,25 +28,25 @@ export default class Texture {
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 	}
 
-	bind() {
-		gl.activeTexture(gl.TEXTURE0 + this.unit);
+	bind(unit: number) {
+		gl.activeTexture(gl.TEXTURE0 + unit);
 		gl.bindTexture(gl.TEXTURE_2D, this.id);
 	}
 
 	updateFloatRedData(size: Size, data: Float32Array | null) {
-		this.bind();
+		this.bind(0);
 		this.size = size;
 		gl.texImage2D(gl.TEXTURE_2D, 0, gl.R32F, size[0], size[1], 0, gl.RED, gl.FLOAT, data);
 	}
 
 	updateFloatRGBData(size: Size, data: Float32Array | null) {
-		this.bind();
+		this.bind(0);
 		this.size = size;
 		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB32F, size[0], size[1], 0, gl.RGB, gl.FLOAT, data);
 	}
 
 	updateFloatRGBAData(size: Size, data: Float32Array | null) {
-		this.bind();
+		this.bind(0);
 		this.size = size;
 		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, size[0], size[1], 0, gl.RGBA, gl.FLOAT, data);
 	}

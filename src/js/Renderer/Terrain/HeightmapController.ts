@@ -1,10 +1,7 @@
 import Framebuffer from "../Framebuffer";
 import Global from "../Global";
-import Shader from "../Shader";
 import Texture from "../Texture";
-
-const fullscreenVSSource = require("../../Shader/fullscreenPass.vs").default;
-const perlinFSSource = require("../../Shader/perlinPass.fs").default;
+import { HeightBrushPass, InvertPass, Pass, PerlinPass } from "./Passes";
 
 let gl: WebGL2RenderingContext;
 
@@ -47,65 +44,75 @@ class FullscreenMesh {
 	}
 }
 
-export default class HeightmapRenderer {
-	framebuffer: Framebuffer;
-	heightmapTexture: Texture;
-	fullscreenMesh: FullscreenMesh;
-	size: [number, number] = [1024, 1024];
-	perlinShader: Shader;
-	needsUpdate = true;
+export default class HeightmapController {
+	private framebuffer: Framebuffer;
+	private heightmapTextures: Texture[];
+	private currentHeightmapIndex: number;
+	private fullscreenMesh: FullscreenMesh;
+	private size: [number, number] = [1024, 1024];
+	private passQueue: Pass[] = [];
 
-	constructor(heightmapTexture: Texture) {
+	readonly perlinPass: PerlinPass;
+	readonly invertPass: InvertPass;
+	readonly heightBrushPass: HeightBrushPass;
+
+	constructor() {
 		gl = Global.gl;
 
 		this.framebuffer = new Framebuffer();
 		this.fullscreenMesh = new FullscreenMesh();
-		this.heightmapTexture = heightmapTexture;
-		this.perlinShader = new Shader(fullscreenVSSource, perlinFSSource);
+		this.heightmapTextures = [new Texture(), new Texture()];
+		this.currentHeightmapIndex = 0;
 
-		this.heightmapTexture.updateFloatRedData(this.size, null); // force texture into R Format
-		this.framebuffer.setColorAttachment(this.heightmapTexture);
+		this.perlinPass = new PerlinPass();
+		this.invertPass = new InvertPass();
+		this.heightBrushPass = new HeightBrushPass();
+
+		for (const hm of this.heightmapTextures) {
+			hm.updateFloatRedData(this.size, null); // force texture into R Format
+		}
+
+		this.framebuffer.setColorAttachment(this.getCurrentHeightmap());
 		Framebuffer.unbind();
 	}
 
-	scheduleUpdate() {
-		this.needsUpdate = true;
+	queuePass(pass: Pass) {
+		this.passQueue.push(pass);
 	}
 
 	render() {
-		if (!this.needsUpdate) { return; }
-		this.needsUpdate = false;
+		if (this.passQueue.length === 0) { return; }
 
 		// gl.bindVertexArray(null);
 		this.framebuffer.bind();
 		this.fullscreenMesh.bind();
 
-		gl.clear(gl.DEPTH_BUFFER_BIT);
-		this.perlinPass();
+		let pass;
+		while ((pass = this.passQueue.shift())) {
+			gl.clear(gl.DEPTH_BUFFER_BIT);
+
+			pass.shader.use();
+			const attribute = pass.shader.getAttributeLocation("aVertexPosition");
+			gl.enableVertexAttribArray(attribute);
+			gl.vertexAttribPointer(attribute, 3, gl.FLOAT, false, 12, 0);
+
+			pass.initalizeRun(this.getCurrentHeightmap());
+
+			this.framebuffer.setColorAttachment(this.nextHeightmap());
+			this.fullscreenMesh.draw();
+		}
 
 		Framebuffer.unbind();
 	}
 
-	perlinPass() {
-		this.perlinShader.use();
-		const attribute = this.perlinShader.getAttributeLocation("aVertexPosition");
-		gl.enableVertexAttribArray(attribute);
-		gl.vertexAttribPointer(attribute, 3, gl.FLOAT, false, 12, 0);
+	getCurrentHeightmap(): Texture {
+		return this.heightmapTextures[this.currentHeightmapIndex];
+	}
 
-		const seeds = [1, 200, 300, 0, 10, 0];
-		const amplitudes = [300, 200, 50, 8, 1, 0.2];
-		const scales = [500, 330, 120, 40, 10, 1];
-		const offsets = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-		const layerCount = 6;
+	nextHeightmap() {
+		++this.currentHeightmapIndex;
+		this.currentHeightmapIndex %= this.heightmapTextures.length;
 
-		gl.uniform1fv(this.perlinShader.getUniformLocation("uSeed"), seeds);
-		gl.uniform1fv(this.perlinShader.getUniformLocation("uAmplitude"), amplitudes);
-		gl.uniform1fv(this.perlinShader.getUniformLocation("uScale"), scales);
-		gl.uniform2fv(this.perlinShader.getUniformLocation("uOffset"), offsets);
-		gl.uniform2fv(this.perlinShader.getUniformLocation("uHeightMapSize"), this.size);
-		gl.uniform1i(this.perlinShader.getUniformLocation("uLayerCount"), layerCount);
-
-		this.fullscreenMesh.draw();
+		return this.heightmapTextures[this.currentHeightmapIndex];
 	}
 }
-

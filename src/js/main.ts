@@ -1,11 +1,13 @@
 import { Camera } from "./Renderer/Cameras";
 import InputController from "./Renderer/InputController";
 import Renderer from "./Renderer/Renderer";
+import HeightmapController from "./Renderer/Terrain/HeightmapController";
 
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
 let renderer: Renderer;
 let camera: Camera;
 let inputController: InputController;
+let heightmapController: HeightmapController;
 
 function setupRenderer() {
 	camera = new Camera(
@@ -19,23 +21,36 @@ function setupRenderer() {
 
 	inputController = new InputController(camera, canvas);
 	renderer = new Renderer(canvas, camera);
+	heightmapController = renderer.getHeightmapRenderer();
 	window.onresize = () => renderer.resized();
 	renderer.resized();
 
-	requestAnimationFrame(main);
-}
+	// dummy heightmap
+	heightmapController.queuePass(heightmapController.perlinPass);
 
-function testButtonPressed() {
-	//
-	renderer.getHeightmapRenderer().scheduleUpdate();
+	requestAnimationFrame(main);
 }
 
 function setupUI() {
 	const cameraButton = <HTMLButtonElement>document.querySelector("#cameraButton");
 	cameraButton.onclick = () => inputController.toggleFpsMode();
 
-	const testButton = <HTMLButtonElement>document.querySelector("#testButton");
-	testButton.onclick = testButtonPressed;
+	(<HTMLButtonElement>document.querySelector("#testButton1")).onclick = () => {
+		heightmapController.queuePass(heightmapController.invertPass);
+	};
+	(<HTMLButtonElement>document.querySelector("#testButton2")).onclick = () => {
+		heightmapController.heightBrushPass.addPoint(Math.random(), Math.random());
+		heightmapController.queuePass(heightmapController.heightBrushPass);
+	};
+	(<HTMLButtonElement>document.querySelector("#testButton3")).onclick = () => {
+		//
+	};
+	(<HTMLButtonElement>document.querySelector("#testButton4")).onclick = () => {
+		//
+	};
+	(<HTMLButtonElement>document.querySelector("#testButton5")).onclick = () => {
+		//
+	};
 }
 
 function update(now: number, deltaTime: number) {

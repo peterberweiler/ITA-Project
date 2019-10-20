@@ -4,13 +4,18 @@ import Global from "./Global";
 let gl: WebGL2RenderingContext;
 
 export default class Shader {
-	programId: WebGLProgram;
+	private programId: WebGLProgram;
 
-	constructor(vertexShaderSource: string, fragmentShaderSource: string) {
+	constructor(vertexShader: string | WebGLShader, fragmentShader: string | WebGLShader) {
 		gl = Global.gl;
 
-		const vertexShader = this.compileShader(vertexShaderSource, gl.VERTEX_SHADER);
-		const fragmentShader = this.compileShader(fragmentShaderSource, gl.FRAGMENT_SHADER);
+		if (typeof vertexShader === "string") {
+			vertexShader = Shader.compile(vertexShader, gl.VERTEX_SHADER);
+		}
+		if (typeof fragmentShader === "string") {
+			fragmentShader = Shader.compile(fragmentShader, gl.FRAGMENT_SHADER);
+		}
+
 		const program = gl.createProgram();
 
 		if (!program) { throw new Error("Couldn't create program."); }
@@ -81,8 +86,10 @@ export default class Shader {
 	 * @param {string} source
 	 * @param {number} type gl.FRAGMENT_SHADER or gl.VERTEX_SHADER
 	 */
-	private compileShader(source: string, type: number): WebGLShader {
-		let shader = gl.createShader(type);
+	static compile(source: string, type: number): WebGLShader {
+		gl = Global.gl;
+
+		const shader = gl.createShader(type);
 
 		if (!shader) { throw new Error("Couldn't create shader"); }
 

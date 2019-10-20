@@ -9,7 +9,8 @@ uniform float uAmplitude[64];
 uniform float uScale[64];
 
 uniform vec2 uOffset[64];
-uniform vec2 uHeightMapSize;
+
+uniform sampler2D uTexture;
 
 uniform int uLayerCount;
 
@@ -18,7 +19,7 @@ float cnoise(vec3 v);
 out float height;
 
 void main(void) {	
-	vec2 pos = vCoords * uHeightMapSize;
+	vec2 pos = vCoords * vec2(textureSize(uTexture, 0));
 
 	height = 0.0;
 

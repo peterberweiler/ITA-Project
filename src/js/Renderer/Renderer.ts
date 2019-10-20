@@ -4,7 +4,7 @@
 import { mat4 } from "gl-matrix";
 import { Camera } from "./Cameras";
 import Global from "./Global";
-import HeightmapRenderer from "./Terrain/HeightmapController";
+import HeightmapController from "./Terrain/HeightmapController";
 import Terrain from "./Terrain/Terrain";
 
 let gl: WebGL2RenderingContext;
@@ -13,7 +13,7 @@ export default class Renderer {
 	private canvas: HTMLCanvasElement;
 	public camera: Camera;
 	private terrain: Terrain;
-	private heightmapRenderer: HeightmapRenderer;
+	private heightmapController: HeightmapController;
 
 	constructor(canvas: HTMLCanvasElement, camera: Camera) {
 		const context = canvas.getContext("webgl2");
@@ -38,8 +38,8 @@ export default class Renderer {
 			alert("The website might not work correctly, please use a newer or different browser");
 		}
 
-		this.terrain = new Terrain();
-		this.heightmapRenderer = new HeightmapRenderer(this.terrain.getHeightmapTexture());
+		this.heightmapController = new HeightmapController();
+		this.terrain = new Terrain(this.heightmapController);
 
 		this.resized();
 	}
@@ -72,8 +72,8 @@ export default class Renderer {
 		}
 	}
 
-	render(currentTime: number, deltaTime: number) {
-		this.heightmapRenderer.render();
+	render(_currentTime: number, _deltaTime: number) {
+		this.heightmapController.render();
 
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 		let viewProjection = mat4.create();
@@ -98,7 +98,7 @@ export default class Renderer {
 	}
 
 	getHeightmapRenderer() {
-		return this.heightmapRenderer;
+		return this.heightmapController;
 	}
 
 	setCanvasMouseState(overCanvas: boolean, canvasMouseX: number, canvasMouseY: number) {
