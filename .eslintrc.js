@@ -60,7 +60,7 @@ module.exports = {
 		"no-useless-concat": "error",
 		"no-useless-escape": "error",
 		"no-void": "error",
-		"no-warning-comments": "warn",
+		"no-warning-comments": ["warn", { "terms": ["error", "todo", "fixme"] }],
 		"wrap-iife": [
 			"error",
 			"inside"
@@ -68,7 +68,16 @@ module.exports = {
 		"yoda": "error",
 		"no-label-var": "error",
 		"no-undef-init": "error",
-		"no-unused-vars": "off",
+		"no-unused-vars": ["warn", {
+			"vars": "all",
+			"args": "after-used",
+			"argsIgnorePattern": "^_",
+			/** some exceptions for imported typescript types/classes:
+			* 	- class names (that start with a uppercase letter)
+			* 	- gl-matrix types
+			*/
+			"varsIgnorePattern": "^[A-Z]|^((vec|mat)[2-4]|quat|glMatrix)$",
+		}],
 		"array-bracket-spacing": "error",
 		"block-spacing": "error",
 		"brace-style": [
@@ -151,6 +160,6 @@ module.exports = {
 		],
 		"space-in-parens": "error",
 		"space-infix-ops": "error",
-		"space-unary-ops": "error"
+		"space-unary-ops": "error",
 	}
 }
