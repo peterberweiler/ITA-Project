@@ -1,6 +1,6 @@
 import Framebuffer from "../Framebuffer";
 import Global from "../Global";
-import Texture from "../Texture";
+import Texture, { PingPongTexture } from "../Texture";
 import { HeightBrushPass, InvertPass, Pass, PerlinPass } from "./Passes";
 
 let gl: WebGL2RenderingContext;
@@ -46,8 +46,9 @@ class FullscreenMesh {
 
 export default class HeightmapController {
 	private framebuffer: Framebuffer;
-	private heightmapTextures: Texture[];
-	private currentHeightmapIndex: number;
+	private heightmapTexture: PingPongTexture;
+	private albedomapTexture: PingPongTexture;
+
 	private fullscreenMesh: FullscreenMesh;
 	private size: [number, number] = [1024, 1024];
 	private passQueue: Pass[] = [];
@@ -61,18 +62,36 @@ export default class HeightmapController {
 
 		this.framebuffer = new Framebuffer();
 		this.fullscreenMesh = new FullscreenMesh();
-		this.heightmapTextures = [new Texture(), new Texture()];
-		this.currentHeightmapIndex = 0;
+		this.heightmapTexture = new PingPongTexture();
+		this.albedomapTexture = new PingPongTexture();
 
 		this.perlinPass = new PerlinPass();
 		this.invertPass = new InvertPass();
 		this.heightBrushPass = new HeightBrushPass();
 
-		for (const hm of this.heightmapTextures) {
-			hm.updateFloatRedData(this.size, null); // force texture into R Format
-		}
+		this.heightmapTexture.initialize((hm) => hm.updateFloatRedData(this.size, null)); // force texture into R Format
 
-		this.framebuffer.setColorAttachment(this.getCurrentHeightmap());
+		this.albedomapTexture.initialize((am) => {
+			const data = new Float32Array(this.size[0] * this.size[1] * 4);
+			for (let x = 0; x < this.size[0]; ++x) {
+				for (let y = 0; y < this.size[1]; ++y) {
+					const i = ((y * this.size[0]) + x) * 4;
+					data[i] = 0;
+					data[i + 1] = 0.6;
+					data[i + 2] = 0;
+					data[i + 3] = 1;
+
+					if (Math.random() < 0.5) {
+						data[i] = 0;
+						data[i + 1] = 0;
+						data[i + 2] = 0.1;
+					}
+				}
+			}
+			am.updateFloatRGBAData(this.size, data); // force texture into R Format
+		});
+
+		this.framebuffer.setColorAttachment(this.heightmapTexture.current());
 		Framebuffer.unbind();
 	}
 
@@ -96,23 +115,20 @@ export default class HeightmapController {
 			gl.enableVertexAttribArray(attribute);
 			gl.vertexAttribPointer(attribute, 3, gl.FLOAT, false, 12, 0);
 
-			pass.initalizeRun(this.getCurrentHeightmap());
+			pass.initalizePass(this.heightmapTexture, this.albedomapTexture, this.framebuffer);
 
-			this.framebuffer.setColorAttachment(this.nextHeightmap());
 			this.fullscreenMesh.draw();
+
+			pass.finalizePass(this.framebuffer);
 		}
 
 		Framebuffer.unbind();
 	}
 
-	getCurrentHeightmap(): Texture {
-		return this.heightmapTextures[this.currentHeightmapIndex];
+	getCurrentAlbedomap(): Texture {
+		return this.albedomapTexture.current();
 	}
-
-	nextHeightmap() {
-		++this.currentHeightmapIndex;
-		this.currentHeightmapIndex %= this.heightmapTextures.length;
-
-		return this.heightmapTextures[this.currentHeightmapIndex];
+	getCurrentHeightmap(): Texture {
+		return this.heightmapTexture.current();
 	}
 }

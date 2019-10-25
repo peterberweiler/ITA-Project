@@ -38,7 +38,7 @@ export default class Shader {
 
 	getUniformLocation(name: string) {
 		let loc = gl.getUniformLocation(this.programId, name);
-		if (!loc) { throw new Error("Couldn't retrieve uniform location."); }
+		if (!loc) { throw new Error("Couldn't retrieve uniform location: " + name); }
 		return loc;
 	}
 

@@ -24,11 +24,16 @@ export default class Framebuffer {
 		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 	}
 
-	setColorAttachment(texture: Texture) {
+	setColorAttachment(texture: Texture, attachment: number = 0) {
 		this.size[0] = texture.size[0];
 		this.size[1] = texture.size[1];
 
 		this.bind();
-		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture.id, 0);
+		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0 + attachment, gl.TEXTURE_2D, texture.id, 0);
+	}
+
+	unsetColorAttachment(attachment: number) {
+		this.bind();
+		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0 + attachment, gl.TEXTURE_2D, null, 0);
 	}
 }

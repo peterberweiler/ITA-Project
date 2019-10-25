@@ -1,6 +1,7 @@
+import Framebuffer from "../Framebuffer";
 import Global from "../Global";
 import Shader from "../Shader";
-import Texture from "../Texture";
+import { PingPongTexture } from "../Texture";
 
 const fullscreenVSSource = require("../../Shader/fullscreenPass.vs").default;
 const perlinFSSource = require("../../Shader/perlinPass.fs").default;
@@ -22,7 +23,11 @@ export abstract class Pass {
 		this.shader = new Shader(Pass.vertexShader, fragmentShaderSource);
 	}
 
-	abstract initalizeRun(currentHeightmap: Texture): void;
+	abstract initalizePass(heightmap: PingPongTexture, albedomap: PingPongTexture, framebuffer: Framebuffer): void;
+
+	finalizePass(_framebuffer: Framebuffer) {
+		//
+	}
 }
 
 export class PerlinPass extends Pass {
@@ -33,24 +38,28 @@ export class PerlinPass extends Pass {
 	scales = [500, 330, 120, 40, 10, 1];
 	offsets = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
-	initalizeRun(currentHeightmap: Texture) {
+	initalizePass(heightmap: PingPongTexture, albedomap: PingPongTexture, framebuffer: Framebuffer) {
 		gl.uniform1fv(this.shader.getUniformLocation("uSeed"), this.seeds);
 		gl.uniform1fv(this.shader.getUniformLocation("uAmplitude"), this.amplitudes);
 		gl.uniform1fv(this.shader.getUniformLocation("uScale"), this.scales);
 		gl.uniform2fv(this.shader.getUniformLocation("uOffset"), this.offsets);
 		gl.uniform1i(this.shader.getUniformLocation("uLayerCount"), this.seeds.length);
 
-		currentHeightmap.bind(0);
+		heightmap.current().bind(0);
 		this.shader.setUniformI(this.shader.getUniformLocation("uTexture"), 0);
+
+		framebuffer.setColorAttachment(heightmap.next());
 	}
 }
 
 export class InvertPass extends Pass {
 	constructor() { super(invertFSSource); }
 
-	initalizeRun(currentHeightmap: Texture) {
-		currentHeightmap.bind(0);
+	initalizePass(heightmap: PingPongTexture, albedomap: PingPongTexture, framebuffer: Framebuffer) {
+		heightmap.current().bind(0);
 		this.shader.setUniformI(this.shader.getUniformLocation("uTexture"), 0);
+
+		framebuffer.setColorAttachment(heightmap.next());
 	}
 }
 
@@ -59,8 +68,8 @@ export class HeightBrushPass extends Pass {
 
 	points: number[] = [];
 
-	initalizeRun(currentHeightmap: Texture) {
-		currentHeightmap.bind(0);
+	initalizePass(heightmap: PingPongTexture, albedomap: PingPongTexture, framebuffer: Framebuffer) {
+		heightmap.current().bind(0);
 		this.shader.setUniformI(this.shader.getUniformLocation("uTexture"), 0);
 
 		this.shader.setUniformVec2(this.shader.getUniformLocation("uDrawCoords"), this.points);
@@ -71,6 +80,8 @@ export class HeightBrushPass extends Pass {
 		this.shader.setUniformI(this.shader.getUniformLocation("uCount"), this.points.length / 2);
 
 		this.points = [];
+
+		framebuffer.setColorAttachment(heightmap.next());
 	}
 
 	addPoint(x: number, y: number) {
