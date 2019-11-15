@@ -34,6 +34,7 @@ export default class Terrain {
 	private fillerIndexCount: number = 0;
 	private crossIndexCount: number = 0;
 	private trimIndexCount: number = 0;
+	private seamIndexCount: number = 0;
 	private rotations: mat2[];
 	private uHeightmapTexture: WebGLUniformLocation;
 	private texelSizeInMeters: number = 1.0;
@@ -89,14 +90,16 @@ export default class Terrain {
 		this.fillerIndexCount = TILE_RESOLUTION * 24;
 		this.crossIndexCount = (TILE_RESOLUTION * 24) + 6;
 		this.trimIndexCount = ((CLIPMAP_VERTEX_RESOLUTION * 2) - 1) * 6;
+		this.seamIndexCount = CLIPMAP_VERTEX_RESOLUTION * 6;
 
 		const tileVertexCount = TILE_VERTEX_RESOLUTION * TILE_VERTEX_RESOLUTION;
 		const fillerVertexCount = TILE_VERTEX_RESOLUTION * 8;
 		const crossVertexCount = TILE_VERTEX_RESOLUTION * 8;
 		const trimVertexCount = ((CLIPMAP_VERTEX_RESOLUTION * 2) + 1) * 2;
+		const seamVertexCount = CLIPMAP_VERTEX_RESOLUTION * 4;
 
-		let vertexData = new Float32Array((tileVertexCount + fillerVertexCount + crossVertexCount + trimVertexCount) * 2);
-		let indexData = new Uint16Array(this.tileIndexCount + this.fillerIndexCount + this.crossIndexCount + this.trimIndexCount);
+		let vertexData = new Float32Array((tileVertexCount + fillerVertexCount + crossVertexCount + trimVertexCount + seamVertexCount) * 2);
+		let indexData = new Uint16Array(this.tileIndexCount + this.fillerIndexCount + this.crossIndexCount + this.trimIndexCount + this.seamIndexCount);
 
 		let currentVertexOffset = 0;
 		let currentIndexOffset = 0;
@@ -290,6 +293,37 @@ export default class Terrain {
 			}
 		}
 
+		currentVertexBaseOffset += trimVertexCount;
+
+		// seam
+		{
+			// generate vertex buffer for seam mesh
+			for (let i = 0; i < CLIPMAP_VERTEX_RESOLUTION; ++i) {
+				vertexData[currentVertexOffset + (((CLIPMAP_VERTEX_RESOLUTION * 0) + i) * 2) + 0] = i;
+				vertexData[currentVertexOffset + (((CLIPMAP_VERTEX_RESOLUTION * 0) + i) * 2) + 1] = 0;
+				vertexData[currentVertexOffset + (((CLIPMAP_VERTEX_RESOLUTION * 1) + i) * 2) + 0] = CLIPMAP_VERTEX_RESOLUTION;
+				vertexData[currentVertexOffset + (((CLIPMAP_VERTEX_RESOLUTION * 1) + i) * 2) + 1] = i;
+				vertexData[currentVertexOffset + (((CLIPMAP_VERTEX_RESOLUTION * 2) + i) * 2) + 0] = CLIPMAP_VERTEX_RESOLUTION - i;
+				vertexData[currentVertexOffset + (((CLIPMAP_VERTEX_RESOLUTION * 2) + i) * 2) + 1] = CLIPMAP_VERTEX_RESOLUTION;
+				vertexData[currentVertexOffset + (((CLIPMAP_VERTEX_RESOLUTION * 3) + i) * 2) + 0] = 0;
+				vertexData[currentVertexOffset + (((CLIPMAP_VERTEX_RESOLUTION * 3) + i) * 2) + 1] = CLIPMAP_VERTEX_RESOLUTION - i;
+			}
+
+			currentVertexOffset += CLIPMAP_VERTEX_RESOLUTION * 8;
+
+			// generate index buffer data for seam mesh
+			for (let i = 0; i < CLIPMAP_VERTEX_RESOLUTION * 4; i += 2) {
+				indexData[currentIndexOffset++] = i + 1 + currentVertexBaseOffset;
+				indexData[currentIndexOffset++] = i + currentVertexBaseOffset;
+				indexData[currentIndexOffset++] = i + 2 + currentVertexBaseOffset;
+			}
+
+			// make the last triangle wrap around
+			indexData[currentIndexOffset - 1] = 0;
+		}
+
+		currentVertexBaseOffset += seamVertexCount;
+
 		const vaoBuffer = gl.createVertexArray();
 		const vertexBuffer = gl.createBuffer();
 		const indexBuffer = gl.createBuffer();
@@ -346,13 +380,12 @@ export default class Terrain {
 			const tileSize = TILE_RESOLUTION << level;
 			const baseX = snappedPosX - (TILE_RESOLUTION << (level + 1));
 			const baseY = snappedPosY - (TILE_RESOLUTION << (level + 1));
+			const nextScale = scale * 2;
+			const nextSnappedPosX = Math.floor(camPos[0] / nextScale) * nextScale;
+			const nextSnappedPosY = Math.floor(camPos[2] / nextScale) * nextScale;
 
-			// draw trim
+			// draw trim and seam
 			{
-				const nextScale = scale * 2;
-				const nextSnappedPosX = Math.floor(camPos[0] / nextScale) * nextScale;
-				const nextSnappedPosY = Math.floor(camPos[2] / nextScale) * nextScale;
-
 				let offsetX = baseX - scale;
 				let offsetY = baseY - scale;
 				let dX = camPos[0] - nextSnappedPosX;
@@ -371,6 +404,9 @@ export default class Terrain {
 				this.terrainShader.setUniformMat2(this.uRotationLocation, this.rotations[r]);
 				this.terrainShader.setUniformVec2(this.uBiasLocation, [offsetX, offsetY]);
 				gl.drawElements(drawMode, this.trimIndexCount, gl.UNSIGNED_SHORT, (this.tileIndexCount + this.fillerIndexCount + this.crossIndexCount) * 2);
+
+				// draw seam
+				gl.drawElements(drawMode, this.seamIndexCount, gl.UNSIGNED_SHORT, (this.tileIndexCount + this.fillerIndexCount + this.crossIndexCount + this.trimIndexCount) * 2);
 			}
 
 			// all following drawcalls dont need a rotation
