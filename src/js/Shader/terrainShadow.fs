@@ -28,7 +28,7 @@ void main(void) {
 	vec3 rayDir3D = uLightDir / step * vec3(uTexelSizeInMeters, uHeightScaleInMeters, uTexelSizeInMeters);
 
 	bool foundIntersection = false;
-	while(all(lessThan(currentHeightMapCoord, vec2(1.0))) && all(greaterThanEqual(currentHeightMapCoord, vec2(0.0)))){
+	while(all(lessThan(currentHeightMapCoord + rayDir, vec2(1.0))) && all(greaterThanEqual(currentHeightMapCoord + rayDir, vec2(0.0)))){
 		currentHeightMapCoord += rayDir;
 		rayPos += rayDir3D;
 		if (texelFetch(uHeightMap, ivec2(currentHeightMapCoord * heightMapSize), 0).x > rayPos.y){
