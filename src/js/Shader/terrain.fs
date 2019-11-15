@@ -14,7 +14,8 @@ uniform float uHeightScaleInMeters;
 
 in vec3 vWorldSpacePos;
 
-out vec4 oColor;
+layout(location = 0) out vec4 oColor;
+layout(location = 1) out vec4 oDepth;
 
 struct LightingParams {
 	vec3 albedo;
@@ -148,4 +149,5 @@ void main(void) {
     color = accurateLinearToSRGB(color);//pow(color, vec3(1.0/2.2));
 
 	oColor = vec4(color, 1.0);
+	oDepth = vec4(vWorldSpacePos, 1.0);
 }

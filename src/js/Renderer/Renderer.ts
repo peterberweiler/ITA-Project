@@ -14,9 +14,12 @@ export default class Renderer {
 	public camera: Camera;
 	private terrain: Terrain;
 	private heightmapController: HeightmapController;
+	private mouseOverCanvas: boolean = false;
+	private mousePosX: number = 0;
+	private mousePosY: number = 0;
 
 	constructor(canvas: HTMLCanvasElement, camera: Camera) {
-		const context = canvas.getContext("webgl2");
+		const context = canvas.getContext("webgl2", { antialias: false });
 		if (!context) {
 			throw new Error("Unable to initialize WebGL. Please use a different or newer browser.");
 		}
@@ -44,7 +47,7 @@ export default class Renderer {
 		this.resized();
 	}
 
-	checkGLError(name?: string) {
+	static checkGLError(name?: string) {
 		let error;
 		if (name) { console.warn(name); }
 
@@ -78,7 +81,8 @@ export default class Renderer {
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 		let viewProjection = mat4.create();
 		mat4.multiply(viewProjection, this.camera.projectionMatrix, this.camera.viewMatrix);
-		this.terrain.draw(viewProjection, this.camera.getPosition(), this.heightmapController.getCurrentHeightmap().id);
+		this.terrain.draw(viewProjection, this.camera.getPosition(), this.heightmapController.getCurrentHeightmap().id, this.mouseOverCanvas, this.mousePosX, this.mousePosY);
+		// console.log(this.terrain.getMouseWorldSpacePos());
 	}
 
 	resized() {
@@ -91,6 +95,7 @@ export default class Renderer {
 		gl.viewport(0, 0, w, h);
 		this.camera.aspectRatio = w / h;
 		this.camera.updateProjectionMatrix();
+		this.terrain.resize();
 	}
 
 	getTerrain() {
@@ -102,11 +107,8 @@ export default class Renderer {
 	}
 
 	setCanvasMouseState(overCanvas: boolean, canvasMouseX: number, canvasMouseY: number) {
-		if (overCanvas) {
-			const screenSpaceMouseX = (canvasMouseX / gl.canvas.width * 2) - 1;
-			const screenSpaceMouseY = (canvasMouseY / gl.canvas.height * 2) - 1;
-
-			//TODO: mouse is currently over canvas => calculate world mouse position
-		}
+		this.mouseOverCanvas = overCanvas;
+		this.mousePosX = canvasMouseX;
+		this.mousePosY = canvasMouseY;
 	}
 }

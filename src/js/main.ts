@@ -70,7 +70,7 @@ function main(now: number) {
 	renderer.render(now, deltaTime);
 
 	requestAnimationFrame(main);
-	renderer.checkGLError();
+	Renderer.checkGLError();
 }
 
 setupRenderer();
