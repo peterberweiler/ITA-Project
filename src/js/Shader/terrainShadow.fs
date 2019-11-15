@@ -8,7 +8,7 @@ uniform vec3 uLightDir;
 uniform float uTexelSizeInMeters;
 uniform float uHeightScaleInMeters;
 
-out vec4 oRayLength;
+out vec4 oShadow;
 
 void main(void) {	
 	float currentHeight = textureLod(uHeightMap, vCoords, 0.0).x;
@@ -27,13 +27,15 @@ void main(void) {
 	rayDir = rayDir / step * heightMapTexelSize;
 	vec3 rayDir3D = uLightDir / step * vec3(uTexelSizeInMeters, uHeightScaleInMeters, uTexelSizeInMeters);
 
+	bool foundIntersection = false;
 	while(all(lessThan(currentHeightMapCoord, vec2(1.0))) && all(greaterThanEqual(currentHeightMapCoord, vec2(0.0)))){
 		currentHeightMapCoord += rayDir;
 		rayPos += rayDir3D;
 		if (texelFetch(uHeightMap, ivec2(currentHeightMapCoord * heightMapSize), 0).x > rayPos.y){
+			foundIntersection = true;
 			break;
 		}
 	}
 
-	oRayLength = vec4(distance(startWorldPos, rayPos));
+	oShadow = vec4(foundIntersection ? 1.0 : 0.0, 0.0, 0.0, 1.0);
 }

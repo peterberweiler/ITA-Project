@@ -81,7 +81,7 @@ export default class Renderer {
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 		let viewProjection = mat4.create();
 		mat4.multiply(viewProjection, this.camera.projectionMatrix, this.camera.viewMatrix);
-		this.terrain.draw(viewProjection, this.camera.getPosition(), this.heightmapController.getCurrentHeightmap().id, this.mouseOverCanvas, this.mousePosX, this.mousePosY);
+		this.terrain.draw(viewProjection, this.camera.getPosition(), this.heightmapController.getCurrentHeightmap().id, this.heightmapController.getCurrentTerrainShadowMap().id, this.mouseOverCanvas, this.mousePosX, this.mousePosY);
 		// console.log(this.terrain.getMouseWorldSpacePos());
 	}
 

@@ -7,6 +7,7 @@
 precision mediump float;
 
 uniform sampler2D uHeightmapTexture;
+uniform sampler2D uShadowmapTexture;
 uniform vec3 uColor;
 uniform vec3 uCamPos;
 uniform float uTexelSizeInMeters;
@@ -133,16 +134,18 @@ void main(void) {
 	vec3 N = normalize(cross(dPdu, dPdv));
 
 	LightingParams lightingParams;
-	lightingParams.albedo = vec3(0.0, 0.2, 0.05);
+	lightingParams.albedo = vec3(0.07, 0.2, 0.05);
 	lightingParams.N = N;
 	lightingParams.V = normalize(uCamPos - P);
 	lightingParams.metalness = 0.0;
 	lightingParams.roughness = 0.8;
 
-	vec3 color = cookTorranceSpecularBrdf(lightingParams, vec3(10.0), normalize(vec3(0.0, 1.0, 0.5)));
+	float shadow = 1.0 - textureLod(uShadowmapTexture, texCoord, 0.0).x;
+	vec3 color = cookTorranceSpecularBrdf(lightingParams, vec3(10.0), normalize(vec3(0.0, 1.0, 0.5))) * shadow;
 
 	// ambient
-	color += 0.1 * lightingParams.albedo;
+	vec3 ambientColor = mix(vec3(0.18), vec3(0.529, 0.808, 0.922), vec3(N.y) * 0.5 + 0.5);
+	color += ambientColor * 6.0 * (1.0 / PI) * lightingParams.albedo;
 
 	color = uncharted2Tonemap(1.0 * color);
 	vec3 whiteScale = 1.0/uncharted2Tonemap(W);

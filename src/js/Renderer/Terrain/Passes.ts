@@ -99,7 +99,7 @@ export class HeightBrushPass extends Pass {
 }
 
 export class ShadowPass extends Pass {
-	lightDir: vec3 | number[] = [0, 0, 0];
+	lightDir: vec3 | number[] = [0, 1.118, 0.559];
 	texelSizeInMeters: number = 1;
 	heightScaleInMeters: number = 1;
 

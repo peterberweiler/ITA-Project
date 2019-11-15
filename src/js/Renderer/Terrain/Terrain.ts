@@ -22,7 +22,8 @@ export default class Terrain {
 	private uTexelSizeInMetersLocation: WebGLUniformLocation;
 	private uHeightScaleInMetersLocation: WebGLUniformLocation;
 	private uCamPosLocation: WebGLUniformLocation;
-	//private uColorLocation: WebGLUniformLocation;
+	private uHeightmapTexture: WebGLUniformLocation;
+	private uShadowmapTexture: WebGLUniformLocation;
 	private fbo: WebGLFramebuffer | null;
 	private depthAttachment: Texture;
 	private colorAttachment: Texture;
@@ -36,7 +37,7 @@ export default class Terrain {
 	private trimIndexCount: number = 0;
 	private seamIndexCount: number = 0;
 	private rotations: mat2[];
-	private uHeightmapTexture: WebGLUniformLocation;
+
 	private texelSizeInMeters: number = 1.0;
 	private heightScaleInMeters: number = 1.0;
 	private worldSpaceMousePos: vec3 = vec3.create();
@@ -52,8 +53,8 @@ export default class Terrain {
 		this.uTexelSizeInMetersLocation = this.terrainShader.getUniformLocation("uTexelSizeInMeters");
 		this.uHeightScaleInMetersLocation = this.terrainShader.getUniformLocation("uHeightScaleInMeters");
 		this.uCamPosLocation = this.terrainShader.getUniformLocation("uCamPos");
-		//this.uColorLocation = this.terrainShader.getUniformLocation("uColor");
 		this.uHeightmapTexture = this.terrainShader.getUniformLocation("uHeightmapTexture");
+		this.uShadowmapTexture = this.terrainShader.getUniformLocation("uShadowmapTexture");
 
 		this.fbo = gl.createFramebuffer();
 		this.depthAttachment = new Texture();
@@ -348,7 +349,7 @@ export default class Terrain {
 		gl.bindVertexArray(null);
 	}
 
-	draw(viewProjection: mat4, camPos: vec3, heightMap: WebGLTexture, readMouseWorldSpacePos: boolean = false, mousePosX: number = 0, mousePosY: number = 0) {
+	draw(viewProjection: mat4, camPos: vec3, heightMap: WebGLTexture, shadowMap: WebGLTexture, readMouseWorldSpacePos: boolean = false, mousePosX: number = 0, mousePosY: number = 0) {
 		const drawMode = gl.TRIANGLES;
 
 		gl.bindFramebuffer(gl.FRAMEBUFFER, this.fbo);
@@ -368,7 +369,14 @@ export default class Terrain {
 
 		gl.activeTexture(gl.TEXTURE0);
 		gl.bindTexture(gl.TEXTURE_2D, heightMap);
+		gl.activeTexture(gl.TEXTURE1);
+		gl.bindTexture(gl.TEXTURE_2D, shadowMap);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 		this.terrainShader.setUniformI(this.uHeightmapTexture, 0);
+		this.terrainShader.setUniformI(this.uShadowmapTexture, 1);
 
 		for (let level = 0; level < NUM_CLIPMAP_LEVELS; ++level) {
 			const scale = 1 << level;
