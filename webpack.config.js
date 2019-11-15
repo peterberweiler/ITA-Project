@@ -33,7 +33,10 @@ module.exports = env => {
 				{
 					from: "src/styles/main.scss",
 					to: path.resolve(PUBLIC_DIR, "./main.css"),
-					transform: (content) => sass.renderSync({ data: content.toString() }).css,
+						transform: (content) => sass.renderSync({
+						data: content.toString(),
+						includePaths: ["./src/styles"],
+					}).css,
 				},
 			]),
 		],
