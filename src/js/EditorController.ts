@@ -24,11 +24,13 @@ export default class EditorController {
 
 	invertHeightmap() {
 		this.heightmapController.queuePass(this.heightmapController.invertPass);
+		this.updateShadows();
 	}
 
 	randomHeightChange() {
 		this.heightmapController.heightBrushPass.addPoint(Math.random(), Math.random(), HeightBrushPass.NORMAL, 0.05, 1500);
 		this.heightmapController.queuePass(this.heightmapController.heightBrushPass);
+		this.updateShadows();
 	}
 
 	mouseDownAtPoint(x: number, y: number) {
@@ -48,7 +50,15 @@ export default class EditorController {
 				this.heightmapController.queuePass(this.heightmapController.heightBrushPass);
 				break;
 			}
+
+			default:
+				return;
 		}
+		this.updateShadows();
+	}
+
+	updateShadows() {
+		this.heightmapController.queuePass(this.heightmapController.shadowPass);
 	}
 
 	selectBrush(selectedBrush: any) {

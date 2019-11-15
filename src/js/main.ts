@@ -32,6 +32,7 @@ function setupRenderer() {
 
 	// dummy heightmap
 	heightmapController.queuePass(heightmapController.perlinPass);
+	editorController.updateShadows();
 
 	requestAnimationFrame(main);
 }
