@@ -1,13 +1,17 @@
+import EditorController from "./EditorController";
 import { Camera } from "./Renderer/Cameras";
 import InputController from "./Renderer/InputController";
 import Renderer from "./Renderer/Renderer";
 import HeightmapController from "./Renderer/Terrain/HeightmapController";
 
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
+const menuItems = document.querySelectorAll<HTMLDivElement>("#menu .menu-item");
+
 let renderer: Renderer;
 let camera: Camera;
 let inputController: InputController;
 let heightmapController: HeightmapController;
+let editorController: EditorController;
 
 function setupRenderer() {
 	camera = new Camera(
@@ -22,6 +26,7 @@ function setupRenderer() {
 	inputController = new InputController(camera, canvas);
 	renderer = new Renderer(canvas, camera);
 	heightmapController = renderer.getHeightmapRenderer();
+	editorController = new EditorController(heightmapController);
 	window.onresize = () => renderer.resized();
 	renderer.resized();
 
@@ -36,11 +41,10 @@ function setupUI() {
 	cameraButton.onclick = () => inputController.toggleFpsMode();
 
 	(<HTMLButtonElement>document.querySelector("#testButton1")).onclick = () => {
-		heightmapController.queuePass(heightmapController.invertPass);
+		editorController.invertHeightmap();
 	};
 	(<HTMLButtonElement>document.querySelector("#testButton2")).onclick = () => {
-		heightmapController.heightBrushPass.addPoint(Math.random(), Math.random());
-		heightmapController.queuePass(heightmapController.heightBrushPass);
+		editorController.randomHeightChange();
 	};
 	(<HTMLButtonElement>document.querySelector("#testButton3")).onclick = () => {
 		//
@@ -51,12 +55,43 @@ function setupUI() {
 	(<HTMLButtonElement>document.querySelector("#testButton5")).onclick = () => {
 		//
 	};
+
+	let i = 0;
+	menuItems.forEach(item => {
+		const index = i++;
+		item.onclick = () => {
+			selectMenuIndex(index);
+		};
+	});
+}
+
+function selectMenuIndex(index: number): void {
+	menuItems.forEach(item => item.removeAttribute("selected"));
+	menuItems[index].setAttribute("selected", "true");
+
+	switch (index) {
+		case 0: // height brush
+			editorController.selectBrush(editorController.brush.height);
+			break;
+		case 1: // flatten brush
+			editorController.selectBrush(editorController.brush.flatten);
+			break;
+	}
 }
 
 function update(now: number, deltaTime: number) {
 	inputController.update(now, deltaTime);
 
 	renderer.setCanvasMouseState(inputController.mouse.over, inputController.mouse.lastX, inputController.mouse.lastY);
+
+	if (inputController.mouse.buttonDown && inputController.mouse.lastButton === 0) {
+		const worldSpacePos = renderer.getTerrain().getMouseWorldSpacePos();
+		if (worldSpacePos[0] || worldSpacePos[1] || worldSpacePos[2]) {
+			const x = worldSpacePos[0] / 1024;
+			const y = worldSpacePos[2] / 1024;
+			editorController.mouseDownAtPoint(x, y);
+		}
+	}
 }
 
 let lastRenderTime: number | null = null;

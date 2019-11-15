@@ -113,16 +113,16 @@ export default class InputController {
 		const y = event.offsetY || event.layerY || (event.targetTouches && event.targetTouches[0].pageY) || this.mouse.lastY;
 
 		if (this.mouse.buttonDown) {
-			// if (this.mouse.lastButton === 1) {
-			const dx = this.mouse.lastX - x;
-			const dy = this.mouse.lastY - y;
-			if (!this.fpsMode) {
-				this.cameraController.updateArcBall([dx * 0.0075, dy * 0.0075], 0);
+			if (this.mouse.lastButton === 2) {
+				const dx = this.mouse.lastX - x;
+				const dy = this.mouse.lastY - y;
+				if (!this.fpsMode) {
+					this.cameraController.updateArcBall([dx * 0.0075, dy * 0.0075], 0);
+				}
+				else {
+					this.cameraController.updateFPS([0, 0, 0], dy * -0.0075, dx * -0.0075);
+				}
 			}
-			else {
-				this.cameraController.updateFPS([0, 0, 0], dy * -0.0075, dx * -0.0075);
-			}
-			// }
 
 			this.mouse.movedSinceButtonDown = true;
 		}

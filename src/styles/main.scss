@@ -1,6 +1,10 @@
 $white: rgb(247, 251, 255);
 $black: rgb(33, 37, 41);
 $background-color: rgb(83, 85, 90);
+$theme-color: rgb(211, 146, 25);
+
+$menu-bar-width: 68px;
+
 
 * {
     box-sizing: border-box;
@@ -9,6 +13,8 @@ $background-color: rgb(83, 85, 90);
 *[hidden] {
     display: none;
 }
+
+
 
 body {
     position: absolute;
@@ -41,4 +47,68 @@ body {
     top: 0;
     left: 0;
     background-color: aqua;
+}
+
+
+#menu {
+    position: absolute;
+    top: 5vh;
+    left: 0px;
+    height: 90vh;
+    width: $menu-bar-width;
+    border-top-right-radius: 12px;
+    border-bottom-right-radius: 12px;
+    background-color: rgba(0, 0, 0, 0.5);
+    // background-color: #202225;
+
+    $item-size: 52px;
+    $item-margin: ($menu-bar-width - $item-size)/2;
+
+
+    .menu-item,
+    .menu-text {
+        width: $item-size;
+        margin: 8px $item-margin;
+    }
+
+    .menu-text {
+        font-size: 14px;
+        color: $white;
+    }
+
+    .menu-item {
+        height: $item-size;
+        line-height: $item-size;
+        font-size: 12px;
+        text-align: center;
+        background-color: rgb(73, 73, 73);
+        color: $theme-color;
+        border-radius: 100%;
+
+        cursor: pointer;
+        -webkit-transition: 0.2s ease-in-out;
+        -moz-transition: 0.2s ease-in-out;
+        -o-transition: 0.2s ease-in-out;
+        transition: 0.2s ease-in-out;
+
+        &:hover,
+        &[selected] {
+            border-radius: 12px;
+            background-color: $theme-color;
+            color: white;
+        }
+
+        &[selected]::after {
+            // white pill next to selected menu item
+            content: "";
+            display: block;
+            position: relative;
+            left: -10px;
+            top: -44px;
+            width: 5px;
+            height: 33px;
+            border-radius: 2px;
+            background: white;
+        }
+    }
 }

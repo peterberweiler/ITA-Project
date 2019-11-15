@@ -66,25 +66,31 @@ export class InvertPass extends Pass {
 export class HeightBrushPass extends Pass {
 	constructor() { super(heightBrushFSSource); }
 
-	points: number[] = [];
+	data: number[] = [];
+
+	static NORMAL = 0.1;
+	static FLATTEN = 1.1;
 
 	initalizePass(heightmap: PingPongTexture, albedomap: PingPongTexture, framebuffer: Framebuffer) {
 		heightmap.current().bind(0);
 		this.shader.setUniformI(this.shader.getUniformLocation("uTexture"), 0);
 
-		this.shader.setUniformVec2(this.shader.getUniformLocation("uDrawCoords"), this.points);
-
-		this.shader.setUniformF(this.shader.getUniformLocation("uBrushRadius"), 0.05);
-		this.shader.setUniformF(this.shader.getUniformLocation("uBrushStrength"), 1500);
-		this.shader.setUniformF(this.shader.getUniformLocation("uDirection"), 1);
-		this.shader.setUniformI(this.shader.getUniformLocation("uCount"), this.points.length / 2);
-
-		this.points = [];
+		let sendData;
+		if (this.data.length > 200) {
+			sendData = this.data.slice(0, 200);
+			this.data = this.data.slice(200);
+		}
+		else {
+			sendData = this.data;
+			this.data = [];
+		}
+		this.shader.setUniformFv(this.shader.getUniformLocation("uData"), sendData);
+		this.shader.setUniformI(this.shader.getUniformLocation("uDataLength"), sendData.length);
 
 		framebuffer.setColorAttachment(heightmap.next());
 	}
 
-	addPoint(x: number, y: number) {
-		this.points.push(x, y);
+	addPoint(x: number, y: number, type: number, radius: number, strength: number) {
+		this.data.push(x, y, type, radius, strength);
 	}
 }

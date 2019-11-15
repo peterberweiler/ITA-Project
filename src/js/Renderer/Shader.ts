@@ -46,6 +46,10 @@ export default class Shader {
 		gl.uniform1f(location, value);
 	}
 
+	setUniformFv(location: WebGLUniformLocation, value: number[]) {
+		gl.uniform1fv(location, value);
+	}
+
 	setUniformI(location: WebGLUniformLocation, value: number) {
 		gl.uniform1i(location, value);
 	}
