@@ -7,7 +7,7 @@ in vec2 vCoords;
 uniform float uSeed[64];
 uniform float uAmplitude[64];
 uniform float uScale[64];
-
+uniform float uRidgeFactor[64];
 uniform vec2 uOffset[64];
 
 uniform sampler2D uTexture;
@@ -18,6 +18,13 @@ float cnoise(vec3 v);
 
 out float height;
 
+float smoothRidge(float x){
+	const float factor = 5.0;
+	return (factor - sqrt(x*x + factor*factor));
+}
+
+float ridge(float x) { return -abs(x); }
+
 void main(void) {	
 	vec2 pos = vCoords * vec2(textureSize(uTexture, 0));
 
@@ -25,15 +32,12 @@ void main(void) {
 
 	for (int i = 0; i < uLayerCount; ++i){
 		float h = (uAmplitude[i] * cnoise(vec3((pos + uOffset[i]) / uScale[i], uSeed[i])));
-	
-		// if ( i <= 4){
-			// height += -abs(h);
-		// }else{
-			height += h;
-		// }
+
+		height += mix(h, smoothRidge(h), uRidgeFactor[i]);
 	}
-	height = -abs(height);
 }
+
+
 
 //////////////////////////////////////////////////////////
 //

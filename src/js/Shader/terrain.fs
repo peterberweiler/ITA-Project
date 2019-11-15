@@ -125,9 +125,11 @@ void main(void) {
 	Pt.y = texture(uHeightmapTexture, Pt.xz  * uTexelSizeInMeters * texelSize).x * uHeightScaleInMeters;
 
 	// Calculate tangent basis vectors using the minimum difference
-	vec3 dPdu = minDiff(P, Pr, Pl);
-	vec3 dPdv = minDiff(P, Pt, Pb);
-	
+	// vec3 dPdu = minDiff(P, Pr, Pl);
+	// vec3 dPdv = minDiff(P, Pt, Pb);
+	vec3 dPdu =  Pr - Pl;
+	vec3 dPdv =  Pt - Pb;
+
 	vec3 N = normalize(cross(dPdu, dPdv));
 
 	LightingParams lightingParams;
