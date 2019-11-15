@@ -1,7 +1,6 @@
 import { mat2, mat4, vec3 } from "gl-matrix";
 import Global from "../Global";
 import Shader from "../Shader";
-import HeightmapController from "./HeightmapController";
 
 let gl: WebGL2RenderingContext;
 const TILE_RESOLUTION: number = 32;
@@ -33,11 +32,9 @@ export default class Terrain {
 	private uHeightmapTexture: WebGLUniformLocation;
 	private texelSizeInMeters: number = 1.0;
 	private heightScaleInMeters: number = 1.0;
-	private heightmapController: HeightmapController;
 
-	constructor(heightmapController: HeightmapController) {
+	constructor() {
 		gl = Global.gl;
-		this.heightmapController = heightmapController;
 
 		this.terrainShader = new Shader(vertSource, fragSource);
 		this.uTransformLocation = this.terrainShader.getUniformLocation("uTransform");
@@ -289,7 +286,7 @@ export default class Terrain {
 		gl.bindVertexArray(null);
 	}
 
-	draw(viewProjection: mat4, camPos: vec3) {
+	draw(viewProjection: mat4, camPos: vec3, heightMap: WebGLTexture) {
 		const drawMode = gl.TRIANGLES;
 
 		this.terrainShader.use();
@@ -301,7 +298,8 @@ export default class Terrain {
 		this.terrainShader.setUniformF(this.uHeightScaleInMetersLocation, this.heightScaleInMeters);
 		this.terrainShader.setUniformVec3(this.uCamPosLocation, camPos);
 
-		this.heightmapController.getCurrentHeightmap().bind(0);
+		gl.activeTexture(gl.TEXTURE0);
+		gl.bindTexture(gl.TEXTURE_2D, heightMap);
 		this.terrainShader.setUniformI(this.uHeightmapTexture, 0);
 
 		for (let level = 0; level < NUM_CLIPMAP_LEVELS; ++level) {

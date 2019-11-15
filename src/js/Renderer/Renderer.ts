@@ -39,7 +39,7 @@ export default class Renderer {
 		}
 
 		this.heightmapController = new HeightmapController();
-		this.terrain = new Terrain(this.heightmapController);
+		this.terrain = new Terrain();
 
 		this.resized();
 	}
@@ -78,7 +78,7 @@ export default class Renderer {
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 		let viewProjection = mat4.create();
 		mat4.multiply(viewProjection, this.camera.projectionMatrix, this.camera.viewMatrix);
-		this.terrain.draw(viewProjection, this.camera.getPosition());
+		this.terrain.draw(viewProjection, this.camera.getPosition(), this.heightmapController.getCurrentHeightmap().id);
 	}
 
 	resized() {
