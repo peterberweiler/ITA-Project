@@ -47,7 +47,7 @@ function setupUI() {
 		editorController.randomHeightChange();
 	};
 	(<HTMLButtonElement>document.querySelector("#testButton3")).onclick = () => {
-		//
+		heightmapController.queuePass(heightmapController.shadowPass);
 	};
 	(<HTMLButtonElement>document.querySelector("#testButton4")).onclick = () => {
 		//

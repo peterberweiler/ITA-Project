@@ -8,10 +8,10 @@ uniform sampler2D uTexture;
 uniform float uData[200];
 uniform int uDataLength;
 
-out float height;
+out vec4 oHeight;
 
 void main(void) {	
-	height = texture(uTexture, vCoords).r;
+	float height = texture(uTexture, vCoords).r;
 
 	for (int i = 0; i < uDataLength; i+=5) {
 
@@ -35,4 +35,5 @@ void main(void) {
 		}		
 	}
 
+	oHeight = vec4(height, 0.0, 0.0, 1.0);
 }

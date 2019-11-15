@@ -5,9 +5,10 @@ in vec2 vCoords;
 
 uniform sampler2D uTexture;
 
-out float height;
+out vec4 oHeight;
 
 void main(void) {	
 	float h = texture(uTexture, vCoords).r;
-	height = -h;
+	
+	oHeight = vec4(-h, 0.0, 0.0, 1.0);
 }

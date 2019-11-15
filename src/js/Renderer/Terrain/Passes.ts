@@ -1,12 +1,13 @@
+import { vec3 } from "gl-matrix";
 import Framebuffer from "../Framebuffer";
-import Global from "../Global";
+import Global, { TextureBundle } from "../Global";
 import Shader from "../Shader";
-import { PingPongTexture } from "../Texture";
 
 const fullscreenVSSource = require("../../Shader/fullscreenPass.vs").default;
 const perlinFSSource = require("../../Shader/perlinPass.fs").default;
 const invertFSSource = require("../../Shader/invertPass.fs").default;
 const heightBrushFSSource = require("../../Shader/heightBrushPass.fs").default;
+const shadowFSSource = require("../../Shader/terrainShadow.fs").default;
 
 let gl: WebGL2RenderingContext;
 
@@ -23,7 +24,7 @@ export abstract class Pass {
 		this.shader = new Shader(Pass.vertexShader, fragmentShaderSource);
 	}
 
-	abstract initalizePass(heightmap: PingPongTexture, albedomap: PingPongTexture, framebuffer: Framebuffer): void;
+	abstract initalizePass(textures: TextureBundle, framebuffer: Framebuffer): void;
 
 	finalizePass(_framebuffer: Framebuffer) {
 		//
@@ -39,7 +40,7 @@ export class PerlinPass extends Pass {
 	offsets = [0, 0];
 	ridgeFactor = [1, 0, 1, 0, 1, 1, 0];
 
-	initalizePass(heightmap: PingPongTexture, albedomap: PingPongTexture, framebuffer: Framebuffer) {
+	initalizePass(textures: TextureBundle, framebuffer: Framebuffer) {
 		gl.uniform1fv(this.shader.getUniformLocation("uSeed"), this.seeds);
 		gl.uniform1fv(this.shader.getUniformLocation("uAmplitude"), this.amplitudes);
 		gl.uniform1fv(this.shader.getUniformLocation("uScale"), this.scales);
@@ -47,21 +48,21 @@ export class PerlinPass extends Pass {
 		gl.uniform1fv(this.shader.getUniformLocation("uRidgeFactor"), this.ridgeFactor);
 		gl.uniform1i(this.shader.getUniformLocation("uLayerCount"), this.seeds.length);
 
-		heightmap.current().bind(0);
+		textures.heightMap.current().bind(0);
 		this.shader.setUniformI(this.shader.getUniformLocation("uTexture"), 0);
 
-		framebuffer.setColorAttachment(heightmap.next());
+		framebuffer.setColorAttachment(textures.heightMap.next());
 	}
 }
 
 export class InvertPass extends Pass {
 	constructor() { super(invertFSSource); }
 
-	initalizePass(heightmap: PingPongTexture, albedomap: PingPongTexture, framebuffer: Framebuffer) {
-		heightmap.current().bind(0);
+	initalizePass(textures: TextureBundle, framebuffer: Framebuffer) {
+		textures.heightMap.current().bind(0);
 		this.shader.setUniformI(this.shader.getUniformLocation("uTexture"), 0);
 
-		framebuffer.setColorAttachment(heightmap.next());
+		framebuffer.setColorAttachment(textures.heightMap.next());
 	}
 }
 
@@ -73,8 +74,8 @@ export class HeightBrushPass extends Pass {
 	static NORMAL = 0.1;
 	static FLATTEN = 1.1;
 
-	initalizePass(heightmap: PingPongTexture, albedomap: PingPongTexture, framebuffer: Framebuffer) {
-		heightmap.current().bind(0);
+	initalizePass(textures: TextureBundle, framebuffer: Framebuffer) {
+		textures.heightMap.current().bind(0);
 		this.shader.setUniformI(this.shader.getUniformLocation("uTexture"), 0);
 
 		let sendData;
@@ -89,10 +90,39 @@ export class HeightBrushPass extends Pass {
 		this.shader.setUniformFv(this.shader.getUniformLocation("uData"), sendData);
 		this.shader.setUniformI(this.shader.getUniformLocation("uDataLength"), sendData.length);
 
-		framebuffer.setColorAttachment(heightmap.next());
+		framebuffer.setColorAttachment(textures.heightMap.next());
 	}
 
 	addPoint(x: number, y: number, type: number, radius: number, strength: number) {
 		this.data.push(x, y, type, radius, strength);
+	}
+}
+
+export class ShadowPass extends Pass {
+	lightDir: vec3 | number[] = [0, 0, 0];
+	texelSizeInMeters: number = 1;
+	heightScaleInMeters: number = 1;
+
+	uHeightMap: WebGLUniformLocation;
+	uLightDir: WebGLUniformLocation;
+	uTexelSizeInMeters: WebGLUniformLocation;
+	uHeightScaleInMeters: WebGLUniformLocation;
+
+	constructor() {
+		super(shadowFSSource);
+		this.uHeightMap = this.shader.getUniformLocation("uHeightMap");
+		this.uLightDir = this.shader.getUniformLocation("uLightDir");
+		this.uTexelSizeInMeters = this.shader.getUniformLocation("uTexelSizeInMeters");
+		this.uHeightScaleInMeters = this.shader.getUniformLocation("uHeightScaleInMeters");
+	}
+
+	initalizePass(textures: TextureBundle, framebuffer: Framebuffer): void {
+		textures.heightMap.current().bind(0);
+		this.shader.setUniformI(this.uHeightMap, 0);
+		this.shader.setUniformVec3(this.uLightDir, this.lightDir);
+		this.shader.setUniformF(this.uTexelSizeInMeters, this.texelSizeInMeters);
+		this.shader.setUniformF(this.uHeightScaleInMeters, this.heightScaleInMeters);
+
+		framebuffer.setColorAttachment(textures.terrainShadowMap.next());
 	}
 }

@@ -16,7 +16,7 @@ uniform int uLayerCount;
 
 float cnoise(vec3 v);
 
-out float height;
+out vec4 oHeight;
 
 float smoothRidge(float x){
 	const float factor = 5.0;
@@ -28,13 +28,15 @@ float ridge(float x) { return -abs(x); }
 void main(void) {	
 	vec2 pos = vCoords * vec2(textureSize(uTexture, 0));
 
-	height = 0.0;
+	float height = 0.0;
 
 	for (int i = 0; i < uLayerCount; ++i){
 		float h = (uAmplitude[i] * cnoise(vec3((pos + uOffset[i]) / uScale[i], uSeed[i])));
 
 		height += mix(h, smoothRidge(h), uRidgeFactor[i]);
 	}
+
+	oHeight = vec4(height, 0.0, 0.0, 1.0);
 }
 
 

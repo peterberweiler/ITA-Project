@@ -1,7 +1,7 @@
 import Framebuffer from "../Framebuffer";
-import Global from "../Global";
+import Global, { TextureBundle } from "../Global";
 import Texture, { PingPongTexture } from "../Texture";
-import { HeightBrushPass, InvertPass, Pass, PerlinPass } from "./Passes";
+import { HeightBrushPass, InvertPass, Pass, PerlinPass, ShadowPass } from "./Passes";
 
 let gl: WebGL2RenderingContext;
 
@@ -46,9 +46,8 @@ class FullscreenMesh {
 
 export default class HeightmapController {
 	private framebuffer: Framebuffer;
-	private heightmapTexture: PingPongTexture;
-	private albedomapTexture: PingPongTexture;
 
+	readonly textures: TextureBundle;
 	private fullscreenMesh: FullscreenMesh;
 	private size: [number, number] = [1024, 1024];
 	private passQueue: Pass[] = [];
@@ -56,22 +55,30 @@ export default class HeightmapController {
 	readonly perlinPass: PerlinPass;
 	readonly invertPass: InvertPass;
 	readonly heightBrushPass: HeightBrushPass;
+	readonly shadowPass: ShadowPass;
 
 	constructor() {
 		gl = Global.gl;
 
 		this.framebuffer = new Framebuffer();
 		this.fullscreenMesh = new FullscreenMesh();
-		this.heightmapTexture = new PingPongTexture();
-		this.albedomapTexture = new PingPongTexture();
+
+		this.textures = {
+			heightMap: new PingPongTexture(),
+			albedoMap: new PingPongTexture(),
+			terrainShadowMap: new PingPongTexture(),
+		};
 
 		this.perlinPass = new PerlinPass();
 		this.invertPass = new InvertPass();
 		this.heightBrushPass = new HeightBrushPass();
+		this.shadowPass = new ShadowPass();
 
-		this.heightmapTexture.initialize((hm) => hm.updateFloatRedData(this.size, null)); // force texture into R Format
+		this.textures.heightMap.initialize((hm) => hm.updateFloatRedData(this.size, null)); // force texture into R Format
 
-		this.albedomapTexture.initialize((am) => {
+		this.textures.terrainShadowMap.initialize((hm) => hm.updateFloatRedData(this.size, null)); // force texture into R Format
+
+		this.textures.albedoMap.initialize((am) => {
 			const data = new Float32Array(this.size[0] * this.size[1] * 4);
 			for (let x = 0; x < this.size[0]; ++x) {
 				for (let y = 0; y < this.size[1]; ++y) {
@@ -91,7 +98,7 @@ export default class HeightmapController {
 			am.updateFloatRGBAData(this.size, data); // force texture into R Format
 		});
 
-		this.framebuffer.setColorAttachment(this.heightmapTexture.current());
+		this.framebuffer.setColorAttachment(this.textures.heightMap.current());
 		Framebuffer.unbind();
 	}
 
@@ -115,7 +122,7 @@ export default class HeightmapController {
 			gl.enableVertexAttribArray(attribute);
 			gl.vertexAttribPointer(attribute, 3, gl.FLOAT, false, 12, 0);
 
-			pass.initalizePass(this.heightmapTexture, this.albedomapTexture, this.framebuffer);
+			pass.initalizePass(this.textures, this.framebuffer);
 
 			this.fullscreenMesh.draw();
 
@@ -126,9 +133,12 @@ export default class HeightmapController {
 	}
 
 	getCurrentAlbedomap(): Texture {
-		return this.albedomapTexture.current();
+		return this.textures.albedoMap.current();
 	}
 	getCurrentHeightmap(): Texture {
-		return this.heightmapTexture.current();
+		return this.textures.heightMap.current();
+	}
+	getCurrentTerrainShadowMap(): Texture {
+		return this.textures.terrainShadowMap.current();
 	}
 }
