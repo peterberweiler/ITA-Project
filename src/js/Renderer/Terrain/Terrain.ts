@@ -63,7 +63,7 @@ export default class Terrain {
 		gl.texStorage2D(gl.TEXTURE_2D, 1, gl.RGBA8, gl.canvas.width, gl.canvas.height);
 		this.readBackDepthAttachment = new Texture();
 		this.readBackDepthAttachment.bind(0);
-		gl.texStorage2D(gl.TEXTURE_2D, 1, gl.RGBA32F, gl.canvas.width, gl.canvas.height);
+		gl.texStorage2D(gl.TEXTURE_2D, 1, gl.RGBA16F, gl.canvas.width, gl.canvas.height);
 		Renderer.checkGLError();
 
 		gl.bindFramebuffer(gl.FRAMEBUFFER, this.fbo);
@@ -461,7 +461,7 @@ export default class Terrain {
 		gl.texStorage2D(gl.TEXTURE_2D, 1, gl.RGBA8, gl.canvas.width, gl.canvas.height);
 		this.readBackDepthAttachment = new Texture();
 		this.readBackDepthAttachment.bind(0);
-		gl.texStorage2D(gl.TEXTURE_2D, 1, gl.RGBA32F, gl.canvas.width, gl.canvas.height);
+		gl.texStorage2D(gl.TEXTURE_2D, 1, gl.RGBA16F, gl.canvas.width, gl.canvas.height);
 		Renderer.checkGLError();
 
 		gl.bindFramebuffer(gl.FRAMEBUFFER, this.fbo);
