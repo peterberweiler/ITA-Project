@@ -17,7 +17,7 @@ void main(void) {
 
 		vec2 drawCoord = vec2(uData[i], uData[i+1]); 
 		int type = int(uData[i+2]);
-		float radius = uData[i+3];
+		float radius = uData[i+3] / float(textureSize(uTexture, 0).x);
 		float strength = uData[i+4];
 
 		float dist = distance(drawCoord, vCoords);
@@ -30,7 +30,7 @@ void main(void) {
 			float centerHeight = texture(uTexture, drawCoord).r;
 
 			float delta = (centerHeight - height) * weight;
-			height += delta*strength;
+			height += delta*strength * 0.03;
 
 		}		
 	}

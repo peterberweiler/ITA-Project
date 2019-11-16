@@ -6,17 +6,17 @@ export default class EditorController {
 
 	public brush = {
 		height: {
-			radius: 0.1,
-			strength: 2,
+			radius: 100,
+			strength: 50,
 			direction: 1,
 		},
 		flatten: {
-			radius: 0.1,
-			strength: 0.04,
+			radius: 100,
+			strength: 50,
 		},
 	}
 
-	private selectedBrush = this.brush.height;
+	selectedBrush: any = this.brush.height;
 
 	constructor(heightmapController: HeightmapController) {
 		this.heightmapController = heightmapController;
@@ -33,11 +33,12 @@ export default class EditorController {
 		this.updateShadows();
 	}
 
-	mouseDownAtPoint(x: number, y: number) {
+	mouseDownAtPoint(x: number, y: number, deltaTime: number) {
 		switch (this.selectedBrush) {
 			case this.brush.height: {
 				this.heightmapController.heightBrushPass.addPoint(x, y, HeightBrushPass.NORMAL,
-					this.brush.height.radius, this.brush.height.strength * this.brush.height.direction
+					this.brush.height.radius,
+					this.brush.height.strength * this.brush.height.direction * deltaTime * 0.001
 				);
 				this.heightmapController.queuePass(this.heightmapController.heightBrushPass);
 				break;
@@ -45,7 +46,8 @@ export default class EditorController {
 
 			case this.brush.flatten: {
 				this.heightmapController.heightBrushPass.addPoint(x, y, HeightBrushPass.FLATTEN,
-					this.brush.flatten.radius, this.brush.flatten.strength
+					this.brush.flatten.radius,
+					this.brush.flatten.strength * deltaTime * 0.001
 				);
 				this.heightmapController.queuePass(this.heightmapController.heightBrushPass);
 				break;
@@ -61,7 +63,15 @@ export default class EditorController {
 		this.heightmapController.queuePass(this.heightmapController.shadowPass);
 	}
 
-	selectBrush(selectedBrush: any) {
-		this.selectedBrush = selectedBrush;
+	setRadius(value: number) {
+		if ("radius" in this.selectedBrush) {
+			this.selectedBrush.radius = value;
+		}
+	}
+
+	setStrength(value: number) {
+		if ("strength" in this.selectedBrush) {
+			this.selectedBrush.strength = value;
+		}
 	}
 }
