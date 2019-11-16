@@ -105,6 +105,14 @@ vec3 cookTorranceSpecularBrdf(const LightingParams params, vec3 radiance, vec3 L
 	return (kD * params.albedo * (1.0 / PI) + specular) * radiance * NdotL;
 }
 
+float linearDepth(float depth)
+{
+	float n = 0.1;
+	float f = 10000.0;
+    float z_n = 2.0 * depth - 1.0;
+    return 2.0 * n * f / (f + n - z_n * (f - n));
+}
+
 void main(void) {
 	vec2 texelSize = (1.0 / vec2(textureSize(uHeightmapTexture, 0).xy));
 	vec2 texCoord = vWorldSpacePos.xz  * uTexelSizeInMeters * texelSize;
@@ -143,9 +151,15 @@ void main(void) {
 	float shadow = 1.0 - textureLod(uShadowmapTexture, texCoord, 0.0).x;
 	vec3 color = cookTorranceSpecularBrdf(lightingParams, vec3(10.0), normalize(vec3(0.0, 1.0, 0.5))) * shadow;
 
+	vec3 skyColor = pow(vec3(0.529, 0.808, 0.922), vec3(2.2));
+
 	// ambient
-	vec3 ambientColor = mix(vec3(0.18), vec3(0.529, 0.808, 0.922), vec3(N.y) * 0.5 + 0.5);
+	vec3 ambientColor = mix(vec3(0.18), skyColor, vec3(N.y) * 0.5 + 0.5);
 	color += ambientColor * 6.0 * (1.0 / PI) * lightingParams.albedo;
+
+	// fog
+	float fogAlpha = exp(-0.66 * linearDepth(gl_FragCoord.z) / 10000.0);
+	color += mix(skyColor, color, clamp(fogAlpha * fogAlpha, 0.0, 1.0));
 
 	color = uncharted2Tonemap(1.0 * color);
 	vec3 whiteScale = 1.0/uncharted2Tonemap(W);

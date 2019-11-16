@@ -356,6 +356,7 @@ export default class Terrain {
 		gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 		let buffers: number[] = [gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1];
 		gl.drawBuffers(buffers);
+		gl.clearColor(0.529, 0.808, 0.922, 1.0);
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
 		this.terrainShader.use();
