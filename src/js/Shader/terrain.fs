@@ -113,6 +113,21 @@ float linearDepth(float depth)
     return 2.0 * n * f / (f + n - z_n * (f - n));
 }
 
+float getGridColor(vec3 position, vec3 campos, float size, float dotColor, float lineColor) {
+	vec2 coord = position.xz / size;
+	vec2 grid = abs(fract(coord - 0.5) - 0.5) / fwidth(coord);
+	float dots = (grid.x + grid.y) * 0.75; // constant controls size of dots
+	float lines = min(grid.x, grid.y);
+
+	vec3 pc = campos - position;
+	pc.y *= 0.333; // make the grid spread more in y than in xz
+	float distanceLimiter = max(min(1.0 - dot(pc, pc) / 400000.0, 1.0), 0.0); // grid is only visible around camera position
+
+	lines = max(min(lines / distanceLimiter, 1.0), lineColor); // limits the darkness of the lines
+	dots = max(min(dots / distanceLimiter, 1.0), dotColor); // limits the darkness of the dots
+	return dots * lines;
+}
+
 void main(void) {
 	vec2 texelSize = (1.0 / vec2(textureSize(uHeightmapTexture, 0).xy));
 	vec2 texCoord = vWorldSpacePos.xz  * uTexelSizeInMeters * texelSize;
@@ -167,6 +182,10 @@ void main(void) {
     // gamma correct
     color = accurateLinearToSRGB(color);//pow(color, vec3(1.0/2.2));
 
+	// apply grid
+	color *= getGridColor(vWorldSpacePos, uCamPos, 8.0, 0.05, 0.97);
+
+	//	
 	oColor = vec4(color, 1.0);
 	oDepth = vec4(vWorldSpacePos, 1.0);
 }
