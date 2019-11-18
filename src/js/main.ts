@@ -123,13 +123,29 @@ function update(now: number, deltaTime: number) {
 
 	renderer.setCanvasMouseState(inputController.mouse.over, inputController.mouse.lastX, inputController.mouse.lastY);
 
-	if (inputController.mouse.buttonDown && inputController.mouse.lastButton === 0) {
+	if (inputController.mouse.buttonDown && inputController.mouse.lastButton === 0 && inputController.mouse.over) {
 		const worldSpacePos = renderer.getTerrain().getMouseWorldSpacePos();
 		if (worldSpacePos[0] || worldSpacePos[1] || worldSpacePos[2]) {
-			const x = worldSpacePos[0] / 1024;
-			const y = worldSpacePos[2] / 1024;
-			editorController.mouseDownAtPoint(x, y, deltaTime);
+			const x = worldSpacePos[0];
+			const y = worldSpacePos[2];
+
+			if (inputController.terrainWorldSpaceMouse.pressed) {
+				editorController.mouseDownAtPoint(
+					x, y,
+					inputController.terrainWorldSpaceMouse.lastX, inputController.terrainWorldSpaceMouse.lastY,
+					deltaTime
+				);
+			}
+			else {
+				editorController.mouseDownAtPoint(x, y, x, y, deltaTime);
+			}
+			inputController.terrainWorldSpaceMouse.lastX = x;
+			inputController.terrainWorldSpaceMouse.lastY = y;
+			inputController.terrainWorldSpaceMouse.pressed = true;
 		}
+	}
+	else {
+		inputController.terrainWorldSpaceMouse.pressed = false;
 	}
 }
 

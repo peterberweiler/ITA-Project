@@ -66,35 +66,61 @@ export class InvertPass extends Pass {
 	}
 }
 
+type HeightBrushPassData = {
+	points: number[],
+	type: number,
+	radius: number,
+	strength: number,
+}
+
 export class HeightBrushPass extends Pass {
-	constructor() { super(heightBrushFSSource); }
+	private dataQueue: HeightBrushPassData[] = [];
 
-	data: number[] = [];
+	static readonly NORMAL = 0.1;
+	static readonly FLATTEN = 1.1;
 
-	static NORMAL = 0.1;
-	static FLATTEN = 1.1;
+	private readonly uPoints: WebGLUniformLocation;
+	private readonly uTexture: WebGLUniformLocation;
+	private readonly uPointCount: WebGLUniformLocation;
+	private readonly uType: WebGLUniformLocation;
+	private readonly uRadius: WebGLUniformLocation;
+	private readonly uStrength: WebGLUniformLocation;
+
+	constructor() {
+		super(heightBrushFSSource);
+		this.uTexture = this.shader.getUniformLocation("uTexture");
+		this.uType = this.shader.getUniformLocation("uType");
+		this.uRadius = this.shader.getUniformLocation("uRadius");
+		this.uStrength = this.shader.getUniformLocation("uStrength");
+		this.uPoints = this.shader.getUniformLocation("uPoints");
+		this.uPointCount = this.shader.getUniformLocation("uPointCount");
+	}
 
 	initalizePass(textures: TextureBundle, framebuffer: Framebuffer) {
 		textures.heightMap.current().bind(0);
-		this.shader.setUniformI(this.shader.getUniformLocation("uTexture"), 0);
+		this.shader.setUniformI(this.uTexture, 0);
 
-		let sendData;
-		if (this.data.length > 200) {
-			sendData = this.data.slice(0, 200);
-			this.data = this.data.slice(200);
+		const data = this.dataQueue.shift();
+
+		if (data) {
+			if (data.points.length >= 100) {
+				console.error("Too much points for HeightBrushPass");
+			}
+			this.shader.setUniformVec2(this.uPoints, data.points);
+			this.shader.setUniformI(this.uPointCount, data.points.length / 2);
+			this.shader.setUniformI(this.uType, data.type);
+			this.shader.setUniformF(this.uRadius, data.radius);
+			this.shader.setUniformF(this.uStrength, data.strength);
 		}
 		else {
-			sendData = this.data;
-			this.data = [];
+			this.shader.setUniformF(this.shader.getUniformLocation("uPointCount"), 0);
 		}
-		this.shader.setUniformFv(this.shader.getUniformLocation("uData"), sendData);
-		this.shader.setUniformI(this.shader.getUniformLocation("uDataLength"), sendData.length);
 
 		framebuffer.setColorAttachment(textures.heightMap.next());
 	}
 
-	addPoint(x: number, y: number, type: number, radius: number, strength: number) {
-		this.data.push(x, y, type, radius, strength);
+	queueData(data: HeightBrushPassData) {
+		this.dataQueue.push(data);
 	}
 }
 
@@ -103,10 +129,10 @@ export class ShadowPass extends Pass {
 	texelSizeInMeters: number = 1;
 	heightScaleInMeters: number = 1;
 
-	uHeightMap: WebGLUniformLocation;
-	uLightDir: WebGLUniformLocation;
-	uTexelSizeInMeters: WebGLUniformLocation;
-	uHeightScaleInMeters: WebGLUniformLocation;
+	private readonly uHeightMap: WebGLUniformLocation;
+	private readonly uLightDir: WebGLUniformLocation;
+	private readonly uTexelSizeInMeters: WebGLUniformLocation;
+	private readonly uHeightScaleInMeters: WebGLUniformLocation;
 
 	constructor() {
 		super(shadowFSSource);

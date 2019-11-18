@@ -45,10 +45,10 @@ class FullscreenMesh {
 }
 
 export default class HeightmapController {
-	private framebuffer: Framebuffer;
+	private readonly framebuffer: Framebuffer;
 
 	readonly textures: TextureBundle;
-	private fullscreenMesh: FullscreenMesh;
+	private readonly fullscreenMesh: FullscreenMesh;
 	private size: [number, number] = [1024, 1024];
 	private passQueue: Pass[] = [];
 

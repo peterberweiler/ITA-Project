@@ -30,13 +30,19 @@ const CONTROL_KEYS = {
 };
 
 export default class InputController {
-	camera: Camera;
-	cameraController: CameraController
-	canvas: HTMLCanvasElement;
-	mouse: Mouse;
-	keyDown: any = {}
+	private readonly camera: Camera;
+	private readonly cameraController: CameraController
+	private readonly canvas: HTMLCanvasElement;
+	public mouse: Mouse;
+	private keyDown: any = {}
 	fpsMode = true;
 	isRunning = false;
+
+	terrainWorldSpaceMouse = {
+		pressed: false,
+		lastX: 0,
+		lastY: 0,
+	};
 
 	constructor(camera: Camera, canvas: HTMLCanvasElement) {
 		this.camera = camera;
