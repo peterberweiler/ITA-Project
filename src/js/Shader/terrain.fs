@@ -116,7 +116,7 @@ float linearDepth(float depth)
 float getGridColor(vec3 position, vec3 campos, float size, float dotColor, float lineColor) {
 	vec2 coord = position.xz / size;
 	vec2 grid = abs(fract(coord - 0.5) - 0.5) / fwidth(coord);
-	float dots = (grid.x + grid.y) * 0.75; // constant controls size of dots
+	// float dots = (grid.x + grid.y) * 0.75; // constant controls size of dots
 	float lines = min(grid.x, grid.y);
 
 	vec3 pc = campos - position;
@@ -124,8 +124,9 @@ float getGridColor(vec3 position, vec3 campos, float size, float dotColor, float
 	float distanceLimiter = max(min(1.0 - dot(pc, pc) / 400000.0, 1.0), 0.0); // grid is only visible around camera position
 
 	lines = max(min(lines / distanceLimiter, 1.0), lineColor); // limits the darkness of the lines
-	dots = max(min(dots / distanceLimiter, 1.0), dotColor); // limits the darkness of the dots
-	return dots * lines;
+	// dots = max(min(dots / distanceLimiter, 1.0), dotColor); // limits the darkness of the dots
+	// return dots * lines;
+	return lines;
 }
 
 void main(void) {
