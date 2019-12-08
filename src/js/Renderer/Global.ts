@@ -1,4 +1,4 @@
-import { PingPongTexture } from "./Texture";
+import Texture, { PingPongTexture } from "./Texture";
 
 export default {
 	gl: null as unknown as WebGL2RenderingContext
@@ -6,6 +6,6 @@ export default {
 
 export type TextureBundle = {
 	heightMap: PingPongTexture,
-	albedoMap: PingPongTexture,
-	terrainShadowMap: PingPongTexture,
+	shadowMap: Texture,
+	surfaceWeightMaps: [PingPongTexture, PingPongTexture, PingPongTexture, PingPongTexture],
 }

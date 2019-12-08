@@ -8,6 +8,7 @@ const perlinFSSource = require("../../Shader/perlinPass.fs").default;
 const invertFSSource = require("../../Shader/invertPass.fs").default;
 const heightBrushFSSource = require("../../Shader/heightBrushPass.fs").default;
 const shadowFSSource = require("../../Shader/terrainShadow.fs").default;
+const generateSurfaceFSSource = require("../../Shader/generateSurface.fs").default;
 
 let gl: WebGL2RenderingContext;
 
@@ -149,6 +150,72 @@ export class ShadowPass extends Pass {
 		this.shader.setUniformF(this.uTexelSizeInMeters, this.texelSizeInMeters);
 		this.shader.setUniformF(this.uHeightScaleInMeters, this.heightScaleInMeters);
 
-		framebuffer.setColorAttachment(textures.terrainShadowMap.next());
+		framebuffer.setColorAttachment(textures.shadowMap);
+	}
+}
+
+export class GenerateSurfacePass extends Pass {
+	public minSlopes = new Array<number>(16);
+	public maxSlopes = new Array<number>(16);
+	public minHeights = new Array<number>(16);
+	public maxHeights = new Array<number>(16);
+
+	private readonly uMinSlopes: WebGLUniformLocation;
+	private readonly uMaxSlopes: WebGLUniformLocation;
+	private readonly uMinHeights: WebGLUniformLocation;
+	private readonly uMaxHeights: WebGLUniformLocation;
+
+	private readonly uTexelSizeInMeters: WebGLUniformLocation
+	private readonly uHeightScaleInMeters: WebGLUniformLocation
+
+	constructor() {
+		super(generateSurfaceFSSource);
+		this.uMinSlopes = this.shader.getUniformLocation("uMinSlopes");
+		this.uMaxSlopes = this.shader.getUniformLocation("uMaxSlopes");
+		this.uMinHeights = this.shader.getUniformLocation("uMinHeights");
+		this.uMaxHeights = this.shader.getUniformLocation("uMaxHeights");
+		this.uTexelSizeInMeters = this.shader.getUniformLocation("uTexelSizeInMeters");
+		this.uHeightScaleInMeters = this.shader.getUniformLocation("uHeightScaleInMeters");
+	}
+
+	setSurfaceTypes(types: [number, number, number, number][]) {
+		this.minSlopes.fill(Number.MAX_VALUE);
+		this.maxSlopes.fill(Number.MAX_VALUE);
+		this.minHeights.fill(Number.MAX_VALUE);
+		this.maxHeights.fill(Number.MAX_VALUE);
+
+		for (let i = 0; i < types.length; ++i) {
+			const [minSlopes, maxSlopes, minHeights, maxHeights] = types[i];
+
+			this.minSlopes[i] = minSlopes;
+			this.maxSlopes[i] = maxSlopes;
+			this.minHeights[i] = minHeights;
+			this.maxHeights[i] = maxHeights;
+		}
+	}
+
+	initalizePass(textures: TextureBundle, framebuffer: Framebuffer): void {
+		textures.heightMap.current().bind(0);
+
+		this.shader.setUniformFv(this.uMinSlopes, this.minSlopes);
+		this.shader.setUniformFv(this.uMaxSlopes, this.maxSlopes);
+		this.shader.setUniformFv(this.uMinHeights, this.minHeights);
+		this.shader.setUniformFv(this.uMaxHeights, this.maxHeights);
+
+		this.shader.setUniformF(this.uTexelSizeInMeters, 1);
+		this.shader.setUniformF(this.uHeightScaleInMeters, 1);
+
+		framebuffer.setColorAttachment(textures.surfaceWeightMaps[0].current(), 0);
+		framebuffer.setColorAttachment(textures.surfaceWeightMaps[1].current(), 1);
+		framebuffer.setColorAttachment(textures.surfaceWeightMaps[2].current(), 2);
+		framebuffer.setColorAttachment(textures.surfaceWeightMaps[3].current(), 3);
+		gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1, gl.COLOR_ATTACHMENT2, gl.COLOR_ATTACHMENT3]);
+	}
+
+	finalizePass(framebuffer: Framebuffer) {
+		framebuffer.unsetColorAttachment(1);
+		framebuffer.unsetColorAttachment(2);
+		framebuffer.unsetColorAttachment(3);
+		gl.drawBuffers([gl.COLOR_ATTACHMENT0]);
 	}
 }

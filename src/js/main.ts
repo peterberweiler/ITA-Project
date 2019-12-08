@@ -55,7 +55,13 @@ function setupUI() {
 		editorController.randomHeightChange();
 	};
 	(<HTMLButtonElement>document.querySelector("#testButton3")).onclick = () => {
-		heightmapController.queuePass(heightmapController.shadowPass);
+		heightmapController.generateSurfacePass.setSurfaceTypes([
+			[0.5, 1, -150, 100], // snow
+			[0, 0.8, -200, 100], // stone
+			[0.7, 1, -1000, -150], // grass
+			[0, 0.8, -1000, -30], // dirt
+		]);
+		heightmapController.queuePass(heightmapController.generateSurfacePass);
 	};
 	(<HTMLButtonElement>document.querySelector("#testButton4")).onclick = () => {
 		//

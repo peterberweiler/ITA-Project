@@ -8,6 +8,7 @@ precision mediump float;
 
 uniform sampler2D uHeightmapTexture;
 uniform sampler2D uShadowmapTexture;
+uniform sampler2D uSurfacemapTexture;
 uniform vec3 uColor;
 uniform vec3 uCamPos;
 uniform float uTexelSizeInMeters;
@@ -157,8 +158,19 @@ void main(void) {
 
 	vec3 N = normalize(cross(dPdu, dPdv));
 
+	// calculate surface color
+	vec4 surfaceWeights = texture(uSurfacemapTexture, texCoord);
+	vec3 albedo = vec3(0.0);
+	albedo += surfaceWeights[0] * vec3(1.0, 1.0, 1.0);
+	albedo += surfaceWeights[1] * vec3(0.2, 0.2, 0.2);
+	albedo += surfaceWeights[2] * vec3(0.07, 0.4, 0.05);
+	albedo += surfaceWeights[3] * vec3(0.2, 0.1, 0.05);
+
+
+	//
 	LightingParams lightingParams;
-	lightingParams.albedo = vec3(0.07, 0.2, 0.05);
+	lightingParams.albedo = albedo;
+	// lightingParams.albedo = vec3(0.07, 0.2, 0.05);
 	lightingParams.N = N;
 	lightingParams.V = normalize(uCamPos - P);
 	lightingParams.metalness = 0.0;
