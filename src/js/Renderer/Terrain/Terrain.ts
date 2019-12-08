@@ -3,6 +3,7 @@ import Global, { TextureBundle } from "../Global";
 import Renderer from "../Renderer";
 import Shader from "../Shader";
 import Texture from "../Texture";
+import Surface from "./Surface";
 
 let gl: WebGL2RenderingContext;
 const TILE_RESOLUTION: number = 32;
@@ -42,6 +43,8 @@ export default class Terrain {
 	private texelSizeInMeters: number = 1.0;
 	private heightScaleInMeters: number = 1.0;
 	private worldSpaceMousePos: vec3 = vec3.create();
+
+	readonly surface: Surface;
 
 	constructor() {
 		gl = Global.gl;
@@ -349,6 +352,8 @@ export default class Terrain {
 		gl.vertexAttribPointer(this.terrainShader.getAttributeLocation("aPosition"), 2, gl.FLOAT, false, 8, 0);
 
 		gl.bindVertexArray(null);
+
+		this.surface = new Surface();
 	}
 
 	draw(viewProjection: mat4, camPos: vec3, textures: TextureBundle, readMouseWorldSpacePos: boolean = false, mousePosX: number = 0, mousePosY: number = 0) {
@@ -379,6 +384,8 @@ export default class Terrain {
 
 		gl.activeTexture(gl.TEXTURE2);
 		gl.bindTexture(gl.TEXTURE_2D, textures.surfaceWeightMaps[0].current().id);
+
+		//TODO: this.surface.types[0].albedomap.texture.id
 
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);

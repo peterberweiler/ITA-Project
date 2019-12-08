@@ -64,7 +64,7 @@ function setupUI() {
 		heightmapController.queuePass(heightmapController.generateSurfacePass);
 	};
 	(<HTMLButtonElement>document.querySelector("#testButton4")).onclick = () => {
-		//
+		renderer.getTerrain().surface.loadDefault();
 	};
 	(<HTMLButtonElement>document.querySelector("#testButton5")).onclick = () => {
 		//
