@@ -4,11 +4,11 @@ precision highp float;
 
 in vec2 vCoords;
 
-uniform float uSeed[64];
-uniform float uAmplitude[64];
-uniform float uScale[64];
-uniform float uRidgeFactor[64];
-uniform vec2 uOffset[64];
+uniform float uSeed[32];
+uniform float uAmplitude[32];
+uniform float uScale[32];
+uniform float uRidgeFactor[32];
+uniform vec2 uOffset[32];
 
 uniform sampler2D uTexture;
 
