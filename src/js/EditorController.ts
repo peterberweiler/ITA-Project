@@ -14,6 +14,11 @@ export default class EditorController {
 			radius: 100,
 			strength: 50,
 		},
+		layer: {
+			radius: 15,
+			strength: 50,
+			type: 0,
+		}
 	}
 
 	selectedBrush: any = this.brush.height;
@@ -70,6 +75,18 @@ export default class EditorController {
 				});
 
 				this.heightmapController.queuePass(this.heightmapController.heightBrushPass);
+				break;
+			}
+
+			case this.brush.layer: {
+				this.heightmapController.layerBrushPass.queueData({
+					points: [x, y, lastX, lastY],
+					type: this.selectedBrush.type,
+					radius: this.selectedBrush.radius,
+					strength: this.selectedBrush.strength * deltaTime * 0.001,
+				});
+
+				this.heightmapController.queuePass(this.heightmapController.layerBrushPass);
 				break;
 			}
 

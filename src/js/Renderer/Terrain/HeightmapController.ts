@@ -1,7 +1,7 @@
 import Framebuffer from "../Framebuffer";
 import Global, { TextureBundle } from "../Global";
 import Texture, { PingPongTexture } from "../Texture";
-import { GenerateSurfacePass, HeightBrushPass, InvertPass, Pass, PerlinPass, ShadowPass } from "./Passes";
+import { GenerateSurfacePass, HeightBrushPass, InvertPass, LayerBrushPass, Pass, PerlinPass, ShadowPass } from "./Passes";
 
 let gl: WebGL2RenderingContext;
 
@@ -55,6 +55,7 @@ export default class HeightmapController {
 	readonly perlinPass: PerlinPass;
 	readonly invertPass: InvertPass;
 	readonly heightBrushPass: HeightBrushPass;
+	readonly layerBrushPass: LayerBrushPass;
 	readonly shadowPass: ShadowPass;
 	readonly generateSurfacePass: GenerateSurfacePass;
 
@@ -78,28 +79,14 @@ export default class HeightmapController {
 		this.perlinPass = new PerlinPass();
 		this.invertPass = new InvertPass();
 		this.heightBrushPass = new HeightBrushPass();
+		this.layerBrushPass = new LayerBrushPass();
 		this.shadowPass = new ShadowPass();
 		this.generateSurfacePass = new GenerateSurfacePass();
 
 		// force empty textures into correct format
 		this.textures.heightMap.initialize((tex) => tex.updateFloatRedData(this.size, null));
 		this.textures.shadowMap.updateFloatRedData(this.size, null);
-		// this.textures.surface.initialize((tex) => tex.updateFloatRGBAData(this.size, null));
-
-		//TODO: REMOVE !!!!!!!!!!!!!!!!
-		this.textures.surfaceWeightMaps.forEach(a => a.initialize((tex) => {
-			const data = new Uint8Array(this.size[0] * this.size[1] * 4);
-			for (let x = 0; x < this.size[0]; ++x) {
-				for (let y = 0; y < this.size[1]; ++y) {
-					const i = ((y * this.size[0]) + x) * 4;
-					data[i] = 128;
-					data[i + 1] = 0;
-					data[i + 2] = 0;
-					data[i + 3] = 255;
-				}
-			}
-			tex.updateRGBAData(this.size, data);
-		}));
+		this.textures.surfaceWeightMaps.forEach(a => a.initialize((tex) => tex.updateRGBAData(this.size, null)));
 
 		this.framebuffer.setColorAttachment(this.textures.heightMap.current());
 		Framebuffer.unbind();

@@ -7,6 +7,7 @@ const fullscreenVSSource = require("../../Shader/fullscreenPass.vs").default;
 const perlinFSSource = require("../../Shader/perlinPass.fs").default;
 const invertFSSource = require("../../Shader/invertPass.fs").default;
 const heightBrushFSSource = require("../../Shader/heightBrushPass.fs").default;
+const layerBrushFSSource = require("../../Shader/layerBrushPass.fs").default;
 const shadowFSSource = require("../../Shader/terrainShadow.fs").default;
 const generateSurfaceFSSource = require("../../Shader/generateSurface.fs").default;
 
@@ -73,6 +74,12 @@ type HeightBrushPassData = {
 	radius: number,
 	strength: number,
 }
+type LayerBrushPassData = {
+	points: number[],
+	type: number,
+	radius: number,
+	strength: number,
+}
 
 export class HeightBrushPass extends Pass {
 	private dataQueue: HeightBrushPassData[] = [];
@@ -118,6 +125,55 @@ export class HeightBrushPass extends Pass {
 		}
 
 		framebuffer.setColorAttachment(textures.heightMap.next());
+	}
+
+	queueData(data: HeightBrushPassData) {
+		this.dataQueue.push(data);
+	}
+}
+
+export class LayerBrushPass extends Pass {
+	private dataQueue: LayerBrushPassData[] = [];
+
+	private readonly uPoints: WebGLUniformLocation;
+	private readonly uTexture: WebGLUniformLocation;
+	private readonly uPointCount: WebGLUniformLocation;
+	private readonly uType: WebGLUniformLocation;
+	private readonly uRadius: WebGLUniformLocation;
+	private readonly uStrength: WebGLUniformLocation;
+
+	constructor() {
+		super(layerBrushFSSource);
+		this.uTexture = this.shader.getUniformLocation("uTexture");
+		this.uType = this.shader.getUniformLocation("uType");
+		this.uRadius = this.shader.getUniformLocation("uRadius");
+		this.uStrength = this.shader.getUniformLocation("uStrength");
+		this.uPoints = this.shader.getUniformLocation("uPoints");
+		this.uPointCount = this.shader.getUniformLocation("uPointCount");
+	}
+
+	//TODO: include all 4 weight maps
+
+	initalizePass(textures: TextureBundle, framebuffer: Framebuffer) {
+		textures.surfaceWeightMaps[0].current().bind(0);
+		this.shader.setUniformI(this.uTexture, 0);
+
+		const data = this.dataQueue.shift();
+		if (data) {
+			if (data.points.length >= 100) {
+				console.error("Too much points for LayerBrushPass");
+			}
+			this.shader.setUniformVec2(this.uPoints, data.points);
+			this.shader.setUniformI(this.uPointCount, data.points.length / 2);
+			this.shader.setUniformI(this.uType, data.type);
+			this.shader.setUniformF(this.uRadius, data.radius);
+			this.shader.setUniformF(this.uStrength, data.strength);
+		}
+		else {
+			this.shader.setUniformF(this.shader.getUniformLocation("uPointCount"), 0);
+		}
+
+		framebuffer.setColorAttachment(textures.surfaceWeightMaps[0].next());
 	}
 
 	queueData(data: HeightBrushPassData) {

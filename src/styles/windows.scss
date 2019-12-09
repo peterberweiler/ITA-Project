@@ -1,0 +1,25 @@
+#layer-type-selector {
+
+    margin-top: 16px;
+    background: rgba(0, 0, 0, 0.3);
+
+    border-radius: 4px;
+    padding: 7px;
+
+    span {
+        display: inline-block;
+        width: 32px;
+        height: 32px;
+        border-radius: 2px;
+        border-width: 2px;
+        border-style: ridge;
+        border-color: white;
+
+
+        &[selected] {
+            border-style: groove;
+            border-radius: 100%;
+        }
+
+    }
+}

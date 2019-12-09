@@ -17,6 +17,9 @@ class UIController extends EventEmitter {
 	public readonly layerEditWindow = document.getElementById("layer-edit-window") as HTMLDivElement
 	public readonly settingsWindow = document.getElementById("settings-window") as HTMLDivElement
 
+	public readonly layerTypeSelector = document.getElementById("layer-type-selector") as HTMLDivElement;
+	public readonly layerTypeSelectorButtons = document.querySelectorAll<HTMLDivElement>("#layer-type-selector span");
+
 	constructor() {
 		super();
 
@@ -42,6 +45,14 @@ class UIController extends EventEmitter {
 			const index = i++;
 			item.onclick = () => {
 				this.selectMenuIndex(index);
+			};
+		});
+
+		i = 0;
+		this.layerTypeSelectorButtons.forEach(item => {
+			const index = i++;
+			item.onclick = () => {
+				this.selectLayerType(index);
 			};
 		});
 
@@ -75,24 +86,41 @@ class UIController extends EventEmitter {
 
 		// show correct window
 		this.windows.forEach(window => window.setAttribute("hidden", "true"));
+
+		//TODO: don't use numbered ids
 		switch (index) {
 			case 0:
 			case 1:
 			case 2:
-				this.brushWindow.removeAttribute("hidden");
-				break;
-
 			case 3:
-				this.layersWindow.removeAttribute("hidden");
+				this.brushWindow.removeAttribute("hidden");
+
+				if (index === 3) {
+					this.layerTypeSelector.removeAttribute("hidden");
+				}
+				else {
+					this.layerTypeSelector.setAttribute("hidden", "true");
+				}
 				break;
 
 			case 4:
+				this.layersWindow.removeAttribute("hidden");
+				break;
+
+			case 5:
 				this.settingsWindow.removeAttribute("hidden");
 				break;
 		}
 
 		// emit event
 		this.emit("menu-selected", index);
+	}
+
+	selectLayerType(index: number) {
+		this.layerTypeSelectorButtons.forEach(item => item.removeAttribute("selected"));
+		this.layerTypeSelectorButtons[index].setAttribute("selected", "true");
+
+		this.emit("layer-type-selected", index);
 	}
 }
 

@@ -68,8 +68,12 @@ function setupUI() {
 				editorController.selectedBrush = editorController.brush.flatten;
 				break;
 
-			case 3: // Layers
-			case 4: // Settings
+			case 3: // Layer Brush
+				editorController.selectedBrush = editorController.brush.layer;
+				break;
+
+			case 4: // Layers
+			case 5: // Settings
 				editorController.selectedBrush = null;
 				break;
 		}
@@ -83,6 +87,10 @@ function setupUI() {
 				UI.strengthOutput.value = editorController.selectedBrush.strength.toString();
 			}
 		}
+	});
+
+	UI.on("layer-type-selected", (index: number) => {
+		editorController.brush.layer.type = index;
 	});
 
 	UI.selectMenuIndex(0);
