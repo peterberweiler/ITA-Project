@@ -31,6 +31,7 @@ function setupRenderer() {
 
 	// dummy heightmap
 	heightmapController.queuePass(heightmapController.perlinPass);
+	heightmapController.queuePass(heightmapController.generateSurfacePass);
 	editorController.updateShadows();
 
 	requestAnimationFrame(main);
@@ -43,12 +44,6 @@ function setupUI() {
 	UI.on("debug2", () => editorController.randomHeightChange());
 
 	UI.on("debug3", () => {
-		heightmapController.generateSurfacePass.setSurfaceTypes([
-			[0.5, 1, -150, 100], // snow
-			[0, 0.8, -200, 100], // stone
-			[0.7, 1, -1000, -150], // grass
-			[0, 0.8, -1000, -30], // dirt
-		]);
 		heightmapController.queuePass(heightmapController.generateSurfacePass);
 	});
 	UI.on("debug4", () => renderer.getTerrain().surface.loadDefault());

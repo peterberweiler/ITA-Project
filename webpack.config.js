@@ -31,12 +31,13 @@ module.exports = env => {
 			}),
 			new CopyPlugin([
 				{
-					from: "src/styles/main.scss",
-					to: path.resolve(PUBLIC_DIR, "./main.css"),
+					from: "src/styles/",
+					to: PUBLIC_DIR,
 					transform: (content) => sass.renderSync({
 						data: content.toString(),
 						includePaths: ["./src/styles"],
 					}).css,
+					transformPath: (path) => path.replace("scss", "css"),
 				},
 				{
 					from: "src/data",
