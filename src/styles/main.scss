@@ -15,6 +15,13 @@ $menu-background: rgba(0, 0, 0, 0.5);
     transition: $time ease-in-out;
 }
 
+@mixin unselectable {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
 * {
     box-sizing: border-box;
 }
@@ -54,7 +61,7 @@ body {
     position: absolute;
     padding: 4px;
     top: 0;
-    left: $menu-bar-width;
+    right: 0;
     background-color: aqua;
 }
 
@@ -123,6 +130,16 @@ body {
         cursor: pointer;
 
         @include transition(0.2s);
+        @include unselectable;
+
+        svg,
+        span,
+        div {
+            // menu item content
+            display: block;
+            height: 100%;
+            width: 100%;
+        }
 
         &:hover,
         &[selected] {
@@ -137,7 +154,7 @@ body {
             display: block;
             position: relative;
             left: -11px;
-            top: -64px;
+            top: -44px;
             width: 6px;
             height: 34px;
             border-radius: 3px;
@@ -146,35 +163,40 @@ body {
     }
 }
 
-#options {
+.window {
     position: absolute;
-    // display: none;
-    // opacity: 0;
-    left: $menu-bar-width;
-    top: 40px;
-    width: 160px;
-    height: 300px;
+
     background: $menu-background;
-    padding: 6px;
+    padding: 8px;
+    border-radius: 4px;
 
-    @include transition(0.4s);
-    transform: translateX(-100%) translateX(-$menu-bar-width);
+    // @include transition(0.4s);
+    // transform: translateX(-100%) translateX(-$menu-bar-width);
 
-
-    input[type=range] {
-        width: 150px;
+    h1 {
         margin: 0;
+        font-size: 20px;
+        text-align: center;
     }
 
+    &.small-window {
+        left: $menu-bar-width * 1.1;
+        top: $menu-bar-width * 0.1;
+        width: 170px;
+        height: 300px;
+    }
+
+    &:not(.small-window) {
+        top: 10%;
+        left: 10%;
+        width: 80%;
+        height: 80%;
+    }
 }
 
-#menu:hover+#options,
-#options:hover {
-    // display: block;
-    // opacity: 1;
-    transform: translateX(0);
 
-    @include transition(0.1s);
+#brush-window output {
+    float: right;
 }
 
 input[type=range] {
@@ -185,6 +207,7 @@ input[type=range] {
     background: rgba(255, 255, 255, 0.2);
     outline: none;
     opacity: 0.7;
+    margin: 0;
     // -webkit-transition: .2s;
     // transition: opacity .2s;
 

@@ -14,7 +14,8 @@
 	},
 	"license": "ISC",
 	"dependencies": {
-		"gl-matrix": "^3.0.0"
+		"gl-matrix": "^3.0.0",
+		"html5sortable": "^0.9.17"
 	},
 	"devDependencies": {
 		"@types/gl-matrix": "^2.4.5",

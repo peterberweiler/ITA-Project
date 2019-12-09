@@ -73,7 +73,8 @@ function setupUI() {
 				editorController.selectedBrush = editorController.brush.flatten;
 				break;
 
-			case 3:
+			case 3: // Layers
+			case 4: // Settings
 				editorController.selectedBrush = null;
 				break;
 		}
@@ -88,6 +89,8 @@ function setupUI() {
 			}
 		}
 	});
+
+	UI.selectMenuIndex(0);
 }
 
 function update(now: number, deltaTime: number) {
