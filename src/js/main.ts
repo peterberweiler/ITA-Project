@@ -52,6 +52,9 @@ function setupUI() {
 	UI.on("radius-changed", (value) => editorController.setRadius(value));
 	UI.on("strength-changed", (value) => editorController.setStrength(value));
 
+	UI.on("min-slope-changed", (value) => editorController.setValueForAllBrushes("minSlope", value));
+	UI.on("max-slope-changed", (value) => editorController.setValueForAllBrushes("maxSlope", value));
+
 	UI.on("menu-selected", (menuIndex) => {
 		switch (menuIndex) {
 			case 0: // height brush
@@ -85,6 +88,13 @@ function setupUI() {
 			if ("strength" in editorController.selectedBrush) {
 				UI.strengthInput.value = editorController.selectedBrush.strength.toString();
 				UI.strengthOutput.value = editorController.selectedBrush.strength.toString();
+			}
+			if ("minSlope" in editorController.selectedBrush) {
+				console.log(editorController.selectedBrush);
+				UI.minSlopeInput.value = editorController.selectedBrush.minSlope.toString();
+			}
+			if ("maxSlope" in editorController.selectedBrush) {
+				UI.maxSlopeInput.value = editorController.selectedBrush.maxSlope.toString();
 			}
 		}
 	});

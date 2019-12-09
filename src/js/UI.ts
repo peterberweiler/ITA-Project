@@ -10,6 +10,8 @@ class UIController extends EventEmitter {
 	public readonly strengthInput = document.getElementById("strength-input") as HTMLInputElement;
 	public readonly radiusOutput = document.getElementById("radius-output") as HTMLInputElement;
 	public readonly strengthOutput = document.getElementById("strength-output") as HTMLInputElement;
+	public readonly minSlopeInput = document.getElementById("min-slope-input") as HTMLInputElement;
+	public readonly maxSlopeInput = document.getElementById("max-slope-input") as HTMLInputElement;
 
 	public readonly windows = document.querySelectorAll<HTMLDivElement>(".window");
 	public readonly brushWindow = document.getElementById("brush-window") as HTMLDivElement
@@ -38,6 +40,13 @@ class UIController extends EventEmitter {
 		this.strengthInput.oninput = () => {
 			this.strengthOutput.value = this.strengthInput.value;
 			this.emit("strength-changed", parseFloat(this.strengthInput.value));
+		};
+
+		this.minSlopeInput.oninput = () => {
+			this.emit("min-slope-changed", parseFloat(this.minSlopeInput.value));
+		};
+		this.maxSlopeInput.oninput = () => {
+			this.emit("max-slope-changed", parseFloat(this.maxSlopeInput.value));
 		};
 
 		let i = 0;

@@ -79,6 +79,8 @@ type LayerBrushPassData = {
 	type: number,
 	radius: number,
 	strength: number,
+	minSlope: number,
+	maxSlope: number,
 }
 
 export class HeightBrushPass extends Pass {
@@ -136,27 +138,38 @@ export class LayerBrushPass extends Pass {
 	private dataQueue: LayerBrushPassData[] = [];
 
 	private readonly uPoints: WebGLUniformLocation;
-	private readonly uTexture: WebGLUniformLocation;
+	private readonly uHeightmapTexture: WebGLUniformLocation;
+	private readonly uSurfaceMapTexture0: WebGLUniformLocation;
 	private readonly uPointCount: WebGLUniformLocation;
 	private readonly uType: WebGLUniformLocation;
 	private readonly uRadius: WebGLUniformLocation;
 	private readonly uStrength: WebGLUniformLocation;
 
+	private readonly uMinSlope: WebGLUniformLocation;
+	private readonly uMaxSlope: WebGLUniformLocation;
+
 	constructor() {
 		super(layerBrushFSSource);
-		this.uTexture = this.shader.getUniformLocation("uTexture");
+		this.uHeightmapTexture = this.shader.getUniformLocation("uHeightmapTexture");
+		this.uSurfaceMapTexture0 = this.shader.getUniformLocation("uSurfaceMapTexture0");
 		this.uType = this.shader.getUniformLocation("uType");
 		this.uRadius = this.shader.getUniformLocation("uRadius");
 		this.uStrength = this.shader.getUniformLocation("uStrength");
 		this.uPoints = this.shader.getUniformLocation("uPoints");
 		this.uPointCount = this.shader.getUniformLocation("uPointCount");
+
+		this.uMinSlope = this.shader.getUniformLocation("uMinSlope");
+		this.uMaxSlope = this.shader.getUniformLocation("uMaxSlope");
 	}
 
 	//TODO: include all 4 weight maps
 
 	initalizePass(textures: TextureBundle, framebuffer: Framebuffer) {
-		textures.surfaceWeightMaps[0].current().bind(0);
-		this.shader.setUniformI(this.uTexture, 0);
+		textures.heightMap.current().bind(0);
+		this.shader.setUniformI(this.uHeightmapTexture, 0);
+
+		textures.surfaceWeightMaps[0].current().bind(1);
+		this.shader.setUniformI(this.uSurfaceMapTexture0, 1);
 
 		const data = this.dataQueue.shift();
 		if (data) {
@@ -168,6 +181,9 @@ export class LayerBrushPass extends Pass {
 			this.shader.setUniformI(this.uType, data.type);
 			this.shader.setUniformF(this.uRadius, data.radius);
 			this.shader.setUniformF(this.uStrength, data.strength);
+
+			this.shader.setUniformF(this.uMinSlope, data.minSlope);
+			this.shader.setUniformF(this.uMaxSlope, data.maxSlope);
 		}
 		else {
 			this.shader.setUniformF(this.shader.getUniformLocation("uPointCount"), 0);
@@ -176,7 +192,7 @@ export class LayerBrushPass extends Pass {
 		framebuffer.setColorAttachment(textures.surfaceWeightMaps[0].next());
 	}
 
-	queueData(data: HeightBrushPassData) {
+	queueData(data: LayerBrushPassData) {
 		this.dataQueue.push(data);
 	}
 }
@@ -234,8 +250,8 @@ export class GenerateSurfacePass extends Pass {
 		this.uHeightScaleInMeters = this.shader.getUniformLocation("uHeightScaleInMeters");
 
 		this.setSurfaceTypes([
-			[0.5, 1, -150, 100], // snow
-			[0, 0.8, -200, 100], // stone
+			[0.5, 1, -150, 1000], // snow
+			[0, 0.8, -200, 1000], // stone
 			[0.7, 1, -1000, -150], // grass
 			[0, 0.8, -1000, -30], // dirt
 		]);
