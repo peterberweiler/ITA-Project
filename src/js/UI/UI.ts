@@ -133,5 +133,6 @@ class UIController extends EventEmitter {
 	}
 }
 
-export const UI = new UIController();
+const UI = new UIController();
+export default UI;
 

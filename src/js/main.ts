@@ -3,7 +3,7 @@ import { Camera } from "./Renderer/Cameras";
 import InputController from "./Renderer/InputController";
 import Renderer from "./Renderer/Renderer";
 import HeightmapController from "./Renderer/Terrain/HeightmapController";
-import { UI } from "./UI";
+import UI from "./UI/UI";
 
 let renderer: Renderer;
 let camera: Camera;
