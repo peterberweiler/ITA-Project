@@ -103,6 +103,10 @@ function setupUI() {
 		editorController.brush.layer.type = index;
 	});
 
+	UI.on("brush-type-selected", (index: number) => {
+		editorController.brush.height.type = index;
+	});
+
 	UI.selectMenuIndex(0);
 }
 

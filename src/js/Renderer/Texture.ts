@@ -37,6 +37,16 @@ export default class Texture {
 		this.bind(0);
 		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
 	}
+	updateRGBADataWithImage(image: HTMLImageElement) {
+		this.bind(0);
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+	}
+
+	updateRGBData(size: Size, data: Uint8Array | null) {
+		this.bind(0);
+		this.size = size;
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, size[0], size[1], 0, gl.RGB, gl.UNSIGNED_BYTE, data);
+	}
 
 	updateRGBAData(size: Size, data: Uint8Array | null) {
 		this.bind(0);

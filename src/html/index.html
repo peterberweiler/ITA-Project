@@ -58,7 +58,7 @@
 				<path fill="currentColor"
 					d="M12.41 148.02l232.94 105.67c6.8 3.09 14.49 3.09 21.29 0l232.94-105.67c16.55-7.51 16.55-32.52 0-40.03L266.65 2.31a25.607 25.607 0 0 0-21.29 0L12.41 107.98c-16.55 7.51-16.55 32.53 0 40.04zm487.18 88.28l-58.09-26.33-161.64 73.27c-7.56 3.43-15.59 5.17-23.86 5.17s-16.29-1.74-23.86-5.17L70.51 209.97l-58.1 26.33c-16.55 7.5-16.55 32.5 0 40l232.94 105.59c6.8 3.08 14.49 3.08 21.29 0L499.59 276.3c16.55-7.5 16.55-32.5 0-40zm0 127.8l-57.87-26.23-161.86 73.37c-7.56 3.43-15.59 5.17-23.86 5.17s-16.29-1.74-23.86-5.17L70.29 337.87 12.41 364.1c-16.55 7.5-16.55 32.5 0 40l232.94 105.59c6.8 3.08 14.49 3.08 21.29 0L499.59 404.1c16.55-7.5 16.55-32.5 0-40z" />
 			</svg>
-			</div>
+		</div>
 		<div class="menu-hr">
 		</div>
 		<div class="menu-item" title="Settings">
@@ -76,6 +76,26 @@
 		Strength <output id="strength-output">10</output>
 		<input id="strength-input" type="range" min=1 value=10 max=100 />
 
+		<div id="brush-type-selector">
+			Brushes
+			<br>
+			<img src="/data/brushes/thumb0.png" selected>
+			<img src="/data/brushes/thumb1.png">
+			<img src="/data/brushes/thumb2.png">
+			<img src="/data/brushes/thumb3.png">
+			<img src="/data/brushes/thumb4.png">
+			<img src="/data/brushes/thumb5.png">
+			<img src="/data/brushes/thumb6.png">
+			<img src="/data/brushes/thumb7.png">
+			<img src="/data/brushes/thumb8.png">
+			<img src="/data/brushes/thumb9.png">
+			<img src="/data/brushes/thumb10.png">
+			<img src="/data/brushes/thumb11.png">
+			<img src="/data/brushes/thumb12.png">
+			<img src="/data/brushes/thumb13.png">
+			<img src="/data/brushes/thumb14.png">
+			<img src="/data/brushes/thumb15.png">
+		</div>
 
 		<div id="layer-type-selector">
 			<span style="background-color:rgb(255, 255, 255)" selected></span>
@@ -99,6 +119,20 @@
 			<li>Test 5</li>
 			<li>Test 6</li>
 		</ul>
+		<template>
+			<li>
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">
+					<path fill="currentColor"
+						d="M41 288h238c21.4 0 32.1 25.9 17 41L177 448c-9.4 9.4-24.6 9.4-33.9 0L24 329c-15.1-15.1-4.4-41 17-41zm255-105L177 64c-9.4-9.4-24.6-9.4-33.9 0L24 183c-15.1 15.1-4.4 41 17 41h238c21.4 0 32.1-25.9 17-41z" />
+				</svg>
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 512">
+					<path fill="currentColor"
+						d="M214.059 377.941H168V134.059h46.059c21.382 0 32.09-25.851 16.971-40.971L144.971 7.029c-9.373-9.373-24.568-9.373-33.941 0L24.971 93.088c-15.119 15.119-4.411 40.971 16.971 40.971H88v243.882H41.941c-21.382 0-32.09 25.851-16.971 40.971l86.059 86.059c9.373 9.373 24.568 9.373 33.941 0l86.059-86.059c15.12-15.119 4.412-40.971-16.97-40.971z" />
+				</svg>
+				<span></span>
+				<button>Edit</button>
+			</li>
+		</template>
 	</div>
 
 	<div id="layer-edit-window" class="window" hidden>
@@ -106,7 +140,8 @@
 	</div>
 	<div id="settings-window" class="window" hidden>
 		<h1>Settings</h1>
-		Sun Setting
+		Sun Setting<br>
+		Debug Mode: <input type="checkbox" id="debug-mode-input" />
 
 	</div>
 </body>

@@ -38,6 +38,7 @@ export default class InputController {
 	fpsMode = true;
 	isRunning = false;
 
+	//TODO: only update 3d mouse if 2d mouse moved (retain 3d mouse position during draw)
 	terrainWorldSpaceMouse = {
 		pressed: false,
 		lastX: 0,

@@ -87,10 +87,12 @@ export class HeightBrushPass extends Pass {
 	private dataQueue: HeightBrushPassData[] = [];
 
 	static readonly NORMAL = 0.1;
-	static readonly FLATTEN = 1.1;
+	static readonly FLATTEN = 16.1;
 
 	private readonly uPoints: WebGLUniformLocation;
 	private readonly uTexture: WebGLUniformLocation;
+	private readonly uBrushesTexture: WebGLUniformLocation;
+
 	private readonly uPointCount: WebGLUniformLocation;
 	private readonly uType: WebGLUniformLocation;
 	private readonly uRadius: WebGLUniformLocation;
@@ -99,6 +101,7 @@ export class HeightBrushPass extends Pass {
 	constructor() {
 		super(heightBrushFSSource);
 		this.uTexture = this.shader.getUniformLocation("uTexture");
+		this.uBrushesTexture = this.shader.getUniformLocation("uBrushesTexture");
 		this.uType = this.shader.getUniformLocation("uType");
 		this.uRadius = this.shader.getUniformLocation("uRadius");
 		this.uStrength = this.shader.getUniformLocation("uStrength");
@@ -109,6 +112,8 @@ export class HeightBrushPass extends Pass {
 	initalizePass(textures: TextureBundle, framebuffer: Framebuffer) {
 		textures.heightMap.current().bind(0);
 		this.shader.setUniformI(this.uTexture, 0);
+		textures.brushes.bind(1);
+		this.shader.setUniformI(this.uBrushesTexture, 1);
 
 		const data = this.dataQueue.shift();
 

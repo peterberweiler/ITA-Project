@@ -26,3 +26,26 @@
 
     }
 }
+
+
+#brush-type-selector {
+    margin-top: 16px;
+
+
+    img {
+        display: inline-block;
+        width: 32px;
+        height: 32px;
+        border-radius: 2px;
+        border-width: 2px;
+        border-radius: 4px;
+        margin-top: 4px;
+        border: 1px solid rgb(163, 163, 163);
+
+
+        &[selected] {
+            background-color: black;
+            border-color: $theme-color;
+        }
+    }
+}

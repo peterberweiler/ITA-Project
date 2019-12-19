@@ -9,6 +9,7 @@ export default class EditorController {
 			radius: 100,
 			strength: 50,
 			direction: 1,
+			type: 0,
 		},
 		flatten: {
 			radius: 100,
@@ -59,7 +60,7 @@ export default class EditorController {
 			case this.brush.height: {
 				this.heightmapController.heightBrushPass.queueData({
 					points: [x, y, lastX, lastY],
-					type: HeightBrushPass.NORMAL,
+					type: HeightBrushPass.NORMAL + this.brush.height.type,
 					radius: this.brush.height.radius,
 					strength: this.brush.height.strength * this.brush.height.direction * deltaTime * 0.001,
 				});

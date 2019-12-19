@@ -8,4 +8,5 @@ export type TextureBundle = {
 	heightMap: PingPongTexture,
 	shadowMap: Texture,
 	surfaceWeightMaps: [PingPongTexture, PingPongTexture, PingPongTexture, PingPongTexture],
+	brushes: Texture,
 }

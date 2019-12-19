@@ -2,6 +2,15 @@ import { EventEmitter } from "events";
 //@ts-ignore
 import sortable from "html5sortable/dist/html5sortable.es";
 
+function hide(element: HTMLElement, hide: boolean = true) {
+	if (hide) {
+		element.setAttribute("hidden", "1");
+	}
+	else {
+		element.removeAttribute("hidden");
+	}
+}
+
 class UIController extends EventEmitter {
 	public readonly menuItems = document.querySelectorAll<HTMLDivElement>("#menu .menu-item");
 	public readonly layerList = document.querySelector<HTMLUListElement>("#layers-window ul");
@@ -20,7 +29,10 @@ class UIController extends EventEmitter {
 	public readonly settingsWindow = document.getElementById("settings-window") as HTMLDivElement
 
 	public readonly layerTypeSelector = document.getElementById("layer-type-selector") as HTMLDivElement;
-	public readonly layerTypeSelectorButtons = document.querySelectorAll<HTMLDivElement>("#layer-type-selector span");
+	public readonly layerTypeSelectorButtons = document.querySelectorAll<HTMLSpanElement>("#layer-type-selector span");
+
+	public readonly brushTypeSelector = document.getElementById("brush-type-selector") as HTMLDivElement;
+	public readonly brushTypeSelectorButtons = document.querySelectorAll<HTMLImageElement>("#brush-type-selector img");
 
 	constructor() {
 		super();
@@ -65,6 +77,14 @@ class UIController extends EventEmitter {
 			};
 		});
 
+		i = 0;
+		this.brushTypeSelectorButtons.forEach(item => {
+			const index = i++;
+			item.onclick = () => {
+				this.selectBrushType(index);
+			};
+		});
+
 		sortable(this.layerList, {
 			// forcePlaceholderSize: true,
 			// placeholderClass: "ph-class",
@@ -104,12 +124,8 @@ class UIController extends EventEmitter {
 			case 3:
 				this.brushWindow.removeAttribute("hidden");
 
-				if (index === 3) {
-					this.layerTypeSelector.removeAttribute("hidden");
-				}
-				else {
-					this.layerTypeSelector.setAttribute("hidden", "true");
-				}
+				hide(this.brushTypeSelector, index !== 0 && index !== 1);
+				hide(this.layerTypeSelector, index !== 3);
 				break;
 
 			case 4:
@@ -130,6 +146,15 @@ class UIController extends EventEmitter {
 		this.layerTypeSelectorButtons[index].setAttribute("selected", "true");
 
 		this.emit("layer-type-selected", index);
+	}
+
+	//TODO: create selector ui class
+
+	selectBrushType(index: number) {
+		this.brushTypeSelectorButtons.forEach(item => item.removeAttribute("selected"));
+		this.brushTypeSelectorButtons[index].setAttribute("selected", "true");
+
+		this.emit("brush-type-selected", index);
 	}
 }
 

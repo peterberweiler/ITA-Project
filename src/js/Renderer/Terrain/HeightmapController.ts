@@ -74,6 +74,7 @@ export default class HeightmapController {
 				new PingPongTexture(),
 				new PingPongTexture(),
 			],
+			brushes: new Texture(),
 		};
 
 		this.perlinPass = new PerlinPass();
@@ -87,6 +88,13 @@ export default class HeightmapController {
 		this.textures.heightMap.initialize((tex) => tex.updateFloatRedData(this.size, null));
 		this.textures.shadowMap.updateFloatRedData(this.size, null);
 		this.textures.surfaceWeightMaps.forEach(a => a.initialize((tex) => tex.updateRGBAData(this.size, null)));
+
+		const image = new Image();
+		image.src = "/data/brushes/brushes.png";
+		this.textures.brushes.updateRGBAData([1, 1], null);
+		image.onload = () => {
+			this.textures.brushes.updateRGBADataWithImage(image);
+		};
 
 		this.framebuffer.setColorAttachment(this.textures.heightMap.current());
 		Framebuffer.unbind();
