@@ -47,7 +47,7 @@ function setupUI() {
 		heightmapController.queuePass(heightmapController.generateSurfacePass);
 	});
 	UI.on("debug4", () => renderer.getTerrain().surface.loadDefault());
-	// UI.on("debug5", () => { });
+	UI.on("debug5", () => heightmapController.textures.heightMap.current().updateFloatRedData([1024, 1024], new Float32Array(1024 * 1024)));
 
 	UI.on("radius-changed", (value) => editorController.setRadius(value));
 	UI.on("strength-changed", (value) => editorController.setStrength(value));
