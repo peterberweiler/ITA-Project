@@ -1,3 +1,5 @@
+@import "./global.scss";
+
 #layer-type-selector {
 
     margin-top: 16px;
@@ -19,6 +21,7 @@
         &[selected] {
             border-style: groove;
             border-radius: 100%;
+            border-color: $theme-color;
         }
 
     }

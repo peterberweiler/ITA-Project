@@ -1,14 +1,11 @@
 @import "./windows.scss";
+@import "./global.scss";
 
-$white: rgb(247, 251, 255);
-$black: rgb(33, 37, 41);
-$background-color: rgb(83, 85, 90);
-$theme-color: rgb(226, 164, 47);
+
 
 $menu-bar-width: 70px;
 $menu-background: rgba(0, 0, 0, 0.5);
 
-//TODO: split into multiple files
 
 @mixin transition($time) {
     -webkit-transition: $time ease-in-out;
