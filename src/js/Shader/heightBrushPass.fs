@@ -14,13 +14,12 @@ uniform float uStrength;
 
 out vec4 oHeight;
 
-float linePointDist(vec2 a, vec2 b, vec2 p, inout vec2 pointOnLine) {
-	vec2 n = b - a;
-	float t = dot(p - a, n) / dot(n, n);
+vec2 projectPointOntoLine(vec2 lineA, vec2 lineB, vec2 point) {
+	vec2 lineNormal = lineB - lineA;
+	float t = dot(point - lineA, lineNormal) / dot(lineNormal, lineNormal);
 	t = min(max(t, 0.0), 1.0);
 
-	pointOnLine = a + t * n;
-	return distance(pointOnLine, p);
+	return lineA + t * lineNormal;
 }
 
 void main(void) {
@@ -36,12 +35,12 @@ void main(void) {
 		vec2 fromPoint = uPoints[i];
 		vec2 toPoint = uPoints[i + 1];
 		
-		vec2 pointOnLine;
-		float dist = linePointDist(fromPoint, toPoint, fragmentPosition, pointOnLine);
-		if (dist < minDist) { //TODO: optimize
-			minDist = dist;
-			closestPoint = pointOnLine;
-		}
+		vec2 pointOnLine = projectPointOntoLine(fromPoint, toPoint, fragmentPosition);
+		float dist = distance(pointOnLine, fragmentPosition);
+
+		float isCloser = step(dist, minDist);
+		minDist  = mix(minDist, dist, isCloser);
+		closestPoint = mix(closestPoint, pointOnLine, isCloser);
 	}
 
 	if (uType < 16) { // normal	mode		
