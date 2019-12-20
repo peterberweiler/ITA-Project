@@ -115,25 +115,41 @@ function update(now: number, deltaTime: number) {
 
 	renderer.setCanvasMouseState(inputController.mouse.over, inputController.mouse.lastX, inputController.mouse.lastY);
 
+	//TODO: move this into inputcontroller
+
 	if (inputController.mouse.buttonDown && inputController.mouse.lastButton === 0 && inputController.mouse.over) {
 		const worldSpacePos = renderer.getTerrain().getMouseWorldSpacePos();
 		if (worldSpacePos[0] || worldSpacePos[1] || worldSpacePos[2]) {
-			const x = worldSpacePos[0];
-			const y = worldSpacePos[2];
+			let x = worldSpacePos[0];
+			let y = worldSpacePos[2];
 
-			if (inputController.terrainWorldSpaceMouse.pressed) {
-				editorController.mouseDownAtPoint(
-					x, y,
-					inputController.terrainWorldSpaceMouse.lastX, inputController.terrainWorldSpaceMouse.lastY,
-					deltaTime
-				);
+			// only update 3d mouse if 2d mouse moved
+			if (inputController.terrainWorldSpaceMouse.lastCanvasMouseX !== inputController.mouse.lastX ||
+				inputController.terrainWorldSpaceMouse.lastCanvasMouseY !== inputController.mouse.lastY) {
+				x = worldSpacePos[0];
+				y = worldSpacePos[2];
+				inputController.terrainWorldSpaceMouse.lastCanvasMouseX = inputController.mouse.lastX;
+				inputController.terrainWorldSpaceMouse.lastCanvasMouseY = inputController.mouse.lastY;
 			}
 			else {
-				editorController.mouseDownAtPoint(x, y, x, y, deltaTime);
+				x = inputController.terrainWorldSpaceMouse.lastX;
+				y = inputController.terrainWorldSpaceMouse.lastY;
 			}
+
+			// apply mouse down
+			if (!inputController.terrainWorldSpaceMouse.pressed) {
+				inputController.terrainWorldSpaceMouse.lastX = x;
+				inputController.terrainWorldSpaceMouse.lastY = y;
+				inputController.terrainWorldSpaceMouse.pressed = true;
+			}
+
+			editorController.mouseDownAtPoint(
+				x, y,
+				inputController.terrainWorldSpaceMouse.lastX, inputController.terrainWorldSpaceMouse.lastY,
+				deltaTime
+			);
 			inputController.terrainWorldSpaceMouse.lastX = x;
 			inputController.terrainWorldSpaceMouse.lastY = y;
-			inputController.terrainWorldSpaceMouse.pressed = true;
 		}
 	}
 	else {

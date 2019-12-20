@@ -43,6 +43,8 @@ export default class InputController {
 		pressed: false,
 		lastX: 0,
 		lastY: 0,
+		lastCanvasMouseX: -Number.MAX_SAFE_INTEGER,
+		lastCanvasMouseY: -Number.MAX_SAFE_INTEGER,
 	};
 
 	constructor(camera: Camera, canvas: HTMLCanvasElement) {
