@@ -1,6 +1,7 @@
 import Global from "../Global";
 import Renderer from "../Renderer";
 import Shader from "../Shader";
+import { MAX_LAYERS } from "./Layers";
 import TerrainDrawParams from "./TerrainDrawParams";
 
 let gl: WebGL2RenderingContext;
@@ -19,8 +20,8 @@ export default class TerrainUniformGridMesh {
 	private uShadowmapTexture: WebGLUniformLocation;
 	private uLayerWeightTexture: WebGLUniformLocation;
 	private uAlphaBlendingEnabledLocation: WebGLUniformLocation;
-	private uLayerCountLocation: WebGLUniformLocation;
-	//private uLayerOrderLocation: WebGLUniformLocation[];
+	private uActiveLayersLocation: WebGLUniformLocation;
+	private uLayerOrderLocation: WebGLUniformLocation[];
 	private uMaterialLocation: number;
 
 	constructor() {
@@ -36,11 +37,11 @@ export default class TerrainUniformGridMesh {
 		this.uShadowmapTexture = this.terrainShader.getUniformLocation("uShadowmapTexture");
 		this.uLayerWeightTexture = this.terrainShader.getUniformLocation("uLayerWeightTexture");
 		this.uAlphaBlendingEnabledLocation = this.terrainShader.getUniformLocation("uAlphaBlendingEnabled");
-		this.uLayerCountLocation = this.terrainShader.getUniformLocation("uLayerCount");
-		//this.uLayerOrderLocation = [];
-		//for (let i: number = 0; i < MAX_LAYERS / 4; i += 1) {
-		//	this.uLayerOrderLocation[i] = this.terrainShader.getUniformLocation("uLayerOrder[" + i + "]");
-		//}
+		this.uActiveLayersLocation = this.terrainShader.getUniformLocation("uActiveLayers");
+		this.uLayerOrderLocation = [];
+		for (let i: number = 0; i < MAX_LAYERS / 4; i += 1) {
+			this.uLayerOrderLocation[i] = this.terrainShader.getUniformLocation("uLayerOrder[" + i + "]");
+		}
 		this.uMaterialLocation = gl.getUniformBlockIndex(this.terrainShader.getId(), "MATERIAL_BUFFER");
 		Renderer.checkGLError();
 	}
@@ -55,15 +56,15 @@ export default class TerrainUniformGridMesh {
 		this.terrainShader.setUniformF(this.uHeightScaleInMetersLocation, drawParams.heightScaleInMeters);
 		this.terrainShader.setUniformVec3(this.uCamPosLocation, drawParams.camPos);
 		this.terrainShader.setUniformUi(this.uAlphaBlendingEnabledLocation, drawParams.enableAlphaBlending ? 1 : 0);
-		this.terrainShader.setUniformUi(this.uLayerCountLocation, drawParams.layerCount);
+		this.terrainShader.setUniformUi(this.uActiveLayersLocation, drawParams.activeLayers);
 
-		//for (let i: number = 0; i < MAX_LAYERS / 4; i += 1) {
-		//	let values: number[] = [];
-		//	for (let j: number = 0; j < 4; j += 1) {
-		//		values[j] = drawParams.layerOrder[(i * 4) + j];
-		//	}
-		//	this.terrainShader.setUniformUvec4(this.uLayerOrderLocation[i], values);
-		//}
+		for (let i: number = 0; i < MAX_LAYERS / 4; i += 1) {
+			let values: number[] = [];
+			for (let j: number = 0; j < 4; j += 1) {
+				values[j] = drawParams.layerOrder[(i * 4) + j];
+			}
+			this.terrainShader.setUniformUvec4(this.uLayerOrderLocation[i], values);
+		}
 
 		Renderer.checkGLError();
 		gl.uniformBlockBinding(this.terrainShader.getId(), this.uMaterialLocation, 0);

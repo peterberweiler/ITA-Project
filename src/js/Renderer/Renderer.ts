@@ -44,19 +44,50 @@ export default class Renderer {
 		}
 
 		this.layers = new Layers();
-		let layerIdx: number = this.layers.allocateLayer();
-		if (layerIdx === -1) { throw new Error("Couldnt allocate layer."); }
-		let material = this.layers.getLayerMaterial(layerIdx);
-		material.setColor([1, 0, 0]);
-		material.setRoughness(1.0);
-		this.layers.layerOrder[1] = layerIdx;
 
-		layerIdx = this.layers.allocateLayer();
-		if (layerIdx === -1) { throw new Error("Couldnt allocate layer."); }
-		material = this.layers.getLayerMaterial(layerIdx);
-		material.setColor([0, 1, 0]);
-		material.setRoughness(0.5);
-		this.layers.layerOrder[0] = layerIdx;
+		// stone layer
+		{
+			let layerIdx: number = 0;
+			if (layerIdx === -1) { throw new Error("Couldnt allocate layer."); }
+			let material = this.layers.getLayerMaterial(layerIdx);
+			material.setColor([0.2, 0.2, 0.2]);
+			material.setRoughness(0.7);
+			this.layers.layerOrder[0] = layerIdx;
+			this.layers.setLayerActive(0, true);
+		}
+
+		// dirt layer
+		{
+			let layerIdx: number = 1;
+			if (layerIdx === -1) { throw new Error("Couldnt allocate layer."); }
+			let material = this.layers.getLayerMaterial(layerIdx);
+			material.setColor([0.2, 0.1, 0.05]);
+			material.setRoughness(0.9);
+			this.layers.layerOrder[1] = layerIdx;
+			this.layers.setLayerActive(1, true);
+		}
+
+		// grass layer
+		{
+			let layerIdx: number = 2;
+			if (layerIdx === -1) { throw new Error("Couldnt allocate layer."); }
+			let material = this.layers.getLayerMaterial(layerIdx);
+			material.setColor([0.07, 0.4, 0.05]);
+			material.setRoughness(0.6);
+			this.layers.layerOrder[2] = layerIdx;
+			this.layers.setLayerActive(2, true);
+		}
+
+		// snow layer
+		{
+			let layerIdx: number = 3;
+			if (layerIdx === -1) { throw new Error("Couldnt allocate layer."); }
+			let material = this.layers.getLayerMaterial(layerIdx);
+			material.setColor([1.0, 1.0, 1.0]);
+			material.setRoughness(0.6);
+			this.layers.layerOrder[3] = layerIdx;
+			this.layers.setLayerActive(3, true);
+		}
 
 		this.heightmapController = new HeightmapController(this.layers);
 		this.terrain = new Terrain();

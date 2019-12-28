@@ -19,7 +19,7 @@ uniform vec3 uColor;
 uniform vec3 uCamPos;
 uniform float uTexelSizeInMeters;
 uniform float uHeightScaleInMeters;
-uniform uint uLayerCount;
+uniform uint uActiveLayers;
 uniform uvec4 uLayerOrder[2];
 uniform uint uAlphaBlendingEnabled;
 
@@ -198,17 +198,18 @@ void main(void) {
 	weights[1] = texture(uLayerWeightTexture, vec3(texCoord, 1.0));
 
 	for (uint i = 0u; i < uint(MAX_LAYERS); ++i) {
-		uint layeridx = uLayerOrder[i / 4u][i % 4u];
-		float weight = weights[layeridx / 4u][layeridx % 4u];
+		uint layerid = uLayerOrder[i / 4u][i % 4u];
+		float weight = weights[layerid / 4u][layerid % 4u];
 
-		Material material = uMaterial.materials[i];
-		weight = i >= uLayerCount ? 0.0 : weight;
+		Material material = uMaterial.materials[layerid];
+		weight *= (uActiveLayers & (1u << layerid)) != 0u ? 1.0 : 0.0;
 		vec4 layerAlbedoRoughness = unpackUnorm4x8(material.albedoRoughness);
 		albedoRoughness = uAlphaBlendingEnabled != 0u ? mix(albedoRoughness, layerAlbedoRoughness, weight) : albedoRoughness + layerAlbedoRoughness * weight;
 		weightSum += weight;
 	}
 
 	albedoRoughness = uAlphaBlendingEnabled != 0u ? albedoRoughness : albedoRoughness / weightSum;
+	albedoRoughness.a = 0.8;
 
 	//albedo += surfaceWeights[0] * vec3(1.0, 1.0, 1.0);
 	//albedo += surfaceWeights[1] * vec3(0.2, 0.2, 0.2);

@@ -6,10 +6,10 @@ export default class TerrainDrawParams {
 	texelSizeInMeters: number = 1;
 	heightScaleInMeters: number = 1;
 	enableAlphaBlending: boolean = false;
-	layerCount: number = 0;
+	activeLayers: number = 0;
+	layerOrder: number[] = [];
 	heightMap: WebGLTexture | null = null;
 	shadowMap: WebGLTexture | null = null;
 	weightMap: WebGLTexture | null = null;
 	materialUBO: WebGLBuffer | null = null;
-	layerOrder: number[] = [];
 }

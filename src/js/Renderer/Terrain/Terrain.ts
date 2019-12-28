@@ -74,7 +74,7 @@ export default class Terrain {
 		gl.bindBuffer(gl.UNIFORM_BUFFER, this.materialsUBO);
 		Renderer.checkGLError();
 		let materialData = new Uint32Array(MAX_LAYERS * 4);
-		for (let i = 0; i < layers.getAllocatedLayerCount(); ++i) {
+		for (let i = 0; i < MAX_LAYERS; ++i) {
 			materialData[(i * 4) + 0] = layers.getLayerMaterial(i).albedoRoughness;
 		}
 		gl.bufferSubData(gl.UNIFORM_BUFFER, 0, materialData);
@@ -89,12 +89,16 @@ export default class Terrain {
 			terrainDrawParams.texelSizeInMeters = this.texelSizeInMeters;
 			terrainDrawParams.heightScaleInMeters = this.heightScaleInMeters;
 			terrainDrawParams.enableAlphaBlending = false;
+			terrainDrawParams.layerOrder = layers.layerOrder;
 			terrainDrawParams.heightMap = textures.heightMap.current().id;
 			terrainDrawParams.shadowMap = textures.shadowMap.id;
 			terrainDrawParams.weightMap = layers.weightMapCurrent;
 			terrainDrawParams.materialUBO = this.materialsUBO;
-			terrainDrawParams.layerCount = layers.getAllocatedLayerCount();
-			terrainDrawParams.layerOrder = layers.layerOrder;
+
+			terrainDrawParams.activeLayers = 0;
+			for (let i = 0; i < MAX_LAYERS; ++i) {
+				terrainDrawParams.activeLayers |= layers.getLayerActive(i) ? (1 << i) : 0;
+			}
 
 			//console.time("render");
 			//this.clipMapMesh.draw(terrainDrawParams);

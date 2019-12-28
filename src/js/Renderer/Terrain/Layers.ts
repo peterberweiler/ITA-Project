@@ -36,15 +36,14 @@ export default class Layers {
 	layerOrder: number[] = [];
 	weightMapCurrent: WebGLTexture;
 	weightMapNext: WebGLTexture;
+	private activeLayers: boolean[] = [];
 	private layerMaterials: Material[] = [];
-	private layerCount = 0;
-	private freeLayerIndices: number[] = [];
 
 	constructor() {
 		for (let i = 0; i < MAX_LAYERS; ++i) {
-			this.freeLayerIndices.push(MAX_LAYERS - i - 1);
 			this.layerMaterials.push(new Material());
 			this.layerOrder.push(0);
+			this.activeLayers.push(false);
 		}
 
 		let gl = Global.gl;
@@ -78,37 +77,15 @@ export default class Layers {
 		this.weightMapNext = temp;
 	}
 
-	getLayerMaterial(layerIndex: number) {
-		return this.layerMaterials[layerIndex];
+	getLayerMaterial(layerId: number) {
+		return this.layerMaterials[layerId];
 	}
 
-	getRemainingFreeLayers() {
-		return MAX_LAYERS - this.layerCount;
+	setLayerActive(layerId: number, active: boolean) {
+		this.activeLayers[layerId] = active;
 	}
 
-	getAllocatedLayerCount() {
-		return this.layerCount;
-	}
-
-	allocateLayer() {
-		let index = this.freeLayerIndices.pop();
-		if (index !== undefined) {
-			this.layerCount += 1;
-			return index;
-		}
-		return -1;
-	}
-
-	freeLayer(layerIndex: number) {
-		for (let i = 0; i < this.freeLayerIndices.length; ++i) {
-			if (this.freeLayerIndices[i] === layerIndex) {
-				throw new Error("Tried to double free the same layer index!");
-			}
-		}
-		if (layerIndex >= MAX_LAYERS || layerIndex < 0) {
-			throw new Error("Tried to free invalid layer index!");
-		}
-		this.freeLayerIndices.push(layerIndex);
-		this.layerCount -= 1;
+	getLayerActive(layerId: number) {
+		return this.activeLayers[layerId];
 	}
 }
