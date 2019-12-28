@@ -1,6 +1,7 @@
 import Framebuffer from "../Framebuffer";
 import Global, { TextureBundle } from "../Global";
 import Texture, { PingPongTexture } from "../Texture";
+import Layers from "./Layers";
 import { GenerateSurfacePass, HeightBrushPass, InvertPass, LayerBrushPass, Pass, PerlinPass, ShadowPass } from "./Passes";
 
 let gl: WebGL2RenderingContext;
@@ -59,7 +60,7 @@ export default class HeightmapController {
 	readonly shadowPass: ShadowPass;
 	readonly generateSurfacePass: GenerateSurfacePass;
 
-	constructor() {
+	constructor(layers: Layers) {
 		gl = Global.gl;
 
 		this.framebuffer = new Framebuffer();
@@ -68,12 +69,7 @@ export default class HeightmapController {
 		this.textures = {
 			heightMap: new PingPongTexture(),
 			shadowMap: new Texture(),
-			surfaceWeightMaps: [
-				new PingPongTexture(),
-				new PingPongTexture(),
-				new PingPongTexture(),
-				new PingPongTexture(),
-			],
+			layers,
 			brushes: new Texture(),
 		};
 
@@ -87,7 +83,6 @@ export default class HeightmapController {
 		// force empty textures into correct format
 		this.textures.heightMap.initialize((tex) => tex.updateFloatRedData(this.size, null));
 		this.textures.shadowMap.updateFloatRedData(this.size, null);
-		this.textures.surfaceWeightMaps.forEach(a => a.initialize((tex) => tex.updateRGBAData(this.size, null)));
 
 		const image = new Image();
 		image.src = "/data/brushes/brushes.png";

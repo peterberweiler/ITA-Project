@@ -91,7 +91,7 @@ export default class Terrain {
 			terrainDrawParams.enableAlphaBlending = false;
 			terrainDrawParams.heightMap = textures.heightMap.current().id;
 			terrainDrawParams.shadowMap = textures.shadowMap.id;
-			terrainDrawParams.weightMap = textures.surfaceWeightMaps[0].current().id;
+			terrainDrawParams.weightMap = layers.weightMapCurrent;
 			terrainDrawParams.materialUBO = this.materialsUBO;
 			terrainDrawParams.layerCount = layers.getAllocatedLayerCount();
 			terrainDrawParams.layerOrder = layers.layerOrder;

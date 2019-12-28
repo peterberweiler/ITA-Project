@@ -18,6 +18,7 @@ export default class Renderer {
 	private mouseOverCanvas: boolean = false;
 	private mousePosX: number = 0;
 	private mousePosY: number = 0;
+	private layers: Layers;
 
 	constructor(canvas: HTMLCanvasElement, camera: Camera) {
 		const context = canvas.getContext("webgl2", { antialias: false });
@@ -42,7 +43,22 @@ export default class Renderer {
 			alert("The website might not work correctly, please use a newer or different browser");
 		}
 
-		this.heightmapController = new HeightmapController();
+		this.layers = new Layers();
+		let layerIdx: number = this.layers.allocateLayer();
+		if (layerIdx === -1) { throw new Error("Couldnt allocate layer."); }
+		let material = this.layers.getLayerMaterial(layerIdx);
+		material.setColor([1, 0, 0]);
+		material.setRoughness(1.0);
+		this.layers.layerOrder[1] = layerIdx;
+
+		layerIdx = this.layers.allocateLayer();
+		if (layerIdx === -1) { throw new Error("Couldnt allocate layer."); }
+		material = this.layers.getLayerMaterial(layerIdx);
+		material.setColor([0, 1, 0]);
+		material.setRoughness(0.5);
+		this.layers.layerOrder[0] = layerIdx;
+
+		this.heightmapController = new HeightmapController(this.layers);
 		this.terrain = new Terrain();
 
 		this.resized();
@@ -83,26 +99,11 @@ export default class Renderer {
 		let viewProjection = mat4.create();
 		mat4.multiply(viewProjection, this.camera.projectionMatrix, this.camera.viewMatrix);
 
-		let layers = new Layers();
-		let layerIdx: number = layers.allocateLayer();
-		if (layerIdx === -1) { throw new Error("Couldnt allocate layer."); }
-		let material = layers.getLayerMaterial(layerIdx);
-		material.setColor([1, 0, 0]);
-		material.setRoughness(1.0);
-		layers.layerOrder[1] = layerIdx;
-
-		layerIdx = layers.allocateLayer();
-		if (layerIdx === -1) { throw new Error("Couldnt allocate layer."); }
-		material = layers.getLayerMaterial(layerIdx);
-		material.setColor([0, 1, 0]);
-		material.setRoughness(0.5);
-		layers.layerOrder[0] = layerIdx;
-
 		this.terrain.draw(
 			viewProjection,
 			this.camera.getPosition(),
 			this.heightmapController.textures,
-			layers,
+			this.layers,
 			this.mouseOverCanvas,
 			this.mousePosX,
 			this.mousePosY,

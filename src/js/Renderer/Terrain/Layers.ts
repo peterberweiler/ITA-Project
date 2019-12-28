@@ -34,7 +34,8 @@ export class Material {
 
 export default class Layers {
 	layerOrder: number[] = [];
-	weightMap: WebGLTexture | null = null;
+	weightMapCurrent: WebGLTexture;
+	weightMapNext: WebGLTexture;
 	private layerMaterials: Material[] = [];
 	private layerCount = 0;
 	private freeLayerIndices: number[] = [];
@@ -48,18 +49,33 @@ export default class Layers {
 
 		let gl = Global.gl;
 
-		const id = gl.createTexture();
-
-		if (!id) { throw new Error("Couldn't create texture."); }
-		this.weightMap = id;
+		const idCurrent = gl.createTexture();
+		if (!idCurrent) { throw new Error("Couldn't create texture."); }
+		this.weightMapCurrent = idCurrent;
+		const idNext = gl.createTexture();
+		if (!idNext) { throw new Error("Couldn't create texture."); }
+		this.weightMapNext = idNext;
 
 		gl.activeTexture(gl.TEXTURE0);
-		gl.bindTexture(gl.TEXTURE_2D_ARRAY, this.weightMap);
+		gl.bindTexture(gl.TEXTURE_2D_ARRAY, this.weightMapCurrent);
 		gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 		gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
 		gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 		gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 		gl.texStorage3D(gl.TEXTURE_2D_ARRAY, 1, gl.RGBA8, WEIGHT_MAP_RESOLUTION, WEIGHT_MAP_RESOLUTION, MAX_LAYERS / 4);
+
+		gl.bindTexture(gl.TEXTURE_2D_ARRAY, this.weightMapNext);
+		gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+		gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+		gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+		gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+		gl.texStorage3D(gl.TEXTURE_2D_ARRAY, 1, gl.RGBA8, WEIGHT_MAP_RESOLUTION, WEIGHT_MAP_RESOLUTION, MAX_LAYERS / 4);
+	}
+
+	swapWeightMaps() {
+		const temp = this.weightMapCurrent;
+		this.weightMapCurrent = this.weightMapNext;
+		this.weightMapNext = temp;
 	}
 
 	getLayerMaterial(layerIndex: number) {

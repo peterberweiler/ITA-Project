@@ -17,7 +17,7 @@ export default class TerrainUniformGridMesh {
 	private uCamPosLocation: WebGLUniformLocation;
 	private uHeightmapTexture: WebGLUniformLocation;
 	private uShadowmapTexture: WebGLUniformLocation;
-	private uSurfacemapTexture: WebGLUniformLocation;
+	private uLayerWeightTexture: WebGLUniformLocation;
 	private uAlphaBlendingEnabledLocation: WebGLUniformLocation;
 	private uLayerCountLocation: WebGLUniformLocation;
 	//private uLayerOrderLocation: WebGLUniformLocation[];
@@ -34,7 +34,7 @@ export default class TerrainUniformGridMesh {
 		this.uCamPosLocation = this.terrainShader.getUniformLocation("uCamPos");
 		this.uHeightmapTexture = this.terrainShader.getUniformLocation("uHeightmapTexture");
 		this.uShadowmapTexture = this.terrainShader.getUniformLocation("uShadowmapTexture");
-		this.uSurfacemapTexture = this.terrainShader.getUniformLocation("uSurfacemapTexture");
+		this.uLayerWeightTexture = this.terrainShader.getUniformLocation("uLayerWeightTexture");
 		this.uAlphaBlendingEnabledLocation = this.terrainShader.getUniformLocation("uAlphaBlendingEnabled");
 		this.uLayerCountLocation = this.terrainShader.getUniformLocation("uLayerCount");
 		//this.uLayerOrderLocation = [];
@@ -74,19 +74,18 @@ export default class TerrainUniformGridMesh {
 		gl.bindTexture(gl.TEXTURE_2D, drawParams.heightMap);
 		gl.activeTexture(gl.TEXTURE1);
 		gl.bindTexture(gl.TEXTURE_2D, drawParams.shadowMap);
-
 		gl.activeTexture(gl.TEXTURE2);
-		gl.bindTexture(gl.TEXTURE_2D, drawParams.weightMap);
+		gl.bindTexture(gl.TEXTURE_2D_ARRAY, drawParams.weightMap);
 
 		//TODO: this.surface.types[0].albedomap.texture.id
 
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+		// gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+		// gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+		// gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+		// gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 		this.terrainShader.setUniformI(this.uHeightmapTexture, 0);
 		this.terrainShader.setUniformI(this.uShadowmapTexture, 1);
-		this.terrainShader.setUniformI(this.uSurfacemapTexture, 2);
+		this.terrainShader.setUniformI(this.uLayerWeightTexture, 2);
 		this.terrainShader.setUniformI(this.uGridResolutionLocation, GRID_RESOLUTION);
 		Renderer.checkGLError();
 		gl.drawArrays(drawMode, 0, GRID_RESOLUTION * GRID_RESOLUTION * 6);

@@ -1,14 +1,11 @@
 #version 300 es
 precision highp float;
+precision highp sampler2DArray;
 
 in vec2 vCoords;
 
 uniform sampler2D uHeightmapTexture;
-
-uniform sampler2D uSurfaceMapTexture0;
-// uniform sampler2D uSurfaceMapTexture1;
-// uniform sampler2D uSurfaceMapTexture2;
-// uniform sampler2D uSurfaceMapTexture3;
+uniform sampler2DArray uSurfaceMapTexture;
 
 uniform vec2 uPoints[200];
 uniform int uPointCount;
@@ -19,12 +16,8 @@ uniform float uStrength;
 uniform float uMinSlope;
 uniform float uMaxSlope;
 
-//TODO: add smart option
-
 layout (location = 0) out vec4 oSurfaceMap0;
-// layout (location = 1) out vec4 oSurfaceMap1;
-// layout (location = 2) out vec4 oSurfaceMap2;
-// layout (location = 3) out vec4 oSurfaceMap3;
+layout (location = 1) out vec4 oSurfaceMap1;
 
 
 float linePointDist(vec2 a, vec2 b, vec2 p) {
@@ -38,9 +31,6 @@ float linePointDist(vec2 a, vec2 b, vec2 p) {
 
 void main(void) {
 	float height = texture(uHeightmapTexture, vCoords).r;
-	oSurfaceMap0 = texture(uSurfaceMapTexture0, vCoords);
-
-
 
 	float uTexelSizeInMeters = 1.0; //TODO: get as uniform
 	float uHeightScaleInMeters = 1.0; //TODO: get as uniform
@@ -90,18 +80,23 @@ void main(void) {
 	weight *= uStrength;
 	weight *= fadeInOutSlope;
 
-	oSurfaceMap0[0] += weight * float(uType == 0);
-	oSurfaceMap0[1] += weight * float(uType == 1);
-	oSurfaceMap0[2] += weight * float(uType == 2);
-	oSurfaceMap0[3] += weight * float(uType == 3);
+	oSurfaceMap0 = texture(uSurfaceMapTexture, vec3(vCoords, 0.0));
+	oSurfaceMap1 = texture(uSurfaceMapTexture, vec3(vCoords, 1.0));
 
-	float sum = oSurfaceMap0[0] + oSurfaceMap0[1] + oSurfaceMap0[2] + oSurfaceMap0[3];
-            //   + oSurfaceMap1[0] + oSurfaceMap1[1] + oSurfaceMap1[2] + oSurfaceMap1[3]
-            //   + oSurfaceMap2[0] + oSurfaceMap2[1] + oSurfaceMap2[2] + oSurfaceMap2[3]
-            //   + oSurfaceMap3[0] + oSurfaceMap3[1] + oSurfaceMap3[2] + oSurfaceMap3[3];
+	oSurfaceMap0 = mix(oSurfaceMap0, vec4(1.0), vec4(weight * vec4(equal(vec4(uType), vec4(0, 1, 2, 3)))));
+	oSurfaceMap1 = mix(oSurfaceMap1, vec4(1.0), vec4(weight * vec4(equal(vec4(uType), vec4(4, 5, 6, 7)))));
+
+	float sum = oSurfaceMap0[0] + oSurfaceMap0[1] + oSurfaceMap0[2] + oSurfaceMap0[3] +
+			    oSurfaceMap1[0] + oSurfaceMap1[1] + oSurfaceMap1[2] + oSurfaceMap1[3];
+
 	oSurfaceMap0 /= sum;
-	// oSurfaceMap1 /= sum;
-	// oSurfaceMap2 /= sum;
-	// oSurfaceMap3 /= sum;
+	oSurfaceMap1 /= sum;
+
+	//TODO:
+	// alpha = 1.0 - clamp(distToLine / maxDist, 0.0, 1.0);
+	// alpha *= dT;
+	// alpha = smoothstep(0.0, 1.0, alpha)
+	// alpha = uType == CHANNEL0 ? alpha : 0.0;
+	// oResult = mix(prevValue, uValue, alpha)
 
 }

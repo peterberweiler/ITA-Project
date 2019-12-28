@@ -13,6 +13,8 @@ const generateSurfaceFSSource = require("../../Shader/generateSurface.fs").defau
 
 let gl: WebGL2RenderingContext;
 
+//TODO: add framebuffer per Pass, only change gl.drawBuffers to change outputs
+
 export abstract class Pass {
 	private static vertexShader?: WebGLShader;
 	readonly shader: Shader;
@@ -144,7 +146,7 @@ export class LayerBrushPass extends Pass {
 
 	private readonly uPoints: WebGLUniformLocation;
 	private readonly uHeightmapTexture: WebGLUniformLocation;
-	private readonly uSurfaceMapTexture0: WebGLUniformLocation;
+	private readonly uSurfaceMapTexture: WebGLUniformLocation;
 	private readonly uPointCount: WebGLUniformLocation;
 	private readonly uType: WebGLUniformLocation;
 	private readonly uRadius: WebGLUniformLocation;
@@ -156,7 +158,7 @@ export class LayerBrushPass extends Pass {
 	constructor() {
 		super(layerBrushFSSource);
 		this.uHeightmapTexture = this.shader.getUniformLocation("uHeightmapTexture");
-		this.uSurfaceMapTexture0 = this.shader.getUniformLocation("uSurfaceMapTexture0");
+		this.uSurfaceMapTexture = this.shader.getUniformLocation("uSurfaceMapTexture");
 		this.uType = this.shader.getUniformLocation("uType");
 		this.uRadius = this.shader.getUniformLocation("uRadius");
 		this.uStrength = this.shader.getUniformLocation("uStrength");
@@ -173,8 +175,9 @@ export class LayerBrushPass extends Pass {
 		textures.heightMap.current().bind(0);
 		this.shader.setUniformI(this.uHeightmapTexture, 0);
 
-		textures.surfaceWeightMaps[0].current().bind(1);
-		this.shader.setUniformI(this.uSurfaceMapTexture0, 1);
+		gl.activeTexture(gl.TEXTURE1);
+		gl.bindTexture(gl.TEXTURE_2D_ARRAY, textures.layers.weightMapCurrent);
+		this.shader.setUniformI(this.uSurfaceMapTexture, 1);
 
 		const data = this.dataQueue.shift();
 		if (data) {
@@ -194,7 +197,15 @@ export class LayerBrushPass extends Pass {
 			this.shader.setUniformF(this.shader.getUniformLocation("uPointCount"), 0);
 		}
 
-		framebuffer.setColorAttachment(textures.surfaceWeightMaps[0].next());
+		gl.framebufferTextureLayer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, textures.layers.weightMapNext, 0, 0);
+		gl.framebufferTextureLayer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT1, textures.layers.weightMapNext, 0, 1);
+		textures.layers.swapWeightMaps();
+		gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1]);
+	}
+
+	finalizePass(framebuffer: Framebuffer) {
+		framebuffer.unsetColorAttachment(1);
+		gl.drawBuffers([gl.COLOR_ATTACHMENT0]);
 	}
 
 	queueData(data: LayerBrushPassData) {
@@ -237,6 +248,7 @@ export class GenerateSurfacePass extends Pass {
 	public minHeights = new Array<number>(16);
 	public maxHeights = new Array<number>(16);
 
+	private readonly uHeightmapTexture: WebGLUniformLocation;
 	private readonly uMinSlopes: WebGLUniformLocation;
 	private readonly uMaxSlopes: WebGLUniformLocation;
 	private readonly uMinHeights: WebGLUniformLocation;
@@ -247,6 +259,7 @@ export class GenerateSurfacePass extends Pass {
 
 	constructor() {
 		super(generateSurfaceFSSource);
+		this.uHeightmapTexture = this.shader.getUniformLocation("uHeightmapTexture");
 		this.uMinSlopes = this.shader.getUniformLocation("uMinSlopes");
 		this.uMaxSlopes = this.shader.getUniformLocation("uMaxSlopes");
 		this.uMinHeights = this.shader.getUniformLocation("uMinHeights");
@@ -280,6 +293,7 @@ export class GenerateSurfacePass extends Pass {
 
 	initalizePass(textures: TextureBundle, framebuffer: Framebuffer): void {
 		textures.heightMap.current().bind(0);
+		this.shader.setUniformI(this.uHeightmapTexture, 0);
 
 		this.shader.setUniformFv(this.uMinSlopes, this.minSlopes);
 		this.shader.setUniformFv(this.uMaxSlopes, this.maxSlopes);
@@ -289,17 +303,14 @@ export class GenerateSurfacePass extends Pass {
 		this.shader.setUniformF(this.uTexelSizeInMeters, 1);
 		this.shader.setUniformF(this.uHeightScaleInMeters, 1);
 
-		framebuffer.setColorAttachment(textures.surfaceWeightMaps[0].current(), 0);
-		framebuffer.setColorAttachment(textures.surfaceWeightMaps[1].current(), 1);
-		framebuffer.setColorAttachment(textures.surfaceWeightMaps[2].current(), 2);
-		framebuffer.setColorAttachment(textures.surfaceWeightMaps[3].current(), 3);
-		gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1, gl.COLOR_ATTACHMENT2, gl.COLOR_ATTACHMENT3]);
+		gl.framebufferTextureLayer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, textures.layers.weightMapNext, 0, 0);
+		gl.framebufferTextureLayer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT1, textures.layers.weightMapNext, 0, 1);
+		textures.layers.swapWeightMaps();
+		gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1]);
 	}
 
 	finalizePass(framebuffer: Framebuffer) {
 		framebuffer.unsetColorAttachment(1);
-		framebuffer.unsetColorAttachment(2);
-		framebuffer.unsetColorAttachment(3);
 		gl.drawBuffers([gl.COLOR_ATTACHMENT0]);
 	}
 }

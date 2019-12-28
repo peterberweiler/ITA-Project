@@ -192,8 +192,15 @@ void main(void) {
 	vec4 surfaceWeights = texture(uSurfacemapTexture, texCoord);
 	vec4 albedoRoughness = vec4(0.0);
 	float weightSum = 0.0;
+
+	vec4 weights[2];
+	weights[0] = texture(uLayerWeightTexture, vec3(texCoord, 0.0));
+	weights[1] = texture(uLayerWeightTexture, vec3(texCoord, 1.0));
+
 	for (uint i = 0u; i < uint(MAX_LAYERS); ++i) {
-		float weight = 1.0; // sample from weight texture at uLayerOrder[i / 4][i % 4]
+		uint layeridx = uLayerOrder[i / 4u][i % 4u];
+		float weight = weights[layeridx / 4u][layeridx % 4u];
+
 		Material material = uMaterial.materials[i];
 		weight = i >= uLayerCount ? 0.0 : weight;
 		vec4 layerAlbedoRoughness = unpackUnorm4x8(material.albedoRoughness);

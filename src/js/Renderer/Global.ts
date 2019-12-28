@@ -1,3 +1,4 @@
+import Layers from "./Terrain/Layers";
 import Texture, { PingPongTexture } from "./Texture";
 
 export default {
@@ -7,6 +8,6 @@ export default {
 export type TextureBundle = {
 	heightMap: PingPongTexture,
 	shadowMap: Texture,
-	surfaceWeightMaps: [PingPongTexture, PingPongTexture, PingPongTexture, PingPongTexture],
+	layers: Layers,
 	brushes: Texture,
 }
