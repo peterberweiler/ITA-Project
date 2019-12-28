@@ -5,7 +5,11 @@ export default class TerrainDrawParams {
 	camPos: vec3 = vec3.create();
 	texelSizeInMeters: number = 1;
 	heightScaleInMeters: number = 1;
+	enableAlphaBlending: boolean = false;
+	layerCount: number = 0;
 	heightMap: WebGLTexture | null = null;
 	shadowMap: WebGLTexture | null = null;
 	weightMap: WebGLTexture | null = null;
+	materialUBO: WebGLBuffer | null = null;
+	layerOrder: number[] = [];
 }

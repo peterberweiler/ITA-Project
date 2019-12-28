@@ -32,6 +32,10 @@ export default class Shader {
 		}
 	}
 
+	getId() {
+		return this.programId;
+	}
+
 	getAttributeLocation(name: string) {
 		return gl.getAttribLocation(this.programId, name);
 	}
@@ -68,6 +72,10 @@ export default class Shader {
 
 	setUniformVec4(location: WebGLUniformLocation, value: vec4 | number[]) {
 		gl.uniform4fv(location, value);
+	}
+
+	setUniformUvec4(location: WebGLUniformLocation, value: number[]) {
+		gl.uniform4uiv(location, value);
 	}
 
 	setUniformMat2(location: WebGLUniformLocation, value: mat2 | number[]) {

@@ -5,6 +5,7 @@ import { mat4 } from "gl-matrix";
 import { Camera } from "./Cameras";
 import Global from "./Global";
 import HeightmapController from "./Terrain/HeightmapController";
+import Layers from "./Terrain/Layers";
 import Terrain from "./Terrain/Terrain";
 
 let gl: WebGL2RenderingContext;
@@ -81,10 +82,27 @@ export default class Renderer {
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 		let viewProjection = mat4.create();
 		mat4.multiply(viewProjection, this.camera.projectionMatrix, this.camera.viewMatrix);
+
+		let layers = new Layers();
+		let layerIdx: number = layers.allocateLayer();
+		if (layerIdx === -1) { throw new Error("Couldnt allocate layer."); }
+		let material = layers.getLayerMaterial(layerIdx);
+		material.setColor([1, 0, 0]);
+		material.setRoughness(1.0);
+		layers.layerOrder[1] = layerIdx;
+
+		layerIdx = layers.allocateLayer();
+		if (layerIdx === -1) { throw new Error("Couldnt allocate layer."); }
+		material = layers.getLayerMaterial(layerIdx);
+		material.setColor([0, 1, 0]);
+		material.setRoughness(0.5);
+		layers.layerOrder[0] = layerIdx;
+
 		this.terrain.draw(
 			viewProjection,
 			this.camera.getPosition(),
 			this.heightmapController.textures,
+			layers,
 			this.mouseOverCanvas,
 			this.mousePosX,
 			this.mousePosY,

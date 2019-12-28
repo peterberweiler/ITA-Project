@@ -1,6 +1,8 @@
 import { mat4, vec3 } from "gl-matrix";
 import Global, { TextureBundle } from "../Global";
+import Renderer from "../Renderer";
 import Texture from "../Texture";
+import Layers, { MAX_LAYERS } from "./Layers";
 import Surface from "./Surface";
 import TerrainClipMapMesh from "./TerrainClipMapMesh";
 import TerrainDrawParams from "./TerrainDrawParams";
@@ -11,6 +13,7 @@ let gl: WebGL2RenderingContext;
 export default class Terrain {
 	private clipMapMesh: TerrainClipMapMesh;
 	private uniformGridMesh: TerrainUniformGridMesh;
+	private materialsUBO: WebGLBuffer;
 	private fbo: WebGLFramebuffer | null;
 	private depthAttachment: Texture;
 	private colorAttachment: Texture;
@@ -27,6 +30,14 @@ export default class Terrain {
 
 		this.clipMapMesh = new TerrainClipMapMesh();
 		this.uniformGridMesh = new TerrainUniformGridMesh();
+
+		let bufferId = gl.createBuffer();
+		if (!bufferId) { throw new Error("Couldn't create buffer!"); }
+		this.materialsUBO = bufferId;
+
+		gl.bindBuffer(gl.UNIFORM_BUFFER, this.materialsUBO);
+		gl.bufferData(gl.UNIFORM_BUFFER, 16 * MAX_LAYERS, gl.DYNAMIC_DRAW); // sizeof(Material) == 16
+		gl.bindBuffer(gl.UNIFORM_BUFFER, null);
 
 		this.fbo = gl.createFramebuffer();
 		this.depthAttachment = new Texture();
@@ -46,9 +57,10 @@ export default class Terrain {
 		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
 		this.surface = new Surface();
+		Renderer.checkGLError();
 	}
 
-	draw(viewProjection: mat4, camPos: vec3, textures: TextureBundle, readMouseWorldSpacePos: boolean = false, mousePosX: number = 0, mousePosY: number = 0) {
+	draw(viewProjection: mat4, camPos: vec3, textures: TextureBundle, layers: Layers, readMouseWorldSpacePos: boolean = false, mousePosX: number = 0, mousePosY: number = 0) {
 		gl.bindFramebuffer(gl.FRAMEBUFFER, this.fbo);
 		gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 		let buffers: number[] = [gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1];
@@ -58,6 +70,17 @@ export default class Terrain {
 		gl.clearBufferfv(gl.COLOR, 1, [0.0, 0.0, 0.0, 1.0]);
 		gl.clearBufferfv(gl.DEPTH, 0, [1.0]);
 
+		// update buffer data
+		gl.bindBuffer(gl.UNIFORM_BUFFER, this.materialsUBO);
+		Renderer.checkGLError();
+		let materialData = new Uint32Array(MAX_LAYERS * 4);
+		for (let i = 0; i < layers.getAllocatedLayerCount(); ++i) {
+			materialData[(i * 4) + 0] = layers.getLayerMaterial(i).albedoRoughness;
+		}
+		gl.bufferSubData(gl.UNIFORM_BUFFER, 0, materialData);
+
+		Renderer.checkGLError();
+
 		// draw terrain
 		{
 			let terrainDrawParams = new TerrainDrawParams();
@@ -65,15 +88,20 @@ export default class Terrain {
 			terrainDrawParams.camPos = camPos;
 			terrainDrawParams.texelSizeInMeters = this.texelSizeInMeters;
 			terrainDrawParams.heightScaleInMeters = this.heightScaleInMeters;
+			terrainDrawParams.enableAlphaBlending = false;
 			terrainDrawParams.heightMap = textures.heightMap.current().id;
 			terrainDrawParams.shadowMap = textures.shadowMap.id;
 			terrainDrawParams.weightMap = textures.surfaceWeightMaps[0].current().id;
+			terrainDrawParams.materialUBO = this.materialsUBO;
+			terrainDrawParams.layerCount = layers.getAllocatedLayerCount();
+			terrainDrawParams.layerOrder = layers.layerOrder;
 
 			//console.time("render");
 			//this.clipMapMesh.draw(terrainDrawParams);
 			this.uniformGridMesh.draw(terrainDrawParams);
 			//console.timeEnd("render");
 		}
+		Renderer.checkGLError();
 
 		if (readMouseWorldSpacePos) {
 			gl.readBuffer(gl.COLOR_ATTACHMENT1);

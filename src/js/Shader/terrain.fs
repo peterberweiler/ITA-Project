@@ -4,15 +4,36 @@
 #define PI (3.14159265359)
 #endif // PI
 
+#ifndef MAX_LAYERS
+#define MAX_LAYERS (8)
+#endif // MAX_LAYERS
+
 precision mediump float;
+precision highp sampler2DArray;
 
 uniform sampler2D uHeightmapTexture;
 uniform sampler2D uShadowmapTexture;
 uniform sampler2D uSurfacemapTexture;
+uniform sampler2DArray uLayerWeightTexture;
 uniform vec3 uColor;
 uniform vec3 uCamPos;
 uniform float uTexelSizeInMeters;
 uniform float uHeightScaleInMeters;
+uniform uint uLayerCount;
+uniform uvec4 uLayerOrder[2];
+uniform uint uAlphaBlendingEnabled;
+
+struct Material {
+	uint albedoRoughness;
+	uint pad0;
+	uint pad1;
+	uint pad2;
+};
+
+layout(std140) uniform MATERIAL_BUFFER
+{
+    Material materials[MAX_LAYERS];
+} uMaterial;
 
 in vec3 vWorldSpacePos;
 
@@ -130,6 +151,15 @@ float getGridColor(vec3 position, vec3 campos, float size, float dotColor, float
 	return lines;
 }
 
+vec4 unpackUnorm4x8(uint value){
+	vec4 result = vec4(0.0);
+	result[0] = float((value >> 24) & 0xFFu) / 255.0;
+	result[1] = float((value >> 16) & 0xFFu) / 255.0;
+	result[2] = float((value >> 8) & 0xFFu) / 255.0;
+	result[3] = float(value & 0xFFu) / 255.0;
+	return result;
+}
+
 void main(void) {
 	vec2 texelSize = (1.0 / vec2(textureSize(uHeightmapTexture, 0).xy));
 	vec2 texCoord = vWorldSpacePos.xz  * uTexelSizeInMeters * texelSize;
@@ -160,21 +190,33 @@ void main(void) {
 
 	// calculate surface color
 	vec4 surfaceWeights = texture(uSurfacemapTexture, texCoord);
-	vec3 albedo = vec3(0.0);
-	albedo += surfaceWeights[0] * vec3(1.0, 1.0, 1.0);
-	albedo += surfaceWeights[1] * vec3(0.2, 0.2, 0.2);
-	albedo += surfaceWeights[2] * vec3(0.07, 0.4, 0.05);
-	albedo += surfaceWeights[3] * vec3(0.2, 0.1, 0.05);
+	vec4 albedoRoughness = vec4(0.0);
+	float weightSum = 0.0;
+	for (uint i = 0u; i < uint(MAX_LAYERS); ++i) {
+		float weight = 1.0; // sample from weight texture at uLayerOrder[i / 4][i % 4]
+		Material material = uMaterial.materials[i];
+		weight = i >= uLayerCount ? 0.0 : weight;
+		vec4 layerAlbedoRoughness = unpackUnorm4x8(material.albedoRoughness);
+		albedoRoughness = uAlphaBlendingEnabled != 0u ? mix(albedoRoughness, layerAlbedoRoughness, weight) : albedoRoughness + layerAlbedoRoughness * weight;
+		weightSum += weight;
+	}
+
+	albedoRoughness = uAlphaBlendingEnabled != 0u ? albedoRoughness : albedoRoughness / weightSum;
+
+	//albedo += surfaceWeights[0] * vec3(1.0, 1.0, 1.0);
+	//albedo += surfaceWeights[1] * vec3(0.2, 0.2, 0.2);
+	//albedo += surfaceWeights[2] * vec3(0.07, 0.4, 0.05);
+	//albedo += surfaceWeights[3] * vec3(0.2, 0.1, 0.05);
 
 
 	//
 	LightingParams lightingParams;
-	lightingParams.albedo = albedo;
+	lightingParams.albedo = albedoRoughness.rgb;
 	// lightingParams.albedo = vec3(0.07, 0.2, 0.05);
 	lightingParams.N = N;
 	lightingParams.V = normalize(uCamPos - P);
 	lightingParams.metalness = 0.0;
-	lightingParams.roughness = 0.8;
+	lightingParams.roughness = albedoRoughness.a;
 
 	float shadow = 1.0 - textureLod(uShadowmapTexture, texCoord, 0.0).x;
 	vec3 color = cookTorranceSpecularBrdf(lightingParams, vec3(10.0), normalize(vec3(0.0, 1.0, 0.5))) * shadow;
