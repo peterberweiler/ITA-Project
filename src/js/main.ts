@@ -109,12 +109,16 @@ function setupUI() {
 
 	UI.selectMenuIndex(0);
 	UI.on("sun-changed", (pitch: number, yaw: number) => {
-		pitch *= Math.PI * 2;
+		pitch *= Math.PI * 0.5;
+		pitch += Math.PI * 0.5;
+		pitch = Math.PI - pitch;
+
 		yaw *= Math.PI * 2;
+		yaw = (2 * Math.PI) - yaw;
 		const dir: [number, number, number] = [
-			Math.cos(yaw) * Math.cos(pitch),
-			Math.sin(yaw) * Math.cos(pitch),
-			Math.sin(pitch),
+			Math.sin(pitch) * Math.sin(yaw),
+			Math.cos(pitch),
+			Math.sin(pitch) * Math.cos(yaw),
 		];
 
 		renderer.sunDir = dir;

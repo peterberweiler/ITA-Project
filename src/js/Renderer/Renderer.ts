@@ -19,7 +19,7 @@ export default class Renderer {
 	private mousePosX: number = 0;
 	private mousePosY: number = 0;
 	private layers: Layers;
-	public sunDir: [number, number, number] = [0, 1.118, 0.559];
+	public sunDir: [number, number, number] = [0, 0.5620833778521306, 0.8270805742745618];
 
 	constructor(canvas: HTMLCanvasElement, camera: Camera) {
 		const context = canvas.getContext("webgl2", { antialias: false });
