@@ -133,6 +133,7 @@ export default class Renderer {
 		this.terrain.draw(
 			viewProjection,
 			this.camera.getPosition(),
+			[0, 1.118, 0.559],
 			this.heightmapController.textures,
 			this.layers,
 			this.mouseOverCanvas,

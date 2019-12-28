@@ -1,6 +1,7 @@
 import { mat4, vec3 } from "gl-matrix";
 import Global, { TextureBundle } from "../Global";
 import Renderer from "../Renderer";
+import Skybox from "../Skybox";
 import Texture from "../Texture";
 import Layers, { MAX_LAYERS } from "./Layers";
 import Surface from "./Surface";
@@ -13,6 +14,7 @@ let gl: WebGL2RenderingContext;
 export default class Terrain {
 	private clipMapMesh: TerrainClipMapMesh;
 	private uniformGridMesh: TerrainUniformGridMesh;
+	private skybox: Skybox;
 	private materialsUBO: WebGLBuffer;
 	private fbo: WebGLFramebuffer | null;
 	private depthAttachment: Texture;
@@ -30,6 +32,7 @@ export default class Terrain {
 
 		this.clipMapMesh = new TerrainClipMapMesh();
 		this.uniformGridMesh = new TerrainUniformGridMesh();
+		this.skybox = new Skybox();
 
 		let bufferId = gl.createBuffer();
 		if (!bufferId) { throw new Error("Couldn't create buffer!"); }
@@ -60,14 +63,14 @@ export default class Terrain {
 		Renderer.checkGLError();
 	}
 
-	draw(viewProjection: mat4, camPos: vec3, textures: TextureBundle, layers: Layers, readMouseWorldSpacePos: boolean = false, mousePosX: number = 0, mousePosY: number = 0) {
+	draw(viewProjection: mat4, camPos: vec3, sunDir: vec3 | number[], textures: TextureBundle, layers: Layers, readMouseWorldSpacePos: boolean = false, mousePosX: number = 0, mousePosY: number = 0) {
 		gl.bindFramebuffer(gl.FRAMEBUFFER, this.fbo);
 		gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 		let buffers: number[] = [gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1];
 		gl.drawBuffers(buffers);
 
-		gl.clearBufferfv(gl.COLOR, 0, [0.529, 0.808, 0.922, 1.0]);
-		gl.clearBufferfv(gl.COLOR, 1, [0.0, 0.0, 0.0, 1.0]);
+		//gl.clearBufferfv(gl.COLOR, 0, [0.529, 0.808, 0.922, 1.0]);
+		//gl.clearBufferfv(gl.COLOR, 1, [0.0, 0.0, 0.0, 1.0]);
 		gl.clearBufferfv(gl.DEPTH, 0, [1.0]);
 
 		// update buffer data
@@ -104,6 +107,9 @@ export default class Terrain {
 			//this.clipMapMesh.draw(terrainDrawParams);
 			this.uniformGridMesh.draw(terrainDrawParams);
 			//console.timeEnd("render");
+			let invViewProjection = mat4.create();
+			mat4.invert(invViewProjection, viewProjection);
+			this.skybox.draw(invViewProjection, sunDir);
 		}
 		Renderer.checkGLError();
 
