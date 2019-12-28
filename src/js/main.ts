@@ -108,6 +108,19 @@ function setupUI() {
 	});
 
 	UI.selectMenuIndex(0);
+	UI.on("sun-changed", (pitch: number, yaw: number) => {
+		pitch *= Math.PI * 2;
+		yaw *= Math.PI * 2;
+		const dir: [number, number, number] = [
+			Math.cos(yaw) * Math.cos(pitch),
+			Math.sin(yaw) * Math.cos(pitch),
+			Math.sin(pitch),
+		];
+
+		renderer.sunDir = dir;
+		heightmapController.shadowPass.lightDir = dir;
+		editorController.updateShadows();
+	});
 }
 
 function update(now: number, deltaTime: number) {

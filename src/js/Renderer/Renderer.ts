@@ -19,6 +19,7 @@ export default class Renderer {
 	private mousePosX: number = 0;
 	private mousePosY: number = 0;
 	private layers: Layers;
+	public sunDir: [number, number, number] = [0, 1.118, 0.559];
 
 	constructor(canvas: HTMLCanvasElement, camera: Camera) {
 		const context = canvas.getContext("webgl2", { antialias: false });
@@ -133,7 +134,7 @@ export default class Renderer {
 		this.terrain.draw(
 			viewProjection,
 			this.camera.getPosition(),
-			[0, 1.118, 0.559],
+			this.sunDir,
 			this.heightmapController.textures,
 			this.layers,
 			this.mouseOverCanvas,

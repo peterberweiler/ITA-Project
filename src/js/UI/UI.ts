@@ -26,7 +26,10 @@ class UIController extends EventEmitter {
 	public readonly brushWindow = document.getElementById("brush-window") as HTMLDivElement
 	public readonly layersWindow = document.getElementById("layers-window") as HTMLDivElement
 	public readonly layerEditWindow = document.getElementById("layer-edit-window") as HTMLDivElement
+
 	public readonly settingsWindow = document.getElementById("settings-window") as HTMLDivElement
+	public readonly sunPitch = document.getElementById("sun-pitch") as HTMLInputElement
+	public readonly sunYaw = document.getElementById("sun-yaw") as HTMLInputElement
 
 	public readonly layerTypeSelector = document.getElementById("layer-type-selector") as HTMLDivElement;
 	public readonly layerTypeSelectorButtons = document.querySelectorAll<HTMLSpanElement>("#layer-type-selector span");
@@ -59,6 +62,10 @@ class UIController extends EventEmitter {
 		};
 		this.maxSlopeInput.oninput = () => {
 			this.emit("max-slope-changed", parseFloat(this.maxSlopeInput.value));
+		};
+
+		this.sunYaw.oninput = this.sunPitch.oninput = () => {
+			this.emit("sun-changed", parseFloat(this.sunPitch.value), parseFloat(this.sunYaw.value));
 		};
 
 		let i = 0;

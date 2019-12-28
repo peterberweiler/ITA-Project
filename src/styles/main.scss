@@ -7,20 +7,6 @@ $menu-bar-width: 70px;
 $menu-background: rgba(0, 0, 0, 0.5);
 
 
-@mixin transition($time) {
-    -webkit-transition: $time ease-in-out;
-    -moz-transition: $time ease-in-out;
-    -o-transition: $time ease-in-out;
-    transition: $time ease-in-out;
-}
-
-@mixin unselectable {
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-}
-
 * {
     box-sizing: border-box;
 }
@@ -66,6 +52,8 @@ body {
 
 // TODO: turn this into flex
 #menu {
+    @include unselectable;
+
     flex-direction: column;
     position: absolute;
     top: 0;
@@ -129,7 +117,6 @@ body {
         cursor: pointer;
 
         @include transition(0.2s);
-        @include unselectable;
 
         svg,
         span,
@@ -163,6 +150,7 @@ body {
 }
 
 .window {
+    @include unselectable;
     position: absolute;
 
     background: $menu-background;
@@ -186,10 +174,10 @@ body {
     }
 
     &:not(.small-window) {
-        top: 10%;
+        top: 5%;
         left: 10%;
         width: 80%;
-        height: 80%;
+        height: 90%;
     }
 }
 

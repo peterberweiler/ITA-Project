@@ -2,3 +2,19 @@ $white: rgb(247, 251, 255);
 $black: rgb(33, 37, 41);
 $background-color: rgb(83, 85, 90);
 $theme-color: rgb(226, 164, 47);
+
+
+
+@mixin transition($time) {
+    -webkit-transition: $time ease-in-out;
+    -moz-transition: $time ease-in-out;
+    -o-transition: $time ease-in-out;
+    transition: $time ease-in-out;
+}
+
+@mixin unselectable {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
