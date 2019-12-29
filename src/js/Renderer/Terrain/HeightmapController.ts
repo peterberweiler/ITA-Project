@@ -1,18 +1,19 @@
 import Framebuffer from "../Framebuffer";
-import Global, { TextureBundle } from "../Global";
+import { gl, TextureBundle } from "../Global";
 import Texture, { PingPongTexture } from "../Texture";
 import Layers from "./Layers";
-import { GenerateSurfacePass, HeightBrushPass, InvertPass, LayerBrushPass, Pass, PerlinPass, ShadowPass } from "./Passes";
-
-let gl: WebGL2RenderingContext;
+import { GenerateSurfacePass } from "./Passes/GenerateSurfacePass";
+import { HeightBrushPass } from "./Passes/HeightBrushPass";
+import { LayerBrushPass } from "./Passes/LayerBrushPass";
+import { InvertPass, Pass } from "./Passes/Passes";
+import { PerlinPass } from "./Passes/PerlinPass";
+import { ShadowPass } from "./Passes/ShadowPass";
 
 class FullscreenMesh {
 	vertexBuffer: WebGLBuffer;
 	indexBuffer: WebGLBuffer;
 
 	constructor() {
-		gl = Global.gl;
-
 		const vertexBuffer = gl.createBuffer();
 		const indexBuffer = gl.createBuffer();
 		if (!vertexBuffer || !indexBuffer) {
@@ -61,8 +62,6 @@ export default class HeightmapController {
 	readonly generateSurfacePass: GenerateSurfacePass;
 
 	constructor(layers: Layers) {
-		gl = Global.gl;
-
 		this.framebuffer = new Framebuffer();
 		this.fullscreenMesh = new FullscreenMesh();
 

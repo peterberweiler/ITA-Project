@@ -1,9 +1,8 @@
 import { mat2 } from "gl-matrix";
-import Global from "../Global";
+import { gl } from "../Global";
 import Shader from "../Shader";
 import TerrainDrawParams from "./TerrainDrawParams";
 
-let gl: WebGL2RenderingContext;
 const TILE_RESOLUTION: number = 32;
 const TILE_VERTEX_RESOLUTION: number = TILE_RESOLUTION + 1;
 const CLIPMAP_RESOLUTION = (TILE_RESOLUTION * 4) + 1;
@@ -35,8 +34,6 @@ export default class TerrainClipMapMesh {
 	private rotations: mat2[];
 
 	constructor() {
-		gl = Global.gl;
-
 		this.terrainShader = new Shader(vertSource, fragSource);
 		this.uTransformLocation = this.terrainShader.getUniformLocation("uTransform");
 		this.uScaleLocation = this.terrainShader.getUniformLocation("uScale");
@@ -340,8 +337,6 @@ export default class TerrainClipMapMesh {
 
 		gl.activeTexture(gl.TEXTURE2);
 		gl.bindTexture(gl.TEXTURE_2D, drawParams.weightMap);
-
-		//TODO: this.surface.types[0].albedomap.texture.id
 
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);

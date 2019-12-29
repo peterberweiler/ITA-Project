@@ -1,8 +1,7 @@
 import { mat4, vec3 } from "gl-matrix";
-import Global from "./Global";
+import { gl } from "./Global";
 import Shader from "./Shader";
 
-let gl: WebGL2RenderingContext;
 const fragSource = require("../Shader/skybox.fs").default;
 const vertSource = require("../Shader/skybox.vs").default;
 
@@ -12,8 +11,6 @@ export default class Skybox {
 	private uSunDirLocation: WebGLUniformLocation;
 
 	constructor() {
-		gl = Global.gl;
-
 		this.skyboxShader = new Shader(vertSource, fragSource);
 		this.uInvViewProjectionLocation = this.skyboxShader.getUniformLocation("uInvViewProjection");
 		this.uSunDirLocation = this.skyboxShader.getUniformLocation("uSunDir");

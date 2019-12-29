@@ -1,7 +1,5 @@
-import Global from "./Global";
+import { gl } from "./Global";
 import Texture from "./Texture";
-
-let gl: WebGL2RenderingContext;
 
 export default class Framebuffer {
 	private id: WebGLFramebuffer | null;
@@ -9,8 +7,6 @@ export default class Framebuffer {
 	private size = [0, 0];
 
 	constructor() {
-		gl = Global.gl;
-
 		this.id = gl.createFramebuffer();
 	}
 

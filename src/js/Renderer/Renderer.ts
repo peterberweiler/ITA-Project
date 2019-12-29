@@ -3,12 +3,10 @@
  */
 import { mat4 } from "gl-matrix";
 import { Camera } from "./Cameras";
-import Global from "./Global";
+import { gl, setGL } from "./Global";
 import HeightmapController from "./Terrain/HeightmapController";
 import Layers from "./Terrain/Layers";
 import Terrain from "./Terrain/Terrain";
-
-let gl: WebGL2RenderingContext;
 
 export default class Renderer {
 	private canvas: HTMLCanvasElement;
@@ -26,8 +24,8 @@ export default class Renderer {
 		if (!context) {
 			throw new Error("Unable to initialize WebGL. Please use a different or newer browser.");
 		}
-		gl = context;
-		Global.gl = gl;
+		setGL(context);
+
 		this.canvas = canvas;
 		this.camera = camera;
 

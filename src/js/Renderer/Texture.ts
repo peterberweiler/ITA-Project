@@ -1,7 +1,5 @@
 import { vec2 } from "gl-matrix";
-import Global from "./Global";
-
-let gl: WebGL2RenderingContext;
+import { gl } from "./Global";
 
 type Size = vec2 | [number, number];
 
@@ -10,8 +8,6 @@ export default class Texture {
 	public size: Size;
 
 	constructor() {
-		gl = Global.gl;
-
 		this.id = -1;
 		this.size = [0, 0];
 

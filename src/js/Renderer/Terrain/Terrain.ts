@@ -1,5 +1,5 @@
 import { mat4, vec3 } from "gl-matrix";
-import Global, { TextureBundle } from "../Global";
+import { gl, TextureBundle } from "../Global";
 import Renderer from "../Renderer";
 import Skybox from "../Skybox";
 import Texture from "../Texture";
@@ -8,8 +8,6 @@ import Surface from "./Surface";
 import TerrainClipMapMesh from "./TerrainClipMapMesh";
 import TerrainDrawParams from "./TerrainDrawParams";
 import TerrainUniformGridMesh from "./TerrainUniformGridMesh";
-
-let gl: WebGL2RenderingContext;
 
 export default class Terrain {
 	private clipMapMesh: TerrainClipMapMesh;
@@ -28,8 +26,6 @@ export default class Terrain {
 	readonly surface: Surface;
 
 	constructor() {
-		gl = Global.gl;
-
 		this.clipMapMesh = new TerrainClipMapMesh();
 		this.uniformGridMesh = new TerrainUniformGridMesh();
 		this.skybox = new Skybox();

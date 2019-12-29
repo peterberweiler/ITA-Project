@@ -1,14 +1,10 @@
 import { mat2, mat3, mat4, vec2, vec3, vec4 } from "gl-matrix";
-import Global from "./Global";
-
-let gl: WebGL2RenderingContext;
+import { gl } from "./Global";
 
 export default class Shader {
 	private programId: WebGLProgram;
 
 	constructor(vertexShader: string | WebGLShader, fragmentShader: string | WebGLShader) {
-		gl = Global.gl;
-
 		if (typeof vertexShader === "string") {
 			vertexShader = Shader.compile(vertexShader, gl.VERTEX_SHADER);
 		}
@@ -99,8 +95,6 @@ export default class Shader {
 	 * @param {number} type gl.FRAGMENT_SHADER or gl.VERTEX_SHADER
 	 */
 	static compile(source: string, type: number): WebGLShader {
-		gl = Global.gl;
-
 		const shader = gl.createShader(type);
 
 		if (!shader) { throw new Error("Couldn't create shader"); }

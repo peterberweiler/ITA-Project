@@ -1,5 +1,5 @@
 import HeightmapController from "./Renderer/Terrain/HeightmapController";
-import { HeightBrushPass } from "./Renderer/Terrain/Passes";
+import { HeightBrushPass } from "./Renderer/Terrain/Passes/HeightBrushPass";
 
 export default class EditorController {
 	private heightmapController: HeightmapController

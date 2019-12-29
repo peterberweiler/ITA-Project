@@ -1,4 +1,4 @@
-import Global from "../Global";
+import { gl } from "../Global";
 
 export const MAX_LAYERS: number = 8;
 const WEIGHT_MAP_RESOLUTION: number = 1024;
@@ -45,8 +45,6 @@ export default class Layers {
 			this.layerOrder.push(i);
 			this.activeLayers.push(false);
 		}
-
-		let gl = Global.gl;
 
 		const idCurrent = gl.createTexture();
 		if (!idCurrent) { throw new Error("Couldn't create texture."); }

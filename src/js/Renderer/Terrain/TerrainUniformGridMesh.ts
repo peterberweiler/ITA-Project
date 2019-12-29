@@ -1,10 +1,9 @@
-import Global from "../Global";
+import { gl } from "../Global";
 import Renderer from "../Renderer";
 import Shader from "../Shader";
 import { MAX_LAYERS } from "./Layers";
 import TerrainDrawParams from "./TerrainDrawParams";
 
-let gl: WebGL2RenderingContext;
 const GRID_RESOLUTION: number = 1024;
 const fragSource = require("../../Shader/terrain.fs").default;
 const vertSource = require("../../Shader/terrainGrid.vs").default;
@@ -25,8 +24,6 @@ export default class TerrainUniformGridMesh {
 	private uMaterialLocation: number;
 
 	constructor() {
-		gl = Global.gl;
-
 		this.terrainShader = new Shader(vertSource, fragSource);
 		this.uTransformLocation = this.terrainShader.getUniformLocation("uTransform");
 		this.uTexelSizeInMetersLocation = this.terrainShader.getUniformLocation("uTexelSizeInMeters");
@@ -77,8 +74,6 @@ export default class TerrainUniformGridMesh {
 		gl.bindTexture(gl.TEXTURE_2D, drawParams.shadowMap);
 		gl.activeTexture(gl.TEXTURE2);
 		gl.bindTexture(gl.TEXTURE_2D_ARRAY, drawParams.weightMap);
-
-		//TODO: this.surface.types[0].albedomap.texture.id
 
 		// gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 		// gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
