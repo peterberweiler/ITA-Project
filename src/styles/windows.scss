@@ -50,6 +50,135 @@
     }
 }
 
+#layers-window {
+    overflow-y: auto;
+
+    left: $menu-bar-width * 1.1;
+    top: $menu-bar-width * 0.1;
+    width: 480px;
+    height: auto;
+    max-height: 540px;
+    bottom: $menu-bar-width * 0.1;
+
+    padding-right: 2px;
+
+    overflow-y: scroll;
+    overflow-x: hidden;
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+    scrollbar-width: thin;
+
+    &::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: rgba(0, 0, 0, 0.7);
+    }
+
+
+    .sortable {
+        margin: 16px 0;
+        padding: 0;
+
+        &>div {
+            display: flex;
+            background-color: rgba(255, 255, 255, 0.15);
+            border-radius: 3px;
+            padding: 4px;
+            margin-left: 0;
+            margin-bottom: 8px;
+            height: 50px;
+            align-items: center;
+
+            &.sortable-placeholder {
+                border: none;
+                background-color: transparent;
+            }
+
+            .title {
+                margin: 0 32px;
+            }
+
+            button,
+            input {
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                background-color: rgba(255, 255, 255, 0.1);
+                color: white;
+                border-radius: 4px;
+                -moz-appearance: textfield;
+
+                &:disabled {
+                    border-color: rgba(0, 0, 0, 0.2);
+                    background-color: rgba(0, 0, 0, 0.1);
+                }
+
+                &::-webkit-inner-spin-button,
+                &::-webkit-outer-spin-button {
+                    -webkit-appearance: none;
+                    appearance: none;
+                    margin: 0;
+                }
+
+                &:enabled:focus,
+                &:enabled:hover {
+                    border-color: $theme-color;
+                }
+            }
+
+            button {
+                height: 40px;
+                width: 60px;
+                padding: 0;
+            }
+
+            input[type=color] {
+                margin: 0 8px;
+                height: 40px;
+                width: 50px;
+            }
+
+            input[type=number] {
+                margin: 0 8px;
+                height: 40px;
+                width: 160px;
+                text-align: center;
+            }
+
+            &[disabled] {
+                .disable-button {
+                    display: none;
+                }
+
+                background-color: rgba(0, 0, 0, 0.15);
+                color: black;
+            }
+
+            &:not([disabled]) {
+                .enable-button {
+                    display: none;
+                }
+
+            }
+
+            .anchor {
+                height: 26px;
+                width: 26px;
+                text-align: center;
+                cursor: pointer;
+
+                svg {
+                    max-width: 100%;
+                    max-height: 100%;
+                }
+            }
+        }
+    }
+}
+
 #settings-window {
 
     #sun-pitch,

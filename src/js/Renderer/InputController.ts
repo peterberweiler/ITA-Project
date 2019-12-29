@@ -64,16 +64,16 @@ export default class InputController {
 		const mouseMove = this.mouseMove.bind(this);
 		const mouseDown = this.mouseDown.bind(this);
 
-		canvas.oncontextmenu = () => false;
+		document.oncontextmenu = () => false;
 		canvas.addEventListener("mousedown", mouseDown);
 		canvas.addEventListener("touchstart", mouseDown);
 
 		canvas.addEventListener("mousemove", mouseMove);
 		canvas.addEventListener("touchmove", mouseMove);
 
-		canvas.addEventListener("mouseup", mouseUp);
-		canvas.addEventListener("touchend", mouseUp);
-		canvas.addEventListener("touchcancel", mouseUp);
+		document.addEventListener("mouseup", mouseUp);
+		document.addEventListener("touchend", mouseUp);
+		document.addEventListener("touchcancel", mouseUp);
 
 		canvas.addEventListener("mouseleave", () => { this.mouse.over = false; });
 

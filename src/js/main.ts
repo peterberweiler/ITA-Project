@@ -3,6 +3,7 @@ import { Camera } from "./Renderer/Cameras";
 import InputController from "./Renderer/InputController";
 import Renderer from "./Renderer/Renderer";
 import HeightmapController from "./Renderer/Terrain/HeightmapController";
+import Layers from "./Renderer/Terrain/Layers";
 import UI from "./UI/UI";
 
 let renderer: Renderer;
@@ -10,6 +11,7 @@ let camera: Camera;
 let inputController: InputController;
 let heightmapController: HeightmapController;
 let editorController: EditorController;
+let layers: Layers;
 
 function setupRenderer() {
 	camera = new Camera(
@@ -25,6 +27,8 @@ function setupRenderer() {
 	inputController = new InputController(camera, canvas);
 	renderer = new Renderer(canvas, camera);
 	heightmapController = renderer.getHeightmapRenderer();
+	layers = heightmapController.textures.layers;
+
 	editorController = new EditorController(heightmapController);
 	window.onresize = () => renderer.resized();
 	renderer.resized();
@@ -90,7 +94,6 @@ function setupUI() {
 				UI.strengthOutput.value = editorController.selectedBrush.strength.toString();
 			}
 			if ("minSlope" in editorController.selectedBrush) {
-				console.log(editorController.selectedBrush);
 				UI.minSlopeInput.value = editorController.selectedBrush.minSlope.toString();
 			}
 			if ("maxSlope" in editorController.selectedBrush) {
@@ -107,7 +110,17 @@ function setupUI() {
 		editorController.brush.height.type = index;
 	});
 
-	UI.selectMenuIndex(0);
+	UI.on("layer-order-changed", (order: number[]) => {
+		layers.layerOrder = order;
+	});
+
+	UI.on("layer-changed", (id, color, roughness, active) => {
+		const material = layers.getLayerMaterial(id);
+		material.setColor(color);
+		material.setRoughness(roughness);
+		layers.setLayerActive(id, active);
+	});
+
 	UI.on("sun-changed", (pitch: number, yaw: number) => {
 		pitch *= Math.PI * 0.5;
 		pitch += Math.PI * 0.5;
@@ -125,6 +138,10 @@ function setupUI() {
 		heightmapController.shadowPass.lightDir = dir;
 		editorController.updateShadows();
 	});
+
+	UI.setupLayerList(layers);
+
+	UI.selectMenuIndex(0);
 }
 
 function update(now: number, deltaTime: number) {

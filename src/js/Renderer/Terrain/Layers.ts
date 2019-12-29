@@ -28,7 +28,7 @@ export class Material {
 	}
 
 	getRoughness() {
-		return (this.albedoRoughness & 0xFF) * 255.0;
+		return (this.albedoRoughness & 0xFF) / 255.0;
 	}
 }
 
@@ -42,7 +42,7 @@ export default class Layers {
 	constructor() {
 		for (let i = 0; i < MAX_LAYERS; ++i) {
 			this.layerMaterials.push(new Material());
-			this.layerOrder.push(0);
+			this.layerOrder.push(i);
 			this.activeLayers.push(false);
 		}
 

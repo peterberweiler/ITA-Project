@@ -4,6 +4,8 @@ $background-color: rgb(83, 85, 90);
 $theme-color: rgb(226, 164, 47);
 
 
+$menu-bar-width: 70px;
+$menu-background: rgba(0, 0, 0, 0.5);
 
 @mixin transition($time) {
     -webkit-transition: $time ease-in-out;

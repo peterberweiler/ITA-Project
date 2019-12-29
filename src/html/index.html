@@ -111,27 +111,21 @@
 	</div>
 	<div id="layers-window" class="window" hidden>
 		<h1>Layers</h1>
-		<ul class="sortable">
-			<li>Test 1</li>
-			<li>Test 2</li>
-			<li>Test 3</li>
-			<li>Test 4</li>
-			<li>Test 5</li>
-			<li>Test 6</li>
-		</ul>
+		<div class="sortable"></div>
 		<template>
-			<li>
-				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">
-					<path fill="currentColor"
-						d="M41 288h238c21.4 0 32.1 25.9 17 41L177 448c-9.4 9.4-24.6 9.4-33.9 0L24 329c-15.1-15.1-4.4-41 17-41zm255-105L177 64c-9.4-9.4-24.6-9.4-33.9 0L24 183c-15.1 15.1-4.4 41 17 41h238c21.4 0 32.1-25.9 17-41z" />
-				</svg>
-				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 512">
-					<path fill="currentColor"
-						d="M214.059 377.941H168V134.059h46.059c21.382 0 32.09-25.851 16.971-40.971L144.971 7.029c-9.373-9.373-24.568-9.373-33.941 0L24.971 93.088c-15.119 15.119-4.411 40.971 16.971 40.971H88v243.882H41.941c-21.382 0-32.09 25.851-16.971 40.971l86.059 86.059c9.373 9.373 24.568 9.373 33.941 0l86.059-86.059c15.12-15.119 4.412-40.971-16.97-40.971z" />
-				</svg>
-				<span></span>
-				<button>Edit</button>
-			</li>
+			<div>
+				<div class="anchor">
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 512">
+						<path fill="currentColor"
+							d="M214.059 377.941H168V134.059h46.059c21.382 0 32.09-25.851 16.971-40.971L144.971 7.029c-9.373-9.373-24.568-9.373-33.941 0L24.971 93.088c-15.119 15.119-4.411 40.971 16.971 40.971H88v243.882H41.941c-21.382 0-32.09 25.851-16.971 40.971l86.059 86.059c9.373 9.373 24.568 9.373 33.941 0l86.059-86.059c15.12-15.119 4.412-40.971-16.97-40.971z" />
+					</svg>
+				</div>
+				<span class="title"></span>
+				<input type="color" class="color-input">
+				<input type="number" class="roughness-input" min=0 max=1 step="any">
+				<button class="enable-button">Enable</button>
+				<button class="disable-button">Disable</button>
+			</div>
 		</template>
 	</div>
 
@@ -141,7 +135,7 @@
 	<div id="settings-window" class="window" hidden>
 		<h1>Settings</h1>
 		Sun Setting (Pitch/Yaw)<br>
-		<input id="sun-pitch" type="range" min=0 max=1 step=0.01 value=0.69 />
+		<input id="sun-pitch" type="range" min=0 max=1 step=0.01 value=0.4 />
 		<input id="sun-yaw" type="range" min=0 max=1 step=0.01 value=0.0 /><br>
 		<br>
 		Debug Mode: <input type="checkbox" id="debug-mode-input" />

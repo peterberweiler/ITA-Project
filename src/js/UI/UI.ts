@@ -1,6 +1,7 @@
 import { EventEmitter } from "events";
 //@ts-ignore
 import sortable from "html5sortable/dist/html5sortable.es";
+import Layers from "../Renderer/Terrain/Layers";
 
 function hide(element: HTMLElement, hide: boolean = true) {
 	if (hide) {
@@ -11,9 +12,42 @@ function hide(element: HTMLElement, hide: boolean = true) {
 	}
 }
 
+// color is an array with values between 0-1
+export function hex2color(hex: string): number[] {
+	const matches = hex.match(/[A-Za-z0-9]{2}/g);
+	return matches ? matches.map((v) => parseInt(v, 16) / 255) : [0, 0, 0];
+}
+
+// color is an array with values between 0-1
+export function color2hex(color: number[]) {
+	return "#" + color
+		.map((v) => Math.round(v * 255).toString(16).padStart(2, "0"))
+		.join("");
+}
+
+declare interface UIController {
+	on(event: "toggle-camera", listener: () => void): this;
+	on(event: "debug1", listener: () => void): this;
+	on(event: "debug2", listener: () => void): this;
+	on(event: "debug3", listener: () => void): this;
+	on(event: "debug4", listener: () => void): this;
+	on(event: "debug5", listener: () => void): this;
+	on(event: "radius-changed", listener: (value: number) => void): this;
+	on(event: "strength-changed", listener: (value: number) => void): this;
+	on(event: "min-slope-changed", listener: (value: number) => void): this;
+	on(event: "max-slope-changed", listener: (value: number) => void): this;
+	on(event: "menu-selected", listener: (menuIndex: number) => void): this;
+	on(event: "layer-type-selected", listener: (index: number) => void): this;
+	on(event: "brush-type-selected", listener: (index: number) => void): this;
+	on(event: "sun-changed", listener: (pitch: number, yaw: number) => void): this;
+	on(event: "layer-order-changed", listener: (order: number[]) => void): this;
+	on(event: "layer-changed", listener: (id: number, color: number[], roughness: number, active: boolean) => void): this;
+}
+
 class UIController extends EventEmitter {
 	public readonly menuItems = document.querySelectorAll<HTMLDivElement>("#menu .menu-item");
-	public readonly layerList = document.querySelector<HTMLUListElement>("#layers-window ul");
+	public readonly layerList = document.querySelector<HTMLDivElement>("#layers-window .sortable")!;
+	public readonly layerListTemplate = document.querySelector<HTMLTemplateElement>("#layers-window template")!;
 
 	public readonly radiusInput = document.getElementById("radius-input") as HTMLInputElement;
 	public readonly strengthInput = document.getElementById("strength-input") as HTMLInputElement;
@@ -93,25 +127,20 @@ class UIController extends EventEmitter {
 		});
 
 		sortable(this.layerList, {
-			// forcePlaceholderSize: true,
-			// placeholderClass: "ph-class",
-			// hoverClass: "bg-maroon yellow"
+			handle: ".anchor",
 		});
 
-		// reload sortable after items where added
-		// sortable(this.layerList, "reload");
+		sortable(this.layerList)[0].addEventListener("sortupdate", (_event: any) => {
+			// event.detail.item
+			// event.detail.destination
 
-		sortable(this.layerList)[0].addEventListener("sortupdate", (event: any) => {
-
-			// This event is triggered when the user stopped sorting and the DOM position has changed.
-			// event.detail.item - {HTMLElement} dragged element
-
-			// Destination Container Data
-			// event.detail.destination.index - {Integer} Index of the element within Sortable Items Only
-			// event.detail.destination.elementIndex - {Integer} Index of the element in all elements in the Sortable Container
-			// event.detail.destination.container - {HTMLElement} Sortable Container that element was moved out of (or copied from)
-			// event.detail.destination.itemsBeforeUpdate - {Array} Sortable Items before the move
-			// event.detail.destination.items - {Array} Sortable Items after the move
+			const newOrder = [];
+			for (let i = 0; i < this.layerList.children.length; ++i) {
+				const child = this.layerList.children[i];
+				const id = parseInt(child.getAttribute("layerId") || "0");
+				newOrder.push(id);
+			}
+			this.emit("layer-order-changed", newOrder);
 		});
 	}
 
@@ -153,6 +182,58 @@ class UIController extends EventEmitter {
 		this.layerTypeSelectorButtons[index].setAttribute("selected", "true");
 
 		this.emit("layer-type-selected", index);
+	}
+
+	setupLayerList(layers: Layers) {
+		// add elements to layer
+		for (let id = 0; id < 8; ++id) {
+			const newLayer = this.layerListTemplate.content.querySelector<HTMLDivElement>("div")!.cloneNode(true) as HTMLDivElement;
+			const material = layers.getLayerMaterial(id);
+			newLayer.querySelector<HTMLSpanElement>(".title")!.innerText = "Layer " + id;
+			const colorInput = newLayer.querySelector<HTMLInputElement>(".color-input")!;
+			const roughnessInput = newLayer.querySelector<HTMLInputElement>(".roughness-input")!;
+			const enableButton = newLayer.querySelector<HTMLInputElement>(".enable-button")!;
+			const disableButton = newLayer.querySelector<HTMLInputElement>(".disable-button")!;
+
+			const layerChanged = () => {
+				const color = hex2color(colorInput.value);
+				const roughness = parseFloat(roughnessInput.value) || 0;
+				const active = !newLayer.hasAttribute("disabled");
+				this.emit("layer-changed", id, color, roughness, active);
+			};
+
+			const setLayerUIActive = (active: boolean) => {
+				if (active) { newLayer.removeAttribute("disabled"); }
+				else { newLayer.setAttribute("disabled", "1"); }
+				colorInput.disabled = !active;
+				roughnessInput.disabled = !active;
+			};
+
+			colorInput.value = color2hex(material.getColor());
+			roughnessInput.value = material.getRoughness().toString();
+			colorInput.oninput = layerChanged;
+			roughnessInput.oninput = layerChanged;
+
+			setLayerUIActive(layers.getLayerActive(id));
+
+			enableButton.onclick = () => {
+				setLayerUIActive(true);
+				layerChanged();
+			};
+
+			disableButton.onclick = () => {
+				setLayerUIActive(false);
+				layerChanged();
+			};
+
+			// material.getRoughness
+			newLayer.setAttribute("layerId", id.toString());
+
+			this.layerList.appendChild(newLayer);
+		}
+
+		// reload sortable after items where added
+		sortable(this.layerList, "reload");
 	}
 
 	//TODO: create selector ui class
