@@ -117,10 +117,17 @@ export default class InputController {
 		this.mouse.canvas.current[0] = event.clientX || (event.targetTouches && event.targetTouches[0].pageX) || 0;
 		this.mouse.canvas.current[1] = event.clientY || (event.targetTouches && event.targetTouches[0].pageY) || 0;
 
-		this.mouse.terrain.last[0] = this.mouse.terrain.current[0];
-		this.mouse.terrain.last[1] = this.mouse.terrain.current[1];
+		if (this.mouse.terrain.over) {
+			this.mouse.terrain.last[0] = this.mouse.terrain.current[0];
+			this.mouse.terrain.last[1] = this.mouse.terrain.current[1];
+		}
+		else {
+			this.mouse.terrain.last[0] = this.mouse.terrain.input[0];
+			this.mouse.terrain.last[1] = this.mouse.terrain.input[1];
+		}
 		this.mouse.terrain.current[0] = this.mouse.terrain.input[0];
 		this.mouse.terrain.current[1] = this.mouse.terrain.input[1];
+
 		this.mouse.terrain.over = !!(this.mouse.terrain.input[0] || this.mouse.terrain.input[1]);
 
 		if (this.mouse.buttonDown) {

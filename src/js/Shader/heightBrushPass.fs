@@ -43,6 +43,7 @@ void main(void) {
 		closestPoint = mix(closestPoint, pointOnLine, isCloser);
 	}
 
+	// apply brush
 	if (uType < 16) { // normal	mode		
 		vec2 brushCoords = fragmentPosition - closestPoint;
 		brushCoords /= uRadius * 2.0;
@@ -64,8 +65,25 @@ void main(void) {
 
 		float delta = centerHeight - height;
 		float flattenStrength = 0.03; // this number just feels right in comparison to normal mode
-		height += delta * weight * uStrength * flattenStrength;
+		height += delta * min(1.0, weight * uStrength * flattenStrength);
 
+	}
+	else if (uType == 17) // smooth
+	{
+		float weight = smoothstep(uRadius, 0.0, minDist); 
+		float averageHeight = (
+			texture(uTexture, ((vCoords * terrainSize) + vec2(-1, -1)) / terrainSize).r +
+			texture(uTexture, ((vCoords * terrainSize) + vec2( 0, -1)) / terrainSize).r +
+			texture(uTexture, ((vCoords * terrainSize) + vec2( 1, -1)) / terrainSize).r +
+			texture(uTexture, ((vCoords * terrainSize) + vec2(-1,  0)) / terrainSize).r +
+			texture(uTexture, ((vCoords * terrainSize) + vec2( 1,  0)) / terrainSize).r +
+			texture(uTexture, ((vCoords * terrainSize) + vec2(-1,  1)) / terrainSize).r +
+			texture(uTexture, ((vCoords * terrainSize) + vec2( 0,  1)) / terrainSize).r +
+			texture(uTexture, ((vCoords * terrainSize) + vec2( 1,  1)) / terrainSize).r
+		) / 8.0;
+
+		float delta = averageHeight - height;
+		height += delta * min(1.0, weight * uStrength);
 	}
 	// height = texture(uBrushesTexture, vCoords*2.0).r * 300.0;
 	oHeight = vec4(height, 0.0, 0.0, 1.0);
