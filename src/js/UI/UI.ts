@@ -2,6 +2,7 @@ import { EventEmitter } from "events";
 //@ts-ignore
 import sortable from "html5sortable/dist/html5sortable.es";
 import Layers from "../Renderer/Terrain/Layers";
+import Settings from "../Settings";
 
 function hide(element: HTMLElement, hide: boolean = true) {
 	if (hide) {
@@ -26,7 +27,7 @@ export function color2hex(color: number[]) {
 }
 
 declare interface UIController {
-	on(event: "toggle-camera", listener: () => void): this;
+	on(event: "debug0", listener: () => void): this;
 	on(event: "debug1", listener: () => void): this;
 	on(event: "debug2", listener: () => void): this;
 	on(event: "debug3", listener: () => void): this;
@@ -71,16 +72,18 @@ class UIController extends EventEmitter {
 	public readonly brushTypeSelector = document.getElementById("brush-type-selector") as HTMLDivElement;
 	public readonly brushTypeSelectorButtons = document.querySelectorAll<HTMLImageElement>("#brush-type-selector img");
 
+	public readonly debugMenu = document.getElementById("debug-menu") as HTMLDivElement;
+	public readonly debugCheckbox = document.getElementById("debug-mode-input") as HTMLInputElement;
+
 	constructor() {
 		super();
 
-		document.querySelector<HTMLButtonElement>("#testButton1")!.onclick = this.emit.bind(this, "debug1");
-		document.querySelector<HTMLButtonElement>("#testButton2")!.onclick = this.emit.bind(this, "debug2");
-		document.querySelector<HTMLButtonElement>("#testButton3")!.onclick = this.emit.bind(this, "debug3");
-		document.querySelector<HTMLButtonElement>("#testButton4")!.onclick = this.emit.bind(this, "debug4");
-		document.querySelector<HTMLButtonElement>("#testButton5")!.onclick = this.emit.bind(this, "debug5");
-
-		document.querySelector<HTMLButtonElement>("#cameraButton")!.onclick = this.emit.bind(this, "toggle-camera");
+		document.querySelector<HTMLButtonElement>("#debugButton0")!.onclick = this.emit.bind(this, "debug0");
+		document.querySelector<HTMLButtonElement>("#debugButton1")!.onclick = this.emit.bind(this, "debug1");
+		document.querySelector<HTMLButtonElement>("#debugButton2")!.onclick = this.emit.bind(this, "debug2");
+		document.querySelector<HTMLButtonElement>("#debugButton3")!.onclick = this.emit.bind(this, "debug3");
+		document.querySelector<HTMLButtonElement>("#debugButton4")!.onclick = this.emit.bind(this, "debug4");
+		document.querySelector<HTMLButtonElement>("#debugButton5")!.onclick = this.emit.bind(this, "debug5");
 
 		this.radiusInput.oninput = () => {
 			this.radiusOutput.value = this.radiusInput.value;
@@ -142,6 +145,14 @@ class UIController extends EventEmitter {
 			}
 			this.emit("layer-order-changed", newOrder);
 		});
+
+		this.debugCheckbox.checked = Settings.getDebugMode();
+		hide(this.debugMenu, !Settings.getDebugMode());
+
+		this.debugCheckbox.onchange = () => {
+			Settings.setDebugMode(this.debugCheckbox.checked);
+			hide(this.debugMenu, !this.debugCheckbox.checked);
+		};
 	}
 
 	selectMenuIndex(index: number): void {

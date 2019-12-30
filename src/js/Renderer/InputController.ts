@@ -69,8 +69,8 @@ export default class InputController {
 		canvas.addEventListener("mousedown", mouseDown);
 		canvas.addEventListener("touchstart", mouseDown);
 
-		canvas.addEventListener("mousemove", mouseMove);
-		canvas.addEventListener("touchmove", mouseMove);
+		document.addEventListener("mousemove", mouseMove);
+		document.addEventListener("touchmove", mouseMove);
 
 		document.addEventListener("mouseup", mouseUp);
 		document.addEventListener("touchend", mouseUp);
@@ -109,18 +109,15 @@ export default class InputController {
 
 	mouseDown(event: any) {
 		this.mouse.buttonDown = true;
-		this.mouse.lastX = event.offsetX || event.layerX || (event.targetTouches && event.targetTouches[0].pageX) || this.mouse.lastX;
-		this.mouse.lastY = event.offsetY || event.layerY || (event.targetTouches && event.targetTouches[0].pageY) || this.mouse.lastY;
+		this.mouse.lastX = event.clientX || (event.targetTouches && event.targetTouches[0].pageX) || this.mouse.lastX;
+		this.mouse.lastY = event.clientY || (event.targetTouches && event.targetTouches[0].pageY) || this.mouse.lastY;
 		this.mouse.movedSinceButtonDown = false;
 		this.mouse.lastButton = event.button;
-
-		event.preventDefault();
-		event.stopPropagation();
 	}
 
 	mouseMove(event: any) {
-		const x = event.offsetX || event.layerX || (event.targetTouches && event.targetTouches[0].pageX) || this.mouse.lastX;
-		const y = event.offsetY || event.layerY || (event.targetTouches && event.targetTouches[0].pageY) || this.mouse.lastY;
+		const x = event.clientX || (event.targetTouches && event.targetTouches[0].pageX) || this.mouse.lastX;
+		const y = event.clientY || (event.targetTouches && event.targetTouches[0].pageY) || this.mouse.lastY;
 
 		if (this.mouse.buttonDown) {
 			if (this.mouse.lastButton === 2) {
@@ -140,9 +137,6 @@ export default class InputController {
 		this.mouse.lastY = y;
 
 		this.mouse.over = true;
-
-		event.preventDefault();
-		event.stopPropagation();
 	}
 
 	mouseUp(event: any) {

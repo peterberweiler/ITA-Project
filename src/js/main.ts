@@ -42,8 +42,7 @@ function setupRenderer() {
 }
 
 function setupUI() {
-	UI.on("toggle-camera", () => inputController.toggleFpsMode());
-
+	UI.on("debug0", () => inputController.toggleFpsMode());
 	UI.on("debug1", () => editorController.invertHeightmap());
 	UI.on("debug2", () => editorController.randomHeightChange());
 
