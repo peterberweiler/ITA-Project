@@ -109,6 +109,10 @@ function setupUI() {
 		editorController.brush.height.type = index;
 	});
 
+	UI.on("flatten-brush-type-changed", (type: number) => {
+		editorController.brush.flatten.type = type;
+	});
+
 	UI.on("layer-order-changed", (order: number[]) => {
 		layers.layerOrder = order;
 	});

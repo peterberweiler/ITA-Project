@@ -1,30 +1,10 @@
 import { EventEmitter } from "events";
 //@ts-ignore
 import sortable from "html5sortable/dist/html5sortable.es";
+import { color2hex, hex2color, hide } from "../HelperFunctions";
 import Layers from "../Renderer/Terrain/Layers";
 import Settings from "../Settings";
-
-function hide(element: HTMLElement, hide: boolean = true) {
-	if (hide) {
-		element.setAttribute("hidden", "1");
-	}
-	else {
-		element.removeAttribute("hidden");
-	}
-}
-
-// color is an array with values between 0-1
-export function hex2color(hex: string): number[] {
-	const matches = hex.match(/[A-Za-z0-9]{2}/g);
-	return matches ? matches.map((v) => parseInt(v, 16) / 255) : [0, 0, 0];
-}
-
-// color is an array with values between 0-1
-export function color2hex(color: number[]) {
-	return "#" + color
-		.map((v) => Math.round(v * 255).toString(16).padStart(2, "0"))
-		.join("");
-}
+import UISelector from "./UISelector";
 
 declare interface UIController {
 	on(event: "debug0", listener: () => void): this;
@@ -37,6 +17,7 @@ declare interface UIController {
 	on(event: "strength-changed", listener: (value: number) => void): this;
 	on(event: "min-slope-changed", listener: (value: number) => void): this;
 	on(event: "max-slope-changed", listener: (value: number) => void): this;
+	on(event: "flatten-brush-type-changed", listener: (type: number) => void): this;
 	on(event: "menu-selected", listener: (menuIndex: number) => void): this;
 	on(event: "layer-type-selected", listener: (index: number) => void): this;
 	on(event: "brush-type-selected", listener: (index: number) => void): this;
@@ -59,6 +40,8 @@ class UIController extends EventEmitter {
 
 	public readonly windows = document.querySelectorAll<HTMLDivElement>(".window");
 	public readonly brushWindow = document.getElementById("brush-window") as HTMLDivElement
+	public readonly brushWindowTitle = document.querySelector<HTMLHeadingElement>("#brush-window .title")!;
+
 	public readonly layersWindow = document.getElementById("layers-window") as HTMLDivElement
 	public readonly layerEditWindow = document.getElementById("layer-edit-window") as HTMLDivElement
 
@@ -74,6 +57,8 @@ class UIController extends EventEmitter {
 
 	public readonly debugMenu = document.getElementById("debug-menu") as HTMLDivElement;
 	public readonly debugCheckbox = document.getElementById("debug-mode-input") as HTMLInputElement;
+
+	public readonly flattenBrushSelector = new UISelector("#flatten-brush-selector");
 
 	constructor() {
 		super();
@@ -153,6 +138,10 @@ class UIController extends EventEmitter {
 			Settings.setDebugMode(this.debugCheckbox.checked);
 			hide(this.debugMenu, !this.debugCheckbox.checked);
 		};
+
+		this.flattenBrushSelector.on("change", (i) => {
+			this.emit("flatten-brush-type-changed", i);
+		});
 	}
 
 	selectMenuIndex(index: number): void {
@@ -160,27 +149,39 @@ class UIController extends EventEmitter {
 		this.menuItems.forEach(item => item.removeAttribute("selected"));
 		this.menuItems[index].setAttribute("selected", "true");
 
-		// show correct window
-		this.windows.forEach(window => window.setAttribute("hidden", "true"));
-
 		//TODO: don't use numbered ids
 		switch (index) {
 			case 0:
 			case 1:
 			case 2:
 			case 3:
-				this.brushWindow.removeAttribute("hidden");
+				this.brushWindow.classList.add("slide-out");
 
-				hide(this.brushTypeSelector, index !== 0 && index !== 1);
-				hide(this.layerTypeSelector, index !== 3);
+				setTimeout(() => {
+					hide(this.brushWindow, false);
+					hide(this.layersWindow, true);
+					hide(this.settingsWindow, true);
+
+					hide(this.brushTypeSelector, index !== 0 && index !== 1);
+					hide(this.layerTypeSelector, index !== 3);
+					this.flattenBrushSelector.hide(index !== 2);
+
+					this.brushWindowTitle.innerText = this.menuItems[index].getAttribute("title") || "";
+					this.brushWindow.style.top = this.menuItems[index].offsetTop + "px";
+					this.brushWindow.classList.remove("slide-out");
+				}, 100);
 				break;
 
 			case 4:
-				this.layersWindow.removeAttribute("hidden");
+				hide(this.brushWindow, true);
+				hide(this.layersWindow, false);
+				hide(this.settingsWindow, true);
 				break;
 
 			case 5:
-				this.settingsWindow.removeAttribute("hidden");
+				hide(this.brushWindow, true);
+				hide(this.layersWindow, true);
+				hide(this.settingsWindow, false);
 				break;
 		}
 

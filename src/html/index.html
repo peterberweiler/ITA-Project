@@ -36,7 +36,7 @@
 				<polygon points="500,800 425,700 575,700" fill="currentColor" stroke="currentColor" stroke-width="30" />
 			</svg>
 		</div>
-		<div class="menu-item" class="brush" title="Flatten">
+		<div class="menu-item" class="brush" title="Flatten/Smooth">
 			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000">
 				<path fill="none" stroke="currentColor" stroke-width="30" d="M 100 500 L 900 500" />
 				<polygon points="625,400 550,300 700,300" fill="currentColor" stroke="currentColor" stroke-width="30" />
@@ -70,7 +70,7 @@
 		</div>
 	</div>
 	<div id="brush-window" class="window small-window">
-		<h1></h1>
+		<h1 class="title"></h1>
 		Radius <output id="radius-output">10</output>
 		<input id="radius-input" type="range" min=1 value=10 max=250 />
 		Strength <output id="strength-output">10</output>
@@ -107,6 +107,11 @@
 			Slope &nbsp; \_
 			<input id="min-slope-input" type="range" min=-0.1 max=1.1 step=0.05 />
 			<input id="max-slope-input" type="range" min=-0.1 max=1.1 step=0.05 />
+		</div>
+
+		<div id="flatten-brush-selector" class="selector">
+			<span selected>Flatten</span>
+			<span>Smooth</span>
 		</div>
 	</div>
 	<div id="layers-window" class="window" hidden>
