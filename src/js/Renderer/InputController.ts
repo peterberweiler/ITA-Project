@@ -151,9 +151,6 @@ export default class InputController {
 		// 	// single left click on canvas
 		// }
 		this.mouse.buttonDown = false;
-
-		event.preventDefault();
-		event.stopPropagation();
 	}
 
 	update(now: number, deltaTime: number) {
