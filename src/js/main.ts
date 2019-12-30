@@ -146,47 +146,23 @@ function setupUI() {
 function update(now: number, deltaTime: number) {
 	inputController.update(now, deltaTime);
 
-	renderer.setCanvasMouseState(inputController.mouse.over, inputController.mouse.lastX, inputController.mouse.lastY);
+	renderer.setCanvasMouseState(
+		inputController.mouse.canvas.over,
+		inputController.mouse.canvas.current[0],
+		inputController.mouse.canvas.current[1]
+	);
 
-	//TODO: move this into inputcontroller
+	inputController.setTerrainMousePos(renderer.getTerrain().getMouseWorldSpacePos());
 
-	if (inputController.mouse.buttonDown && inputController.mouse.lastButton === 0 && inputController.mouse.over) {
-		const worldSpacePos = renderer.getTerrain().getMouseWorldSpacePos();
-		if (worldSpacePos[0] || worldSpacePos[1] || worldSpacePos[2]) {
-			let x = worldSpacePos[0];
-			let y = worldSpacePos[2];
-
-			// only update 3d mouse if 2d mouse moved
-			if (inputController.terrainWorldSpaceMouse.lastCanvasMouseX !== inputController.mouse.lastX ||
-				inputController.terrainWorldSpaceMouse.lastCanvasMouseY !== inputController.mouse.lastY) {
-				x = worldSpacePos[0];
-				y = worldSpacePos[2];
-				inputController.terrainWorldSpaceMouse.lastCanvasMouseX = inputController.mouse.lastX;
-				inputController.terrainWorldSpaceMouse.lastCanvasMouseY = inputController.mouse.lastY;
-			}
-			else {
-				x = inputController.terrainWorldSpaceMouse.lastX;
-				y = inputController.terrainWorldSpaceMouse.lastY;
-			}
-
-			// apply mouse down
-			if (!inputController.terrainWorldSpaceMouse.pressed) {
-				inputController.terrainWorldSpaceMouse.lastX = x;
-				inputController.terrainWorldSpaceMouse.lastY = y;
-				inputController.terrainWorldSpaceMouse.pressed = true;
-			}
-
-			editorController.mouseDownAtPoint(
-				x, y,
-				inputController.terrainWorldSpaceMouse.lastX, inputController.terrainWorldSpaceMouse.lastY,
-				deltaTime
-			);
-			inputController.terrainWorldSpaceMouse.lastX = x;
-			inputController.terrainWorldSpaceMouse.lastY = y;
-		}
-	}
-	else {
-		inputController.terrainWorldSpaceMouse.pressed = false;
+	if (inputController.mouse.buttonDown && inputController.mouse.button === 0 && inputController.mouse.terrain.over) {
+		// left button down
+		editorController.mouseDownAtPoint(
+			inputController.mouse.terrain.current[0],
+			inputController.mouse.terrain.current[1],
+			inputController.mouse.terrain.last[0],
+			inputController.mouse.terrain.last[1],
+			deltaTime
+		);
 	}
 }
 

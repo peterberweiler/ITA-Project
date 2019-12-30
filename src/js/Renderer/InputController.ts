@@ -1,17 +1,6 @@
 import { vec3 } from "gl-matrix";
 import { Camera, CameraController } from "./Cameras";
 
-type Mouse = {
-	lastX: number;
-	lastY: number;
-	lastButton: number,
-	movedSinceButtonDown: boolean,
-	over: boolean,
-	buttonDown: boolean,
-}
-
-//TODO: maybe capture mouse
-
 const FPS_TRANSLATION_CONTROL_KEYS = {
 	"87": [0.0, 0.0, -1], // W
 	"65": [-1, 0.0, 0.0], // A
@@ -33,33 +22,31 @@ export default class InputController {
 	private readonly camera: Camera;
 	private readonly cameraController: CameraController
 	private readonly canvas: HTMLCanvasElement;
-	public mouse: Mouse;
+
+	public mouse = {
+		canvas: {
+			last: [0, 0],
+			current: [0, 0],
+			over: false,
+		},
+		terrain: {
+			input: [0, 0],
+			last: [0, 0],
+			current: [0, 0],
+			over: false,
+		},
+		button: 0,
+		buttonDown: false,
+	}
+
 	private keyDown: any = {}
 	fpsMode = true;
 	isRunning = false;
-
-	//TODO: only update 3d mouse if 2d mouse moved (retain 3d mouse position during draw)
-
-	terrainWorldSpaceMouse = {
-		pressed: false,
-		lastX: 0,
-		lastY: 0,
-		lastCanvasMouseX: -Number.MAX_SAFE_INTEGER,
-		lastCanvasMouseY: -Number.MAX_SAFE_INTEGER,
-	};
 
 	constructor(camera: Camera, canvas: HTMLCanvasElement) {
 		this.camera = camera;
 		this.cameraController = new CameraController(this.camera);
 		this.canvas = canvas;
-		this.mouse = {
-			lastX: 0,
-			lastY: 0,
-			lastButton: 0,
-			movedSinceButtonDown: false,
-			over: false,
-			buttonDown: false
-		};
 
 		const mouseUp = this.mouseUp.bind(this);
 		const mouseMove = this.mouseMove.bind(this);
@@ -76,7 +63,7 @@ export default class InputController {
 		document.addEventListener("touchend", mouseUp);
 		document.addEventListener("touchcancel", mouseUp);
 
-		canvas.addEventListener("mouseleave", () => { this.mouse.over = false; });
+		canvas.addEventListener("mouseleave", () => { this.mouse.canvas.over = false; });
 
 		canvas.addEventListener("wheel", (event: WheelEvent) => {
 			if (!this.fpsMode) {
@@ -108,21 +95,39 @@ export default class InputController {
 	}
 
 	mouseDown(event: any) {
+		const x = event.clientX || (event.targetTouches && event.targetTouches[0].pageX) || 0;
+		const y = event.clientY || (event.targetTouches && event.targetTouches[0].pageY) || 0;
+		this.mouse.canvas.current[0] = x;
+		this.mouse.canvas.current[1] = y;
+		this.mouse.canvas.last[0] = x;
+		this.mouse.canvas.last[1] = y;
+
+		this.mouse.terrain.current[0] = this.mouse.terrain.input[0];
+		this.mouse.terrain.current[1] = this.mouse.terrain.input[1];
+		this.mouse.terrain.last[0] = this.mouse.terrain.input[0];
+		this.mouse.terrain.last[1] = this.mouse.terrain.input[1];
+
 		this.mouse.buttonDown = true;
-		this.mouse.lastX = event.clientX || (event.targetTouches && event.targetTouches[0].pageX) || this.mouse.lastX;
-		this.mouse.lastY = event.clientY || (event.targetTouches && event.targetTouches[0].pageY) || this.mouse.lastY;
-		this.mouse.movedSinceButtonDown = false;
-		this.mouse.lastButton = event.button;
+		this.mouse.button = event.button;
 	}
 
 	mouseMove(event: any) {
-		const x = event.clientX || (event.targetTouches && event.targetTouches[0].pageX) || this.mouse.lastX;
-		const y = event.clientY || (event.targetTouches && event.targetTouches[0].pageY) || this.mouse.lastY;
+		this.mouse.canvas.last[0] = this.mouse.canvas.current[0];
+		this.mouse.canvas.last[1] = this.mouse.canvas.current[1];
+		this.mouse.canvas.current[0] = event.clientX || (event.targetTouches && event.targetTouches[0].pageX) || 0;
+		this.mouse.canvas.current[1] = event.clientY || (event.targetTouches && event.targetTouches[0].pageY) || 0;
+
+		this.mouse.terrain.last[0] = this.mouse.terrain.current[0];
+		this.mouse.terrain.last[1] = this.mouse.terrain.current[1];
+		this.mouse.terrain.current[0] = this.mouse.terrain.input[0];
+		this.mouse.terrain.current[1] = this.mouse.terrain.input[1];
+		this.mouse.terrain.over = !!(this.mouse.terrain.input[0] || this.mouse.terrain.input[1]);
 
 		if (this.mouse.buttonDown) {
-			if (this.mouse.lastButton === 2) {
-				const dx = this.mouse.lastX - x;
-				const dy = this.mouse.lastY - y;
+			if (this.mouse.button === 2) {
+				const dx = this.mouse.canvas.last[0] - this.mouse.canvas.current[0];
+				const dy = this.mouse.canvas.last[1] - this.mouse.canvas.current[1];
+
 				if (!this.fpsMode) {
 					this.cameraController.updateArcBall([dx * 0.0075, dy * 0.0075], 0);
 				}
@@ -130,21 +135,21 @@ export default class InputController {
 					this.cameraController.updateFPS([0, 0, 0], dy * -0.0075, dx * -0.0075);
 				}
 			}
-
-			this.mouse.movedSinceButtonDown = true;
 		}
-		this.mouse.lastX = x;
-		this.mouse.lastY = y;
-
-		this.mouse.over = true;
+		this.mouse.canvas.over = true;
 	}
 
-	mouseUp(event: any) {
+	mouseUp(_event: any) {
 		// if (this.mouse.down === true && !this.mouse.moved &&
 		// 	event.target === this.canvas && event.button === 0) {
 		// 	// single left click on canvas
 		// }
 		this.mouse.buttonDown = false;
+	}
+
+	setTerrainMousePos(worldSpacePos: vec3 | number[]) {
+		this.mouse.terrain.input[0] = worldSpacePos[0];
+		this.mouse.terrain.input[1] = worldSpacePos[2];
 	}
 
 	update(now: number, deltaTime: number) {
