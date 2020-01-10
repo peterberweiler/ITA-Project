@@ -7,21 +7,21 @@ export default class EditorController {
 	public brush = {
 		height: {
 			radius: 100,
-			strength: 50,
+			strength: 50, //1-100
 			direction: 1,
 			type: 0,
 		},
 		flatten: {
 			radius: 100,
-			strength: 50,
+			strength: 50, //1-100
 			type: 0
 		},
 		layer: {
 			radius: 15,
-			strength: 50,
+			strength: 50, //1-100
 			type: 0,
-			minSlope: -0.1,
-			maxSlope: 1.1,
+			minSlope: 0, //0-1
+			maxSlope: 1, //0-1
 		}
 	}
 
@@ -83,13 +83,19 @@ export default class EditorController {
 			}
 
 			case this.brush.layer: {
+				const value = (this.selectedBrush.strength - 1) / 99;
+
+				const minSlope = Math.min(this.selectedBrush.minSlope, this.selectedBrush.maxSlope);
+				const maxSlope = Math.max(this.selectedBrush.minSlope, this.selectedBrush.maxSlope);
+
 				this.heightmapController.layerBrushPass.queueData({
 					points: [x, y, lastX, lastY],
 					type: this.selectedBrush.type,
 					radius: this.selectedBrush.radius,
-					strength: this.selectedBrush.strength * deltaTime * 0.001,
-					minSlope: this.selectedBrush.minSlope,
-					maxSlope: this.selectedBrush.maxSlope,
+					value: value,
+					strength: deltaTime * 0.01,
+					minSlope,
+					maxSlope,
 				});
 
 				this.heightmapController.queuePass(this.heightmapController.layerBrushPass);

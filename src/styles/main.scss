@@ -7,7 +7,7 @@
 }
 
 *[hidden] {
-    display: none;
+    display: none !important;
 }
 
 body {
@@ -64,23 +64,10 @@ body {
 
     overflow-y: scroll;
     overflow-x: hidden;
-    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
-    scrollbar-width: thin;
-
 
     z-index: 5;
 
-    &::-webkit-scrollbar {
-        width: 6px;
-    }
-
-    &::-webkit-scrollbar-track {
-        background: transparent;
-    }
-
-    &::-webkit-scrollbar-thumb {
-        background: rgba(0, 0, 0, 0.7);
-    }
+    @include customScrollbar;
 
     .menu-item,
     .menu-text,
@@ -177,6 +164,8 @@ body {
         top: $menu-bar-width * 0.1;
         width: 170px;
         // height: 320px;
+        display: flex;
+        flex-direction: column;
     }
 
     &:not(.small-window) {
@@ -187,10 +176,14 @@ body {
     }
 }
 
+#brush-window>span {
+    margin-bottom: 4px;
 
-#brush-window output {
-    float: right;
+    &>output {
+        float: right;
+    }
 }
+
 
 input[type=range] {
     -webkit-appearance: none;

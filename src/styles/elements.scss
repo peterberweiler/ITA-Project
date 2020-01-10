@@ -1,0 +1,47 @@
+@import "./global.scss";
+
+
+.selector {
+    word-spacing: 0;
+    white-space: 0;
+    border-spacing: 0;
+    display: flex;
+
+    $border: 1px solid rgba(255, 255, 255, 0.6);
+    $radius: 4px;
+
+    span,
+    img,
+    div,
+    a {
+        display: block;
+        border: $border;
+        border-right: none;
+        margin: 0;
+        padding: 4px;
+        background-color: rgba(255, 255, 255, 0.15);
+        cursor: pointer;
+
+        &[selected] {
+            background-color: $white;
+            color: $black;
+
+        }
+
+        &:hover {
+            background-color: $theme-color;
+            color: $white;
+        }
+
+        &:first-child {
+            border-top-left-radius: $radius;
+            border-bottom-left-radius: $radius;
+        }
+
+        &:last-child {
+            border-top-right-radius: $radius;
+            border-bottom-right-radius: $radius;
+            border-right: $border;
+        }
+    }
+}

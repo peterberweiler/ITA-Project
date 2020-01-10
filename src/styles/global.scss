@@ -20,3 +20,21 @@ $menu-background: rgba(0, 0, 0, 0.5);
     -ms-user-select: none;
     user-select: none;
 }
+
+
+@mixin customScrollbar {
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+    scrollbar-width: thin;
+
+    &::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: rgba(0, 0, 0, 0.7);
+    }
+}

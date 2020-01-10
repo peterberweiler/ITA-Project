@@ -12,6 +12,7 @@ uniform int uPointCount;
 uniform int uType;
 uniform float uRadius;
 uniform float uStrength;
+uniform float uValue;
 
 uniform float uMinSlope;
 uniform float uMaxSlope;
@@ -50,15 +51,6 @@ void main(void) {
 	vec3 dPdv =  Pt - Pb;
 	vec3 normal = normalize(cross(dPdu, dPdv));
 
-	// calculate slope
-	float slope = max(0.0, dot(vec3(0.0, 1.0, 0.0), normal));	
-	float midSlope = (uMinSlope + uMaxSlope) * 0.5;
-
-	//TODO: this needs to change, minSlope and maxSlope should be 1 not 0
-	float fadeInOutSlope = smoothstep(uMinSlope, midSlope, slope) * smoothstep(uMaxSlope, midSlope, slope);
-		
-
-
 
 	vec2 terrainSize = vec2(textureSize(uHeightmapTexture, 0));
 	vec2 fragmentPosition = vCoords * terrainSize;
@@ -75,28 +67,18 @@ void main(void) {
 		minDist = min(minDist, dist);
 	}
 
-	float weight = smoothstep(radius, 0.0, minDist);
+	float weight = uStrength * smoothstep(radius, 0.0, minDist);
+	float slope = max(0.0, dot(vec3(0.0, 1.0, 0.0), normal));	
+	
+	const float slopeOverlap = 0.05;
+	slope= smoothstep(uMinSlope-slopeOverlap, uMinSlope, slope) * smoothstep(uMaxSlope+slopeOverlap, uMaxSlope, slope);	
+	// slope = step(uMinSlope, slope) * (1.0 - step(uMaxSlope, slope));
 
-	weight *= uStrength;
-	weight *= fadeInOutSlope;
+	float value = uValue * slope;
 
 	oSurfaceMap0 = texture(uSurfaceMapTexture, vec3(vCoords, 0.0));
 	oSurfaceMap1 = texture(uSurfaceMapTexture, vec3(vCoords, 1.0));
 
-	oSurfaceMap0 = mix(oSurfaceMap0, vec4(1.0), vec4(weight * vec4(equal(vec4(uType), vec4(0, 1, 2, 3)))));
-	oSurfaceMap1 = mix(oSurfaceMap1, vec4(1.0), vec4(weight * vec4(equal(vec4(uType), vec4(4, 5, 6, 7)))));
-
-	float sum = oSurfaceMap0[0] + oSurfaceMap0[1] + oSurfaceMap0[2] + oSurfaceMap0[3] +
-			    oSurfaceMap1[0] + oSurfaceMap1[1] + oSurfaceMap1[2] + oSurfaceMap1[3];
-
-	oSurfaceMap0 /= sum;
-	oSurfaceMap1 /= sum;
-
-	//TODO:
-	// alpha = 1.0 - clamp(distToLine / maxDist, 0.0, 1.0);
-	// alpha *= dT;
-	// alpha = smoothstep(0.0, 1.0, alpha)
-	// alpha = uType == CHANNEL0 ? alpha : 0.0;
-	// oResult = mix(prevValue, uValue, alpha)
-
+	oSurfaceMap0 = mix(oSurfaceMap0, vec4(value), weight * vec4(equal(ivec4(uType), ivec4(0, 1, 2, 3))));
+	oSurfaceMap1 = mix(oSurfaceMap1, vec4(value), weight * vec4(equal(ivec4(uType), ivec4(4, 5, 6, 7))));
 }

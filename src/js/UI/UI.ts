@@ -49,8 +49,8 @@ class UIController extends EventEmitter {
 	public readonly sunPitch = document.getElementById("sun-pitch") as HTMLInputElement
 	public readonly sunYaw = document.getElementById("sun-yaw") as HTMLInputElement
 
-	public readonly layerTypeSelector = document.getElementById("layer-type-selector") as HTMLDivElement;
-	public readonly layerTypeSelectorButtons = document.querySelectorAll<HTMLSpanElement>("#layer-type-selector span");
+	public readonly layerBrushTypeSelector = new UISelector("#layer-type-selector", "div");
+	public readonly layerBrushOptions = document.getElementById("layer-brush-options") as HTMLDivElement;
 
 	public readonly brushTypeSelector = document.getElementById("brush-type-selector") as HTMLDivElement;
 	public readonly brushTypeSelectorButtons = document.querySelectorAll<HTMLImageElement>("#brush-type-selector img");
@@ -99,14 +99,6 @@ class UIController extends EventEmitter {
 		});
 
 		i = 0;
-		this.layerTypeSelectorButtons.forEach(item => {
-			const index = i++;
-			item.onclick = () => {
-				this.selectLayerType(index);
-			};
-		});
-
-		i = 0;
 		this.brushTypeSelectorButtons.forEach(item => {
 			const index = i++;
 			item.onclick = () => {
@@ -142,6 +134,10 @@ class UIController extends EventEmitter {
 		this.flattenBrushSelector.on("change", (i) => {
 			this.emit("flatten-brush-type-changed", i);
 		});
+
+		this.layerBrushTypeSelector.on("change", (i) => {
+			this.emit("layer-type-selected", i);
+		});
 	}
 
 	selectMenuIndex(index: number): void {
@@ -163,11 +159,16 @@ class UIController extends EventEmitter {
 					hide(this.settingsWindow, true);
 
 					hide(this.brushTypeSelector, index !== 0 && index !== 1);
-					hide(this.layerTypeSelector, index !== 3);
-					this.flattenBrushSelector.hide(index !== 2);
 
+					this.layerBrushTypeSelector.hide(index !== 3);
+					hide(this.layerBrushOptions, index !== 3);
+
+					this.flattenBrushSelector.hide(index !== 2);
 					this.brushWindowTitle.innerText = this.menuItems[index].getAttribute("title") || "";
-					this.brushWindow.style.top = this.menuItems[index].offsetTop + "px";
+
+					const buttonTop = this.menuItems[index].offsetTop;
+					this.updateBrushWindowSizeAndPos(buttonTop);
+
 					this.brushWindow.classList.remove("slide-out");
 				}, 100);
 				break;
@@ -189,11 +190,13 @@ class UIController extends EventEmitter {
 		this.emit("menu-selected", index);
 	}
 
-	selectLayerType(index: number) {
-		this.layerTypeSelectorButtons.forEach(item => item.removeAttribute("selected"));
-		this.layerTypeSelectorButtons[index].setAttribute("selected", "true");
+	updateBrushWindowSizeAndPos(top?: number) {
+		if (top === undefined) { top = this.brushWindow.offsetTop; }
 
-		this.emit("layer-type-selected", index);
+		const maxHeight = this.brushWindow.offsetParent!.clientHeight;
+		this.brushWindow.style.maxHeight = Math.floor(maxHeight * 0.9) + "px";
+		top = Math.min(top, maxHeight - this.brushWindow.clientHeight - 6);
+		this.brushWindow.style.top = top + "px";
 	}
 
 	setupLayerList(layers: Layers) {
@@ -248,7 +251,18 @@ class UIController extends EventEmitter {
 		sortable(this.layerList, "reload");
 	}
 
-	//TODO: create selector ui class
+	updateLayerBrushTypeSelector(layers: Layers) {
+		const children = this.layerBrushTypeSelector.getChildren();
+		for (let i = 0; i < children.length; ++i) {
+			const layerId = layers.layerOrder[i];
+			const spans = children[i].getElementsByTagName("span");
+			spans[0].style.backgroundColor = color2hex(layers.getLayerMaterial(layerId).getColor());
+			spans[1].innerText = "Layer " + layerId;
+			hide(children[i], !layers.getLayerActive(layerId));
+		}
+
+		this.layerBrushTypeSelector.select(0);
+	}
 
 	selectBrushType(index: number) {
 		this.brushTypeSelectorButtons.forEach(item => item.removeAttribute("selected"));

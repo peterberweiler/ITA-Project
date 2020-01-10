@@ -30,7 +30,11 @@ function setupRenderer() {
 	layers = heightmapController.textures.layers;
 
 	editorController = new EditorController(heightmapController);
-	window.onresize = () => renderer.resized();
+	window.onresize = () => {
+		renderer.resized();
+		UI.updateBrushWindowSizeAndPos();
+	};
+
 	renderer.resized();
 
 	// dummy heightmap
@@ -102,7 +106,7 @@ function setupUI() {
 	});
 
 	UI.on("layer-type-selected", (index: number) => {
-		editorController.brush.layer.type = index;
+		editorController.brush.layer.type = layers.layerOrder[index];
 	});
 
 	UI.on("brush-type-selected", (index: number) => {
@@ -115,6 +119,7 @@ function setupUI() {
 
 	UI.on("layer-order-changed", (order: number[]) => {
 		layers.layerOrder = order;
+		UI.updateLayerBrushTypeSelector(layers);
 	});
 
 	UI.on("layer-changed", (id, color, roughness, active) => {
@@ -122,6 +127,8 @@ function setupUI() {
 		material.setColor(color);
 		material.setRoughness(roughness);
 		layers.setLayerActive(id, active);
+
+		UI.updateLayerBrushTypeSelector(layers);
 	});
 
 	UI.on("sun-changed", (pitch: number, yaw: number) => {
@@ -144,6 +151,7 @@ function setupUI() {
 
 	UI.setupLayerList(layers);
 
+	UI.updateLayerBrushTypeSelector(layers);
 	UI.selectMenuIndex(0);
 }
 

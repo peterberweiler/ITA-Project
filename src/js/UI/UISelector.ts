@@ -42,6 +42,14 @@ class UISelector extends EventEmitter {
 	hide(hidden: boolean) {
 		hide(this.element, hidden);
 	}
+
+	getElement() {
+		return this.element;
+	}
+
+	getChildren() {
+		return this.children;
+	}
 }
 
 export default UISelector;

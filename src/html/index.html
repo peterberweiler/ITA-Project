@@ -69,11 +69,11 @@
 			</svg>
 		</div>
 	</div>
-	<div id="brush-window" class="window small-window">
+	<div id="brush-window" class="window small-window" hidden>
 		<h1 class="title"></h1>
-		Radius <output id="radius-output">10</output>
+		<span>Radius <output id="radius-output">10</output></span>
 		<input id="radius-input" type="range" min=1 value=10 max=250 />
-		Strength <output id="strength-output">10</output>
+		<span>Strength <output id="strength-output">10</output></span>
 		<input id="strength-input" type="range" min=1 value=10 max=100 />
 
 		<div id="brush-type-selector">
@@ -97,16 +97,21 @@
 			<img src="/data/brushes/thumb15.png">
 		</div>
 
-		<div id="layer-type-selector">
-			<span style="background-color:rgb(255, 255, 255)" selected></span>
-			<span style="background-color:rgb(51, 51, 51)"></span>
-			<span style="background-color:rgb(18, 102, 13)"></span>
-			<span style="background-color:rgb(51, 25, 13)"></span>
-			<br>
-			<br>
+		<div id="layer-brush-options">
 			Slope &nbsp; \_
-			<input id="min-slope-input" type="range" min=-0.1 max=1.1 step=0.05 />
-			<input id="max-slope-input" type="range" min=-0.1 max=1.1 step=0.05 />
+			<input id="min-slope-input" type="range" min=0 max=1 step=0.01 />
+			<input id="max-slope-input" type="range" min=0 max=1 step=0.01 />
+		</div>
+
+		<div id="layer-type-selector">
+			<div><span></span><span>Layer 0</span></div>
+			<div><span></span><span>Layer 1</span></div>
+			<div><span></span><span>Layer 2</span></div>
+			<div><span></span><span>Layer 3</span></div>
+			<div><span></span><span>Layer 4</span></div>
+			<div><span></span><span>Layer 5</span></div>
+			<div><span></span><span>Layer 6</span></div>
+			<div><span></span><span>Layer 7</span></div>
 		</div>
 
 		<div id="flatten-brush-selector" class="selector">

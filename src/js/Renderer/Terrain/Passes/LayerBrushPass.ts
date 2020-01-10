@@ -9,6 +9,7 @@ export type LayerBrushPassData = {
 	type: number,
 	radius: number,
 	strength: number,
+	value: number,
 	minSlope: number,
 	maxSlope: number,
 }
@@ -21,6 +22,7 @@ export class LayerBrushPass extends Pass {
 	private readonly uPointCount: WebGLUniformLocation;
 	private readonly uType: WebGLUniformLocation;
 	private readonly uRadius: WebGLUniformLocation;
+	private readonly uValue: WebGLUniformLocation;
 	private readonly uStrength: WebGLUniformLocation;
 	private readonly uMinSlope: WebGLUniformLocation;
 	private readonly uMaxSlope: WebGLUniformLocation;
@@ -32,6 +34,7 @@ export class LayerBrushPass extends Pass {
 		this.uType = this.shader.getUniformLocation("uType");
 		this.uRadius = this.shader.getUniformLocation("uRadius");
 		this.uStrength = this.shader.getUniformLocation("uStrength");
+		this.uValue = this.shader.getUniformLocation("uValue");
 		this.uPoints = this.shader.getUniformLocation("uPoints");
 		this.uPointCount = this.shader.getUniformLocation("uPointCount");
 		this.uMinSlope = this.shader.getUniformLocation("uMinSlope");
@@ -54,6 +57,7 @@ export class LayerBrushPass extends Pass {
 			this.shader.setUniformI(this.uType, data.type);
 			this.shader.setUniformF(this.uRadius, data.radius);
 			this.shader.setUniformF(this.uStrength, data.strength);
+			this.shader.setUniformF(this.uValue, data.value);
 			this.shader.setUniformF(this.uMinSlope, data.minSlope);
 			this.shader.setUniformF(this.uMaxSlope, data.maxSlope);
 		}
