@@ -159,7 +159,7 @@ export default class Renderer {
 		return this.heightmapController;
 	}
 
-	setCanvasMouseState(overCanvas: boolean, canvasMouseX: number, canvasMouseY: number) {
+	setCanvasMouseState(overCanvas: boolean, canvasMouseX: number, canvasMouseY: number, brushRadius: number) {
 		this.mouseOverCanvas = overCanvas;
 		this.mousePosX = canvasMouseX;
 		this.mousePosY = canvasMouseY;

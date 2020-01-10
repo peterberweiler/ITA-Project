@@ -153,7 +153,8 @@ function update(now: number, deltaTime: number) {
 	renderer.setCanvasMouseState(
 		inputController.mouse.canvas.over,
 		inputController.mouse.canvas.current[0],
-		inputController.mouse.canvas.current[1]
+		inputController.mouse.canvas.current[1],
+		editorController.selectedBrush ? editorController.selectedBrush.radius || 0 : 0,
 	);
 
 	inputController.setTerrainMousePos(renderer.getTerrain().getMouseWorldSpacePos());
