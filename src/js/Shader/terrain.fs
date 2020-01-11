@@ -137,20 +137,17 @@ float linearDepth(float depth)
     return 2.0 * n * f / (f + n - z_n * (f - n));
 }
 
-float getGridColor(vec3 position, vec3 campos, float size, float dotColor, float lineColor) {
+// returns the grid value 1.0 is grid, 0.0 no grid
+float getGridValue(vec3 position, vec3 campos, float size) {
 	vec2 coord = position.xz / size;
 	vec2 grid = abs(fract(coord - 0.5) - 0.5) / fwidth(coord);
-	// float dots = (grid.x + grid.y) * 0.75; // constant controls size of dots
 	float lines = min(grid.x, grid.y);
 
 	vec3 pc = campos - position;
 	pc.y *= 0.333; // make the grid spread more in y than in xz
 	float distanceLimiter = max(min(1.0 - dot(pc, pc) / 400000.0, 1.0), 0.0); // grid is only visible around camera position
 
-	lines = max(min(lines / distanceLimiter, 1.0), lineColor); // limits the darkness of the lines
-	// dots = max(min(dots / distanceLimiter, 1.0), dotColor); // limits the darkness of the dots
-	// return dots * lines;
-	return lines;
+	return max(min(1.0 - lines / distanceLimiter, 1.0), 0.0);
 }
 
 vec4 unpackUnorm4x8(uint value){
@@ -260,7 +257,12 @@ void main(void) {
     color = accurateLinearToSRGB(color);//pow(color, vec3(1.0/2.2));
 
 	// apply grid
-	color *= getGridColor(vWorldSpacePos, uCamPos, 8.0, 0.05, 0.97);
+	// color *= max(0.95, getGridValue(vWorldSpacePos, uCamPos, 8.0));
+
+	// color = min(max(color, 0.0), 1.0);
+	float currentColorBrightness = step(0.5, max(color.r, max(color.g, color.b)));
+	vec3 gridColor = -0.13 * vec3(currentColorBrightness - 0.5) * getGridValue(vWorldSpacePos, uCamPos, 8.0);
+	color += gridColor;
 
 	//	
 	oColor = vec4(color, 1.0);
