@@ -17,11 +17,13 @@ uniform sampler2D uSurfacemapTexture;
 uniform sampler2DArray uLayerWeightTexture;
 uniform vec3 uColor;
 uniform vec3 uCamPos;
+uniform vec3 uCurserPosRadius;
 uniform float uTexelSizeInMeters;
 uniform float uHeightScaleInMeters;
 uniform uint uActiveLayers;
 uniform uvec4 uLayerOrder[2];
 uniform uint uAlphaBlendingEnabled;
+uniform uint uDrawCursor;
 
 struct Material {
 	uint albedoRoughness;
@@ -238,6 +240,18 @@ void main(void) {
 	// fog
 	float fogAlpha = exp(-0.66 * linearDepth(gl_FragCoord.z) / 10000.0);
 	color += mix(skyColor, color, clamp(fogAlpha * fogAlpha, 0.0, 1.0));
+
+
+	// mouse curser
+	if (uDrawCursor != 0u)
+	{
+		vec3 curserColor = vec3(1.0, 0.0, 0.0);
+		float distToBrushBorder = abs(uCurserPosRadius.z - distance(vWorldSpacePos.xz, uCurserPosRadius.xy));
+		float alpha = 1.0 - clamp(distToBrushBorder / min(fwidth(vWorldSpacePos.x), fwidth(vWorldSpacePos.z)) * 0.5, 0.0, 1.0);
+		color = mix(color, curserColor, vec3(alpha));
+	}
+	
+
 
 	color = uncharted2Tonemap(1.0 * color);
 	vec3 whiteScale = 1.0/uncharted2Tonemap(W);

@@ -16,6 +16,7 @@ export default class Renderer {
 	private mouseOverCanvas: boolean = false;
 	private mousePosX: number = 0;
 	private mousePosY: number = 0;
+	private brushRadius: number = 20;
 	private layers: Layers;
 	public sunDir: [number, number, number] = [0, 0.5620833778521306, 0.8270805742745618];
 
@@ -131,9 +132,11 @@ export default class Renderer {
 			this.sunDir,
 			this.heightmapController.textures,
 			this.layers,
+			this.brushRadius,
 			this.mouseOverCanvas,
 			this.mousePosX,
 			this.mousePosY,
+			this.mouseOverCanvas
 		);
 		// console.log(this.terrain.getMouseWorldSpacePos());
 	}
@@ -163,5 +166,6 @@ export default class Renderer {
 		this.mouseOverCanvas = overCanvas;
 		this.mousePosX = canvasMouseX;
 		this.mousePosY = canvasMouseY;
+		this.brushRadius = brushRadius;
 	}
 }
