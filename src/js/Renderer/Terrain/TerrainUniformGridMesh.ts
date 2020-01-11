@@ -23,6 +23,7 @@ export default class TerrainUniformGridMesh {
 	private uAlphaBlendingEnabledLocation: WebGLUniformLocation;
 	private uActiveLayersLocation: WebGLUniformLocation;
 	private uLayerOrderLocation: WebGLUniformLocation[];
+	private uTimeLocation: WebGLUniformLocation;
 	private uMaterialLocation: number;
 
 	constructor() {
@@ -39,6 +40,7 @@ export default class TerrainUniformGridMesh {
 		this.uLayerWeightTexture = this.terrainShader.getUniformLocation("uLayerWeightTexture");
 		this.uAlphaBlendingEnabledLocation = this.terrainShader.getUniformLocation("uAlphaBlendingEnabled");
 		this.uActiveLayersLocation = this.terrainShader.getUniformLocation("uActiveLayers");
+		this.uTimeLocation = this.terrainShader.getUniformLocation("uTime");
 		this.uLayerOrderLocation = [];
 		for (let i: number = 0; i < MAX_LAYERS / 4; i += 1) {
 			this.uLayerOrderLocation[i] = this.terrainShader.getUniformLocation("uLayerOrder[" + i + "]");
@@ -60,6 +62,7 @@ export default class TerrainUniformGridMesh {
 		this.terrainShader.setUniformUi(this.uAlphaBlendingEnabledLocation, drawParams.enableAlphaBlending ? 1 : 0);
 		this.terrainShader.setUniformUi(this.uActiveLayersLocation, drawParams.activeLayers);
 		this.terrainShader.setUniformUi(this.uDrawCursorLocation, drawParams.drawCursor ? 1 : 0);
+		this.terrainShader.setUniformF(this.uTimeLocation, drawParams.time);
 
 		for (let i: number = 0; i < MAX_LAYERS / 4; i += 1) {
 			let values: number[] = [];

@@ -8,6 +8,7 @@ export default class TerrainDrawParams {
 	heightScaleInMeters: number = 1;
 	enableAlphaBlending: boolean = false;
 	drawCursor: boolean = false;
+	time: number = 0;
 	activeLayers: number = 0;
 	layerOrder: number[] = [];
 	heightMap: WebGLTexture | null = null;

@@ -127,6 +127,7 @@ export default class Renderer {
 		mat4.multiply(viewProjection, this.camera.projectionMatrix, this.camera.viewMatrix);
 
 		this.terrain.draw(
+			_currentTime,
 			viewProjection,
 			this.camera.getPosition(),
 			this.sunDir,

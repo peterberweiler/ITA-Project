@@ -24,6 +24,7 @@ uniform uint uActiveLayers;
 uniform uvec4 uLayerOrder[2];
 uniform uint uAlphaBlendingEnabled;
 uniform uint uDrawCursor;
+uniform float uTime;
 
 struct Material {
 	uint albedoRoughness;
@@ -207,7 +208,7 @@ void main(void) {
 		weightSum += weight;
 	}
 
-	albedoRoughness = uAlphaBlendingEnabled != 0u ? albedoRoughness : albedoRoughness / weightSum;
+	albedoRoughness = uAlphaBlendingEnabled == 0u && weightSum != 0.0 ? albedoRoughness / weightSum : albedoRoughness;
 	albedoRoughness.a = 0.8;
 
 	//albedo += surfaceWeights[0] * vec3(1.0, 1.0, 1.0);
@@ -245,6 +246,13 @@ void main(void) {
 		vec3 curserColor = vec3(1.0, 0.0, 0.0);
 		float distToBrushBorder = abs(uCurserPosRadius.z - distance(vWorldSpacePos.xz, uCurserPosRadius.xy));
 		float alpha = 1.0 - clamp(distToBrushBorder / min(fwidth(vWorldSpacePos.x), fwidth(vWorldSpacePos.z)) * 0.5, 0.0, 1.0);
+		vec2 centerToBorder = normalize(vWorldSpacePos.xz - uCurserPosRadius.xy);
+		float angle = atan(centerToBorder.y, centerToBorder.x);
+		angle += uTime * 0.0005;
+		angle *= (1.0 / (2.0 * PI));
+		angle = fract(angle);
+		angle *= 128.0;
+		curserColor = mix(vec3(10.0), vec3(0.0), (int(angle) & 1) != 0 ? 1.0 : 0.0);
 		color = mix(color, curserColor, vec3(alpha));
 	}
 	

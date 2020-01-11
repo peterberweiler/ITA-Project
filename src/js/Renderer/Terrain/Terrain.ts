@@ -59,7 +59,7 @@ export default class Terrain {
 		Renderer.checkGLError();
 	}
 
-	draw(viewProjection: mat4, camPos: vec3, sunDir: vec3 | number[], textures: TextureBundle, layers: Layers, brushRadius: number, readMouseWorldSpacePos: boolean = false, mousePosX: number = 0, mousePosY: number = 0, drawCursor: boolean = false) {
+	draw(time: number, viewProjection: mat4, camPos: vec3, sunDir: vec3 | number[], textures: TextureBundle, layers: Layers, brushRadius: number, readMouseWorldSpacePos: boolean = false, mousePosX: number = 0, mousePosY: number = 0, drawCursor: boolean = false) {
 		gl.bindFramebuffer(gl.FRAMEBUFFER, this.fbo);
 		gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 		let buffers: number[] = [gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1];
@@ -90,6 +90,7 @@ export default class Terrain {
 			terrainDrawParams.texelSizeInMeters = this.texelSizeInMeters;
 			terrainDrawParams.heightScaleInMeters = this.heightScaleInMeters;
 			terrainDrawParams.enableAlphaBlending = false;
+			terrainDrawParams.time = time;
 			terrainDrawParams.layerOrder = layers.layerOrder;
 			terrainDrawParams.heightMap = textures.heightMap.current().id;
 			terrainDrawParams.shadowMap = textures.shadowMap.id;
