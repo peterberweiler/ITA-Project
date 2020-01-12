@@ -174,6 +174,12 @@ function setupUI() {
 			case 3:
 				ImportExport.downloadOBJ(heightmapController);
 				break;
+			case 4:
+				ImportExport.downloadPNGLayers8Bit(heightmapController);
+				break;
+			case 5:
+				ImportExport.downloadPNGLayers16Bit(heightmapController);
+				break;
 		}
 	});
 

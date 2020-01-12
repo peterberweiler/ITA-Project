@@ -2,8 +2,9 @@
 // import { PNG } from "pngjs/browser";
 import { PNG } from "pngjs";
 import * as HelperFunctions from "./HelperFunctions";
+import Framebuffer from "./Renderer/Framebuffer";
+import { gl } from "./Renderer/Global";
 import HeightmapController from "./Renderer/Terrain/HeightmapController";
-import { DownloadPass } from "./Renderer/Terrain/Passes/DownloadPass";
 import UI from "./UI/UI";
 
 const SIZE: [number, number] = [1024, 1024];
@@ -58,54 +59,124 @@ function createFlatMesh(resolutionX: number, resolutionY: number) {
 
 export function downloadOBJ(heightmapController: HeightmapController) {
 	UI.setExportFileInfo();
-	getHeightMapData(heightmapController, (hmData: Float32Array) => {
-		const objSource = createOBJ(hmData);
-		HelperFunctions.downloadBlob("terrain.obj", new Blob([objSource]));
-	});
+	const data = getHeightMapData(heightmapController);
+	const objSource = createOBJ(data);
+	HelperFunctions.downloadBlob("terrain.obj", new Blob([objSource]));
 }
 
-export function getHeightMapData(heightmapController: HeightmapController, callback: (data: Float32Array) => void) {
-	heightmapController.downloadPass.queueDownload({
-		textureId: heightmapController.textures.heightMap.current().id,
-		mode: DownloadPass.R_FLOAT_MODE,
-		callback
-	});
+export function getLayerWeightData(heightmapController: HeightmapController) {
+	const fb = gl.createFramebuffer();
+	gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+	gl.viewport(0, 0, SIZE[0], SIZE[1]);
 
-	heightmapController.queuePass(heightmapController.downloadPass);
+	const data = [
+		new Float32Array(SIZE[0] * SIZE[1] * 4),
+		new Float32Array(SIZE[0] * SIZE[1] * 4)
+	];
+	gl.framebufferTextureLayer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, heightmapController.textures.layers.weightMapCurrent, 0, 0);
+	gl.readPixels(0, 0, SIZE[0], SIZE[1], gl.RGBA, gl.FLOAT, data[0]);
+
+	gl.framebufferTextureLayer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, heightmapController.textures.layers.weightMapCurrent, 0, 1);
+	gl.readPixels(0, 0, SIZE[0], SIZE[1], gl.RGBA, gl.FLOAT, data[1]);
+
+	gl.deleteFramebuffer(fb);
+	Framebuffer.unbind();
+	return data;
+}
+
+export function getHeightMapData(heightmapController: HeightmapController) {
+	const fb = gl.createFramebuffer();
+	gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+	gl.viewport(0, 0, SIZE[0], SIZE[1]);
+
+	const data = new Float32Array(SIZE[0] * SIZE[1]);
+	const texId = heightmapController.textures.heightMap.current().id;
+	gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texId, 0);
+	gl.readPixels(0, 0, SIZE[0], SIZE[1], gl.RED, gl.FLOAT, data);
+
+	gl.deleteFramebuffer(fb);
+	Framebuffer.unbind();
+	return data;
 }
 
 export function downloadPNGHeightmap8Bit(heightmapController: HeightmapController) {
-	getHeightMapData(heightmapController, (hmData: Float32Array) => {
-		const { min, max } = HelperFunctions.arrayMinMax(hmData);
+	const hmData = getHeightMapData(heightmapController);
+	const { min, max } = HelperFunctions.arrayMinMax(hmData);
 
-		const buffer = new Uint8Array(SIZE[0] * SIZE[1] * 4);
-		for (let i = 0; i < hmData.length; ++i) {
-			const height = Math.round((hmData[i] - min) / (max - min) * 255);
+	const buffer = new Uint8Array(SIZE[0] * SIZE[1] * 4);
+	for (let i = 0; i < hmData.length; ++i) {
+		const height = Math.round((hmData[i] - min) / (max - min) * 255);
 
-			const index = i * 4;
-			buffer[index] = height;
-			buffer[index + 1] = height;
-			buffer[index + 2] = height;
-			buffer[index + 3] = 255;
-		}
+		const index = i * 4;
+		buffer[index] = height;
+		buffer[index + 1] = height;
+		buffer[index + 2] = height;
+		buffer[index + 3] = 255;
+	}
 
-		UI.setExportFileInfo(min, max);
-		const result = HelperFunctions.rgbaDataToPNGDataURL(buffer, SIZE);
-		HelperFunctions.downloadURI("Heightmap.png", result);
-	});
+	UI.setExportFileInfo(min, max);
+	const result = HelperFunctions.rgbaDataToPNGDataURL(buffer, SIZE);
+	HelperFunctions.downloadURI("Heightmap.png", result);
 }
 
 export function downloadPNGHeightmap16Bit(heightmapController: HeightmapController) {
-	getHeightMapData(heightmapController, (hmData: Float32Array) => {
-		const { min, max } = HelperFunctions.arrayMinMax(hmData);
-		const bitmap = new Uint16Array(SIZE[0] * SIZE[1]);
+	const hmData = getHeightMapData(heightmapController);
+	const { min, max } = HelperFunctions.arrayMinMax(hmData);
+	const bitmap = new Uint16Array(SIZE[0] * SIZE[1]);
 
-		for (let i = 0; i < bitmap.length; ++i) {
-			bitmap[i] = Math.round((hmData[i] - min) / (max - min) * 65535);
+	for (let i = 0; i < bitmap.length; ++i) {
+		bitmap[i] = Math.round((hmData[i] - min) / (max - min) * 65535);
+	}
+	UI.setExportFileInfo(min, max);
+	downloadGrayscale16BitPNG(bitmap, "heightmap_16bit.png", SIZE);
+}
+
+export function downloadPNGLayers8Bit(heightmapController: HeightmapController) {
+	UI.setExportFileInfo();
+	const data = getLayerWeightData(heightmapController);
+	const buffer = new Uint8Array(SIZE[0] * SIZE[1] * 4);
+
+	for (let layerId = 0; layerId < 8; ++layerId) {
+		if (heightmapController.textures.layers.getLayerActive(layerId)) {
+			const layerData = data[Math.floor(layerId / 4)];
+			const layerDataOffset = layerId % 4;
+
+			for (let i = 0; i < buffer.length; i += 4) {
+				const value = Math.round(layerData[layerDataOffset + i] * 255);
+
+				buffer[i] = value;
+				buffer[i + 1] = value;
+				buffer[i + 2] = value;
+				buffer[i + 3] = 255;
+			}
+			const result = HelperFunctions.rgbaDataToPNGDataURL(buffer, SIZE);
+
+			setTimeout(() => {
+				HelperFunctions.downloadURI("layer" + layerId + ".png", result);
+			}, layerId * 200);
 		}
-		UI.setExportFileInfo(min, max);
-		downloadGrayscale16BitPNG(bitmap, "heightmap_16bit.png", SIZE);
-	});
+	}
+}
+
+export function downloadPNGLayers16Bit(heightmapController: HeightmapController) {
+	UI.setExportFileInfo();
+	const data = getLayerWeightData(heightmapController);
+
+	for (let layerId = 0; layerId < 8; ++layerId) {
+		if (heightmapController.textures.layers.getLayerActive(layerId)) {
+			const layerData = data[Math.floor(layerId / 4)];
+			const layerDataOffset = layerId % 4;
+
+			const bitmap = new Uint16Array(SIZE[0] * SIZE[1]);
+			for (let i = 0; i < bitmap.length; ++i) {
+				bitmap[i] = Math.round(layerData[layerDataOffset + (i * 4)] * 65535);
+			}
+
+			setTimeout(() => {
+				downloadGrayscale16BitPNG(bitmap, "layer" + layerId + "_16bit.png", SIZE);
+			}, layerId * 200);
+		}
+	}
 }
 
 function downloadGrayscale16BitPNG(data: Uint16Array, filename: string, size: [number, number]) {
@@ -131,8 +202,7 @@ function downloadGrayscale16BitPNG(data: Uint16Array, filename: string, size: [n
 
 export function downloadFloatHeightMap(heightmapController: HeightmapController) {
 	UI.setExportFileInfo();
-	getHeightMapData(heightmapController, (hmData: Float32Array) => {
-		HelperFunctions.downloadBlob("Heightmap_Red32F.raw", new Blob([hmData]));
-	});
+	const data = getHeightMapData(heightmapController);
+	HelperFunctions.downloadBlob("Heightmap_Red32F.raw", new Blob([data]));
 }
 

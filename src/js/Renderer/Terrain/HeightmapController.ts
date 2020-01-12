@@ -2,7 +2,6 @@ import Framebuffer from "../Framebuffer";
 import { gl, TextureBundle } from "../Global";
 import Texture, { PingPongTexture } from "../Texture";
 import Layers from "./Layers";
-import { DownloadPass } from "./Passes/DownloadPass";
 import { GenerateSurfacePass } from "./Passes/GenerateSurfacePass";
 import { HeightBrushPass } from "./Passes/HeightBrushPass";
 import { LayerBrushPass } from "./Passes/LayerBrushPass";
@@ -61,7 +60,6 @@ export default class HeightmapController {
 	readonly layerBrushPass: LayerBrushPass;
 	readonly shadowPass: ShadowPass;
 	readonly generateSurfacePass: GenerateSurfacePass;
-	readonly downloadPass: DownloadPass;
 
 	constructor(layers: Layers) {
 		this.framebuffer = new Framebuffer();
@@ -80,7 +78,6 @@ export default class HeightmapController {
 		this.layerBrushPass = new LayerBrushPass();
 		this.shadowPass = new ShadowPass();
 		this.generateSurfacePass = new GenerateSurfacePass();
-		this.downloadPass = new DownloadPass();
 
 		// force empty textures into correct format
 		this.textures.heightMap.initialize((tex) => tex.updateFloatRedData(this.size, null));
