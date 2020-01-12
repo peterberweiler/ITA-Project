@@ -67,6 +67,28 @@ export default class Texture {
 		this.size = size;
 		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, size[0], size[1], 0, gl.RGBA, gl.FLOAT, data);
 	}
+
+	static fromRGBImage(uri: string): Texture {
+		const image = new Image();
+		image.src = uri;
+		const texture = new Texture();
+		texture.updateRGBData([1, 1], null);
+		image.onload = () => {
+			texture.updateRGBDataWithImage(image);
+		};
+		return texture;
+	}
+
+	static fromRGBAImage(uri: string): Texture {
+		const image = new Image();
+		image.src = uri;
+		const texture = new Texture();
+		texture.updateRGBAData([1, 1], null);
+		image.onload = () => {
+			texture.updateRGBADataWithImage(image);
+		};
+		return texture;
+	}
 }
 
 /**

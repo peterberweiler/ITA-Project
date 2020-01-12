@@ -4,7 +4,6 @@ import Renderer from "../Renderer";
 import Skybox from "../Skybox";
 import Texture from "../Texture";
 import Layers, { MAX_LAYERS } from "./Layers";
-import Surface from "./Surface";
 import TerrainClipMapMesh from "./TerrainClipMapMesh";
 import TerrainDrawParams from "./TerrainDrawParams";
 import TerrainUniformGridMesh from "./TerrainUniformGridMesh";
@@ -22,8 +21,6 @@ export default class Terrain {
 	private texelSizeInMeters: number = 1.0;
 	private heightScaleInMeters: number = 1.0;
 	private worldSpaceMousePos: vec3 = vec3.create();
-
-	readonly surface: Surface;
 
 	constructor() {
 		this.clipMapMesh = new TerrainClipMapMesh();
@@ -55,7 +52,6 @@ export default class Terrain {
 		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT1, gl.TEXTURE_2D, this.readBackDepthAttachment.id, 0);
 		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
-		this.surface = new Surface();
 		Renderer.checkGLError();
 	}
 

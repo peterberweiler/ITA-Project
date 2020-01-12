@@ -20,7 +20,7 @@ module.exports = env => {
 		module: {
 			rules: [
 				{ test: /\.tsx?$/, loader: "awesome-typescript-loader" },
-				{ test: /\.(txt|fs|vs)$/i, use: "raw-loader" },
+				{ test: /\.(txt|obj|fs|vs)$/i, use: "raw-loader" },
 			]
 		},
 		mode: isDev ? "development" : "production",
