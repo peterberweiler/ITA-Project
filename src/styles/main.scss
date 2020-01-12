@@ -169,10 +169,16 @@ body {
     }
 
     &:not(.small-window) {
-        top: 5%;
-        left: 10%;
-        width: 80%;
-        height: 90%;
+        left: $menu-bar-width * 1.1;
+        top: $menu-bar-width * 0.1;
+        width: 480px;
+        bottom: $menu-bar-width * 0.1;
+
+
+        padding-right: 2px;
+        overflow-y: scroll;
+        overflow-x: hidden;
+        @include customScrollbar;
     }
 }
 
@@ -216,4 +222,10 @@ input[type=range] {
         cursor: pointer;
         border: none;
     }
+}
+
+
+.muted {
+    font-size: 75%;
+    opacity: .7;
 }

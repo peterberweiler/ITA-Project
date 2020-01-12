@@ -25,6 +25,7 @@ declare interface UIController {
 	on(event: "layer-order-changed", listener: (order: number[]) => void): this;
 	on(event: "layer-changed", listener: (id: number, color: number[], roughness: number, active: boolean) => void): this;
 	on(event: "camera-mode-changed", listener: (fpsMode: boolean) => void): this;
+	on(event: "export", listener: (mode: number) => void): this;
 }
 
 class UIController extends EventEmitter {
@@ -159,6 +160,11 @@ class UIController extends EventEmitter {
 				this.radiusInput.oninput();
 			}
 		});
+
+		const exportButtons = document.querySelectorAll<HTMLButtonElement>("#export-box button");
+		exportButtons.forEach((button, i) => {
+			button.onclick = this.emit.bind(this, "export", i);
+		});
 	}
 
 	selectMenuIndex(index: number): void {
@@ -290,6 +296,11 @@ class UIController extends EventEmitter {
 		this.brushTypeSelectorButtons[index].setAttribute("selected", "true");
 
 		this.emit("brush-type-selected", index);
+	}
+
+	setExportFileInfo(min?: number, max?: number) {
+		document.getElementById("export-info")!.innerText =
+			(min && max) ? "Minimum Height: " + min + "\nMaximum Height: " + max : "";
 	}
 }
 

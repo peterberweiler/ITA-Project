@@ -74,21 +74,11 @@
 }
 
 #layers-window {
-    overflow-y: auto;
-
-    left: $menu-bar-width * 1.1;
-    top: $menu-bar-width * 0.1;
     width: 480px;
     height: auto;
     max-height: 540px;
     bottom: $menu-bar-width * 0.1;
 
-    padding-right: 2px;
-
-    overflow-y: scroll;
-    overflow-x: hidden;
-
-    @include customScrollbar;
 
     .sortable {
         margin: 16px 0;
@@ -195,19 +185,54 @@
     &>span {
         display: inline-block;
         width: 150px;
-        margin-top: 12px;
+        margin-left: 20px;
+    }
+
+    &>h2 {
+        margin: 0;
+        margin-top: 32px;
+        font-size: 14px;
+        text-transform: uppercase;
+
+        &:first-of-type {
+            margin-top: 0;
+        }
     }
 
     #sun-setting-box {
         &>span {
             display: inline-block;
-            margin-left: 32px;
+            margin-left: 20px;
             width: 50px;
         }
 
         &>input {
 
             max-width: 200px;
+        }
+    }
+
+    #export-box {
+        margin-left: 20px;
+    }
+
+    button {
+        margin-top: 4px;
+        min-height: 28px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        background-color: rgba(255, 255, 255, 0.1);
+        color: white;
+        border-radius: 4px;
+        -moz-appearance: textfield;
+
+        &:disabled {
+            border-color: rgba(0, 0, 0, 0.2);
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+
+        &:enabled:focus,
+        &:enabled:hover {
+            border-color: $theme-color;
         }
     }
 }

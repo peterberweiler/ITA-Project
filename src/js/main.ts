@@ -1,4 +1,5 @@
 import EditorController from "./EditorController";
+import * as ImportExport from "./ImportExport";
 import { Camera } from "./Renderer/Cameras";
 import InputController from "./Renderer/InputController";
 import Renderer from "./Renderer/Renderer";
@@ -157,6 +158,23 @@ function setupUI() {
 	UI.on("camera-mode-changed", (fpsMode: boolean) => {
 		inputController.setFpsMode(fpsMode);
 		UI.wheelEnabled = fpsMode;
+	});
+
+	UI.on("export", mode => {
+		switch (mode) {
+			case 0:
+				ImportExport.downloadPNGHeightmap8Bit(heightmapController);
+				break;
+			case 1:
+				ImportExport.downloadPNGHeightmap16Bit(heightmapController);
+				break;
+			case 2:
+				ImportExport.downloadFloatHeightMap(heightmapController);
+				break;
+			case 3:
+				ImportExport.downloadOBJ(heightmapController);
+				break;
+		}
 	});
 
 	UI.setupLayerList(layers);

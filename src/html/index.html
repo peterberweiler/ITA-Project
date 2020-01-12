@@ -144,16 +144,27 @@
 	</div>
 	<div id="settings-window" class="window" hidden>
 		<h1>Settings</h1>
-		<span>Sun Position</span><br>
+		<h2>Sun Position</h2>
 		<div id="sun-setting-box">
 			<span>Pitch:</span> <input id="sun-pitch" type="range" min=0 max=1 step=0.01 value=0.4 /><br>
 			<span>Yaw:</span> <input id="sun-yaw" type="range" min=0 max=1 step=0.01 value=0.0 />
 		</div>
-		<br>
+		<h2>General Settings</h2>
 		<span>Camera FPS Mode:</span> <input type="checkbox" id="camera-mode-input" checked />
 		<br>
 		<span>Debug Mode:</span> <input type="checkbox" id="debug-mode-input" />
-
+		<br>
+		<h2>Export</h2>
+		<div id="export-box">
+			<button>Download Heightmap as 8-Bit PNG</button><br>
+			<button>Download Heightmap as 16-Bit PNG</button><br>
+			<button>Download Heightmap as RAW (Float32 Little Endian)</button><br>
+			<button>Download Mesh (large/slow)</button><br>
+			<span class="muted">The dimensions of the exported data are 1024 x 1024.</span>
+			<br>
+			<span id="export-info"></span>
+		</div>
+		<br>
 
 	</div>
 </body>
