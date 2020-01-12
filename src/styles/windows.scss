@@ -191,8 +191,23 @@
 
 #settings-window {
 
-    #sun-pitch,
-    #sun-yaw {
-        width: 49%;
+
+    &>span {
+        display: inline-block;
+        width: 150px;
+        margin-top: 12px;
+    }
+
+    #sun-setting-box {
+        &>span {
+            display: inline-block;
+            margin-left: 32px;
+            width: 50px;
+        }
+
+        &>input {
+
+            max-width: 200px;
+        }
     }
 }

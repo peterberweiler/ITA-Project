@@ -40,12 +40,12 @@ export default class InputController {
 	}
 
 	private keyDown: any = {}
-	fpsMode = true;
-	isRunning = false;
+	private fpsMode = true;
+	private isRunning = false;
 
 	constructor(camera: Camera, canvas: HTMLCanvasElement) {
 		this.camera = camera;
-		this.cameraController = new CameraController(this.camera);
+		this.cameraController = new CameraController(this.camera, [512, 100, 256], 1100, Math.PI * 0.25, -Math.PI);
 		this.canvas = canvas;
 
 		const mouseUp = this.mouseUp.bind(this);
@@ -67,7 +67,7 @@ export default class InputController {
 
 		canvas.addEventListener("wheel", (event: WheelEvent) => {
 			if (!this.fpsMode) {
-				this.cameraController.updateArcBall([0, 0], Math.sign(event.deltaY) * 0.01);
+				this.cameraController.updateArcBall([0, 0, 0], [0, 0], Math.sign(event.deltaY) * 0.1);
 			}
 			event.preventDefault();
 			event.stopPropagation();
@@ -82,15 +82,13 @@ export default class InputController {
 
 	// the state of any keyboard key changed
 	keyboardChange(isDown: boolean, event: KeyboardEvent) {
-		if (this.fpsMode) {
-			if (event.keyCode in CONTROL_KEYS) {
-				this.keyDown[event.keyCode] = isDown;
-				event.stopPropagation();
-				event.preventDefault();
-			}
-			if (!isDown && event.keyCode === R_KEY) {
-				this.isRunning = !this.isRunning;
-			}
+		if (event.keyCode in CONTROL_KEYS) {
+			this.keyDown[event.keyCode] = isDown;
+			event.stopPropagation();
+			event.preventDefault();
+		}
+		if (!isDown && event.keyCode === R_KEY) {
+			this.isRunning = !this.isRunning;
 		}
 	}
 
@@ -131,16 +129,19 @@ export default class InputController {
 		this.mouse.terrain.over = !!(this.mouse.terrain.input[0] || this.mouse.terrain.input[1]);
 
 		if (this.mouse.buttonDown) {
-			if (this.mouse.button === 2) {
-				const dx = this.mouse.canvas.last[0] - this.mouse.canvas.current[0];
-				const dy = this.mouse.canvas.last[1] - this.mouse.canvas.current[1];
+			const dx = this.mouse.canvas.last[0] - this.mouse.canvas.current[0];
+			const dy = this.mouse.canvas.last[1] - this.mouse.canvas.current[1];
 
+			if (this.mouse.button === 2) {
 				if (!this.fpsMode) {
-					this.cameraController.updateArcBall([dx * 0.0075, dy * 0.0075], 0);
+					this.cameraController.updateArcBall([0, 0, 0], [dx * 0.0075, dy * 0.0075], 0);
 				}
 				else {
 					this.cameraController.updateFPS([0, 0, 0], dy * -0.0075, dx * -0.0075);
 				}
+			}
+			else if (this.mouse.button === 1 && !this.fpsMode) { // translate arc camera
+				this.cameraController.updateArcBall([dx, 0, dy], [0, 0], 0);
 			}
 		}
 		this.mouse.canvas.over = true;
@@ -160,27 +161,36 @@ export default class InputController {
 	}
 
 	update(now: number, deltaTime: number) {
-		if (this.fpsMode) {
-			for (const key in FPS_TRANSLATION_CONTROL_KEYS) {
-				if (this.keyDown[key]) {
-					let speed = deltaTime * 0.5;
-					if (this.isRunning) { speed *= 3; }
-					//@ts-ignore
-					const translationOffset = vec3.scale([0, 0, 0], FPS_TRANSLATION_CONTROL_KEYS[key], speed);
+		for (const key in FPS_TRANSLATION_CONTROL_KEYS) {
+			if (this.keyDown[key]) {
+				let speed = deltaTime * 0.5;
+				if (this.isRunning) { speed *= 3; }
+				if (!this.fpsMode) { speed *= 0.5; }
+				//@ts-ignore
+				const translationOffset = vec3.scale([0, 0, 0], FPS_TRANSLATION_CONTROL_KEYS[key], speed);
+
+				if (this.fpsMode) {
 					this.cameraController.updateFPS(translationOffset, 0, 0);
+				}
+				else {
+					this.cameraController.updateArcBall(translationOffset, [0, 0], 0);
 				}
 			}
 		}
 	}
 
-	toggleFpsMode() {
-		this.fpsMode = !this.fpsMode;
+	setFpsMode(fpsMode: boolean) {
+		this.fpsMode = fpsMode;
 
 		if (this.fpsMode) {
 			this.cameraController.updateFPS([0, 0, 0], 0, 0);
 		}
 		else {
-			this.cameraController.updateArcBall([0, 0], 0);
+			this.cameraController.updateArcBall([0, 0, 0], [0, 0], 0);
 		}
+	}
+
+	isFpsMode() {
+		return this.fpsMode;
 	}
 }

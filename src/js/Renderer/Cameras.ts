@@ -55,14 +55,16 @@ export class CameraController {
 		this.updateFPS([0, 0, 0], 0, 0);
 	}
 
-	updateArcBall(angleDelta: [number, number], distanceDelta: number) {
+	updateArcBall(translationDelta: vec3 | [number, number, number], angleDelta: [number, number], distanceDelta: number) {
 		this.distance += distanceDelta * this.distance;
 		this.distance = Math.max(0.0, this.distance);
 
 		this.theta = Math.min(Math.max(this.theta + angleDelta[1], 0.0001), Math.PI - 0.0001);
 		this.phi += angleDelta[0];
 
-		quat.fromEuler(this.camera.orientation, this.phi, this.theta, 0);
+		vec3.rotateY(translationDelta as vec3, translationDelta, [0, 0, 0], this.phi);
+
+		vec3.add(this.center, this.center, translationDelta);
 
 		this.camera.position[0] = this.center[0] + (this.distance * Math.sin(this.theta) * Math.sin(this.phi));
 		this.camera.position[1] = this.center[1] + (this.distance * Math.cos(this.theta));

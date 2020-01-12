@@ -4,6 +4,7 @@ import InputController from "./Renderer/InputController";
 import Renderer from "./Renderer/Renderer";
 import HeightmapController from "./Renderer/Terrain/HeightmapController";
 import Layers from "./Renderer/Terrain/Layers";
+import Settings from "./Settings";
 import UI from "./UI/UI";
 
 let renderer: Renderer;
@@ -23,8 +24,11 @@ function setupRenderer() {
 		10000,
 	);
 
+	const isFpsCameraMode = Settings.getCameraMode();
 	const canvas = document.getElementById("canvas") as HTMLCanvasElement;
 	inputController = new InputController(camera, canvas);
+	inputController.setFpsMode(isFpsCameraMode);
+	UI.wheelEnabled = isFpsCameraMode;
 	renderer = new Renderer(canvas, camera);
 	heightmapController = renderer.getHeightmapRenderer();
 	layers = heightmapController.textures.layers;
@@ -46,7 +50,8 @@ function setupRenderer() {
 }
 
 function setupUI() {
-	UI.on("debug0", () => inputController.toggleFpsMode());
+	// UI.on("debug0", () => {	});
+
 	UI.on("debug1", () => editorController.invertHeightmap());
 	UI.on("debug2", () => editorController.randomHeightChange());
 
@@ -147,6 +152,11 @@ function setupUI() {
 		renderer.sunDir = dir;
 		heightmapController.shadowPass.lightDir = dir;
 		editorController.updateShadows();
+	});
+
+	UI.on("camera-mode-changed", (fpsMode: boolean) => {
+		inputController.setFpsMode(fpsMode);
+		UI.wheelEnabled = fpsMode;
 	});
 
 	UI.setupLayerList(layers);

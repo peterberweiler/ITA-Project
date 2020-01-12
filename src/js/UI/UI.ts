@@ -24,9 +24,11 @@ declare interface UIController {
 	on(event: "sun-changed", listener: (pitch: number, yaw: number) => void): this;
 	on(event: "layer-order-changed", listener: (order: number[]) => void): this;
 	on(event: "layer-changed", listener: (id: number, color: number[], roughness: number, active: boolean) => void): this;
+	on(event: "camera-mode-changed", listener: (fpsMode: boolean) => void): this;
 }
 
 class UIController extends EventEmitter {
+	public readonly canvas = document.getElementById("canvas") as HTMLCanvasElement;
 	public readonly menuItems = document.querySelectorAll<HTMLDivElement>("#menu .menu-item");
 	public readonly layerList = document.querySelector<HTMLDivElement>("#layers-window .sortable")!;
 	public readonly layerListTemplate = document.querySelector<HTMLTemplateElement>("#layers-window template")!;
@@ -57,8 +59,11 @@ class UIController extends EventEmitter {
 
 	public readonly debugMenu = document.getElementById("debug-menu") as HTMLDivElement;
 	public readonly debugCheckbox = document.getElementById("debug-mode-input") as HTMLInputElement;
+	public readonly cameraModeCheckbox = document.getElementById("camera-mode-input") as HTMLInputElement;
 
 	public readonly flattenBrushSelector = new UISelector("#flatten-brush-selector");
+
+	public wheelEnabled = true;
 
 	constructor() {
 		super();
@@ -131,12 +136,28 @@ class UIController extends EventEmitter {
 			hide(this.debugMenu, !this.debugCheckbox.checked);
 		};
 
+		this.cameraModeCheckbox.checked = Settings.getCameraMode();
+		this.cameraModeCheckbox.onchange = () => {
+			Settings.setCameraMode(this.cameraModeCheckbox.checked);
+			this.emit("camera-mode-changed", this.cameraModeCheckbox.checked);
+		};
+
 		this.flattenBrushSelector.on("change", (i) => {
 			this.emit("flatten-brush-type-changed", i);
 		});
 
 		this.layerBrushTypeSelector.on("change", (i) => {
 			this.emit("layer-type-selected", i);
+		});
+
+		this.canvas.addEventListener("wheel", (event: WheelEvent) => {
+			if (this.wheelEnabled) {
+				const value = parseFloat(this.radiusInput.value) - (Math.sign(event.deltaY) * 10);
+				this.radiusInput.value = "" + value;
+				console.log(event.deltaY);
+				//@ts-ignore
+				this.radiusInput.oninput();
+			}
 		});
 	}
 
