@@ -162,6 +162,8 @@ function update(now: number, deltaTime: number) {
 		inputController.mouse.canvas.over,
 		inputController.mouse.canvas.current[0],
 		inputController.mouse.canvas.current[1],
+		inputController.mouse.terrain.current[0],
+		inputController.mouse.terrain.current[1],
 		editorController.selectedBrush ? editorController.selectedBrush.radius || 0 : 0,
 	);
 

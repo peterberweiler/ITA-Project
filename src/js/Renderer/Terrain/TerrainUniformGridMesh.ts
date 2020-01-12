@@ -15,7 +15,7 @@ export default class TerrainUniformGridMesh {
 	private uHeightScaleInMetersLocation: WebGLUniformLocation;
 	private uGridResolutionLocation: WebGLUniformLocation;
 	private uCamPosLocation: WebGLUniformLocation;
-	private uCurserPosRadiusLocation: WebGLUniformLocation;
+	private uCursorPosRadiusLocation: WebGLUniformLocation;
 	private uDrawCursorLocation: WebGLUniformLocation;
 	private uHeightmapTexture: WebGLUniformLocation;
 	private uShadowmapTexture: WebGLUniformLocation;
@@ -33,7 +33,7 @@ export default class TerrainUniformGridMesh {
 		this.uHeightScaleInMetersLocation = this.terrainShader.getUniformLocation("uHeightScaleInMeters");
 		this.uGridResolutionLocation = this.terrainShader.getUniformLocation("uGridResolution");
 		this.uCamPosLocation = this.terrainShader.getUniformLocation("uCamPos");
-		this.uCurserPosRadiusLocation = this.terrainShader.getUniformLocation("uCurserPosRadius");
+		this.uCursorPosRadiusLocation = this.terrainShader.getUniformLocation("uCursorPosRadius");
 		this.uDrawCursorLocation = this.terrainShader.getUniformLocation("uDrawCursor");
 		this.uHeightmapTexture = this.terrainShader.getUniformLocation("uHeightmapTexture");
 		this.uShadowmapTexture = this.terrainShader.getUniformLocation("uShadowmapTexture");
@@ -58,7 +58,7 @@ export default class TerrainUniformGridMesh {
 		this.terrainShader.setUniformF(this.uTexelSizeInMetersLocation, drawParams.texelSizeInMeters);
 		this.terrainShader.setUniformF(this.uHeightScaleInMetersLocation, drawParams.heightScaleInMeters);
 		this.terrainShader.setUniformVec3(this.uCamPosLocation, drawParams.camPos);
-		this.terrainShader.setUniformVec3(this.uCurserPosRadiusLocation, drawParams.curserPosRadius);
+		this.terrainShader.setUniformVec3(this.uCursorPosRadiusLocation, drawParams.cursorPosRadius);
 		this.terrainShader.setUniformUi(this.uAlphaBlendingEnabledLocation, drawParams.enableAlphaBlending ? 1 : 0);
 		this.terrainShader.setUniformUi(this.uActiveLayersLocation, drawParams.activeLayers);
 		this.terrainShader.setUniformUi(this.uDrawCursorLocation, drawParams.drawCursor ? 1 : 0);

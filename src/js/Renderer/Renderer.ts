@@ -16,6 +16,8 @@ export default class Renderer {
 	private mouseOverCanvas: boolean = false;
 	private mousePosX: number = 0;
 	private mousePosY: number = 0;
+	private brushWorldSpacePosX: number = 0;
+	private brushWorldSpacePosY: number = 0;
 	private brushRadius: number = 20;
 	private layers: Layers;
 	public sunDir: [number, number, number] = [0, 0.5620833778521306, 0.8270805742745618];
@@ -137,7 +139,9 @@ export default class Renderer {
 			this.mouseOverCanvas,
 			this.mousePosX,
 			this.mousePosY,
-			this.mouseOverCanvas
+			this.brushWorldSpacePosX,
+			this.brushWorldSpacePosY,
+			this.brushWorldSpacePosX !== 0 || this.brushWorldSpacePosY !== 0,
 		);
 		// console.log(this.terrain.getMouseWorldSpacePos());
 	}
@@ -163,10 +167,12 @@ export default class Renderer {
 		return this.heightmapController;
 	}
 
-	setCanvasMouseState(overCanvas: boolean, canvasMouseX: number, canvasMouseY: number, brushRadius: number) {
+	setCanvasMouseState(overCanvas: boolean, canvasMouseX: number, canvasMouseY: number, brushWorldSpacePosX: number, brushWorldSpacePosY: number, brushRadius: number) {
 		this.mouseOverCanvas = overCanvas;
 		this.mousePosX = canvasMouseX;
 		this.mousePosY = canvasMouseY;
+		this.brushWorldSpacePosX = brushWorldSpacePosX;
+		this.brushWorldSpacePosY = brushWorldSpacePosY;
 		this.brushRadius = brushRadius;
 	}
 }

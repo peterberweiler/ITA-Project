@@ -17,7 +17,7 @@ uniform sampler2D uSurfacemapTexture;
 uniform sampler2DArray uLayerWeightTexture;
 uniform vec3 uColor;
 uniform vec3 uCamPos;
-uniform vec3 uCurserPosRadius;
+uniform vec3 uCursorPosRadius;
 uniform float uTexelSizeInMeters;
 uniform float uHeightScaleInMeters;
 uniform uint uActiveLayers;
@@ -240,24 +240,6 @@ void main(void) {
 	color += mix(skyColor, color, clamp(fogAlpha * fogAlpha, 0.0, 1.0));
 
 
-	// mouse curser
-	if (uDrawCursor != 0u)
-	{
-		vec3 curserColor = vec3(1.0, 0.0, 0.0);
-		float distToBrushBorder = abs(uCurserPosRadius.z - distance(vWorldSpacePos.xz, uCurserPosRadius.xy));
-		float alpha = 1.0 - clamp(distToBrushBorder / min(fwidth(vWorldSpacePos.x), fwidth(vWorldSpacePos.z)) * 0.5, 0.0, 1.0);
-		vec2 centerToBorder = normalize(vWorldSpacePos.xz - uCurserPosRadius.xy);
-		float angle = atan(centerToBorder.y, centerToBorder.x);
-		angle += uTime * 0.0005;
-		angle *= (1.0 / (2.0 * PI));
-		angle = fract(angle);
-		angle *= 128.0;
-		curserColor = mix(vec3(10.0), vec3(0.0), (int(angle) & 1) != 0 ? 1.0 : 0.0);
-		color = mix(color, curserColor, vec3(alpha));
-	}
-	
-
-
 	color = uncharted2Tonemap(1.0 * color);
 	vec3 whiteScale = 1.0/uncharted2Tonemap(W);
 	color *= whiteScale;
@@ -271,6 +253,22 @@ void main(void) {
 	float currentColorBrightness = step(0.5, max(color.r, max(color.g, color.b)));
 	vec3 gridColor = -0.13 * vec3(currentColorBrightness - 0.5) * getGridValue(vWorldSpacePos, uCamPos, 8.0);
 	color += gridColor;
+
+	// mouse cursor
+	if (uDrawCursor != 0u)
+	{
+		vec3 cursorColor = vec3(1.0, 0.0, 0.0);
+		float distToBrushBorder = abs(uCursorPosRadius.z - distance(vWorldSpacePos.xz, uCursorPosRadius.xy));
+		float alpha = 1.0 - clamp(distToBrushBorder / min(fwidth(vWorldSpacePos.x), fwidth(vWorldSpacePos.z)) * 0.5, 0.2, 1.0);
+		vec2 centerToBorder = normalize(vWorldSpacePos.xz - uCursorPosRadius.xy);
+		float angle = atan(centerToBorder.y, centerToBorder.x);
+		angle += uTime * 0.0002;
+		angle *= (1.0 / (2.0 * PI));
+		angle = fract(angle);
+		angle *= 32.0;
+		cursorColor = mix(vec3(1.0), vec3(0.0), (int(angle) & 1) != 0 ? 1.0 : 0.0);
+		color = mix(color, cursorColor, vec3(alpha));
+	}
 
 	//	
 	oColor = vec4(color, 1.0);
