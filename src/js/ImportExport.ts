@@ -2,8 +2,6 @@
 // import { PNG } from "pngjs/browser";
 import { PNG } from "pngjs";
 import * as HelperFunctions from "./HelperFunctions";
-import Framebuffer from "./Renderer/Framebuffer";
-import { gl } from "./Renderer/Global";
 import HeightmapController from "./Renderer/Terrain/HeightmapController";
 import UI from "./UI/UI";
 
@@ -59,48 +57,13 @@ function createFlatMesh(resolutionX: number, resolutionY: number) {
 
 export function downloadOBJ(heightmapController: HeightmapController) {
 	UI.setExportFileInfo();
-	const data = getHeightMapData(heightmapController);
+	const data = heightmapController.getHeightMapData();
 	const objSource = createOBJ(data);
 	HelperFunctions.downloadBlob("terrain.obj", new Blob([objSource]));
 }
 
-export function getLayerWeightData(heightmapController: HeightmapController) {
-	const fb = gl.createFramebuffer();
-	gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
-	gl.viewport(0, 0, SIZE[0], SIZE[1]);
-
-	const data = [
-		new Float32Array(SIZE[0] * SIZE[1] * 4),
-		new Float32Array(SIZE[0] * SIZE[1] * 4)
-	];
-	gl.framebufferTextureLayer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, heightmapController.textures.layers.weightMapCurrent, 0, 0);
-	gl.readPixels(0, 0, SIZE[0], SIZE[1], gl.RGBA, gl.FLOAT, data[0]);
-
-	gl.framebufferTextureLayer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, heightmapController.textures.layers.weightMapCurrent, 0, 1);
-	gl.readPixels(0, 0, SIZE[0], SIZE[1], gl.RGBA, gl.FLOAT, data[1]);
-
-	gl.deleteFramebuffer(fb);
-	Framebuffer.unbind();
-	return data;
-}
-
-export function getHeightMapData(heightmapController: HeightmapController) {
-	const fb = gl.createFramebuffer();
-	gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
-	gl.viewport(0, 0, SIZE[0], SIZE[1]);
-
-	const data = new Float32Array(SIZE[0] * SIZE[1]);
-	const texId = heightmapController.textures.heightMap.current().id;
-	gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texId, 0);
-	gl.readPixels(0, 0, SIZE[0], SIZE[1], gl.RED, gl.FLOAT, data);
-
-	gl.deleteFramebuffer(fb);
-	Framebuffer.unbind();
-	return data;
-}
-
 export function downloadPNGHeightmap8Bit(heightmapController: HeightmapController) {
-	const hmData = getHeightMapData(heightmapController);
+	const hmData = heightmapController.getHeightMapData();
 	const { min, max } = HelperFunctions.arrayMinMax(hmData);
 
 	const buffer = new Uint8Array(SIZE[0] * SIZE[1] * 4);
@@ -120,7 +83,7 @@ export function downloadPNGHeightmap8Bit(heightmapController: HeightmapControlle
 }
 
 export function downloadPNGHeightmap16Bit(heightmapController: HeightmapController) {
-	const hmData = getHeightMapData(heightmapController);
+	const hmData = heightmapController.getHeightMapData();
 	const { min, max } = HelperFunctions.arrayMinMax(hmData);
 	const bitmap = new Uint16Array(SIZE[0] * SIZE[1]);
 
@@ -133,7 +96,7 @@ export function downloadPNGHeightmap16Bit(heightmapController: HeightmapControll
 
 export function downloadPNGLayers8Bit(heightmapController: HeightmapController) {
 	UI.setExportFileInfo();
-	const data = getLayerWeightData(heightmapController);
+	const data = heightmapController.getLayerWeightData();
 	const buffer = new Uint8Array(SIZE[0] * SIZE[1] * 4);
 
 	for (let layerId = 0; layerId < 8; ++layerId) {
@@ -160,7 +123,7 @@ export function downloadPNGLayers8Bit(heightmapController: HeightmapController) 
 
 export function downloadPNGLayers16Bit(heightmapController: HeightmapController) {
 	UI.setExportFileInfo();
-	const data = getLayerWeightData(heightmapController);
+	const data = heightmapController.getLayerWeightData();
 
 	for (let layerId = 0; layerId < 8; ++layerId) {
 		if (heightmapController.textures.layers.getLayerActive(layerId)) {
@@ -179,7 +142,7 @@ export function downloadPNGLayers16Bit(heightmapController: HeightmapController)
 	}
 }
 
-function downloadGrayscale16BitPNG(data: Uint16Array, filename: string, size: [number, number]) {
+export function downloadGrayscale16BitPNG(data: Uint16Array, filename: string, size: [number, number]) {
 	const png = new PNG({
 		width: size[0],
 		height: size[1],
@@ -202,7 +165,7 @@ function downloadGrayscale16BitPNG(data: Uint16Array, filename: string, size: [n
 
 export function downloadFloatHeightMap(heightmapController: HeightmapController) {
 	UI.setExportFileInfo();
-	const data = getHeightMapData(heightmapController);
+	const data = heightmapController.getHeightMapData();
 	HelperFunctions.downloadBlob("Heightmap_Red32F.raw", new Blob([data]));
 }
 

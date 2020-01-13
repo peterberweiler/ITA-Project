@@ -1,6 +1,15 @@
 import HeightmapController from "./Renderer/Terrain/HeightmapController";
 import { HeightBrushPass } from "./Renderer/Terrain/Passes/HeightBrushPass";
 
+interface Brush {
+	radius: number,
+	strength: number,
+	direction: number,
+	type: number,
+	minSlope: number,
+	maxSlope: number,
+}
+
 export default class EditorController {
 	private heightmapController: HeightmapController
 
@@ -10,22 +19,22 @@ export default class EditorController {
 			strength: 50, //1-100
 			direction: 1,
 			type: 0,
-		},
+		} as Brush,
 		flatten: {
 			radius: 100,
 			strength: 50, //1-100
 			type: 0
-		},
+		} as Brush,
 		layer: {
 			radius: 15,
 			strength: 50, //1-100
 			type: 0,
 			minSlope: 0, //0-1
 			maxSlope: 1, //0-1
-		}
+		} as Brush,
 	}
 
-	selectedBrush: any = this.brush.height;
+	selectedBrush: Brush | null = this.brush.height;
 
 	constructor(heightmapController: HeightmapController) {
 		this.heightmapController = heightmapController;
@@ -121,7 +130,8 @@ export default class EditorController {
 	}
 
 	setValueForAllBrushes(name: string, value: number) {
-		if (name in this.selectedBrush) {
+		if (this.selectedBrush && name in this.selectedBrush) {
+			//@ts-ignore
 			this.selectedBrush[name] = value;
 		}
 	}

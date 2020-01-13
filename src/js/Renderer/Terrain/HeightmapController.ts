@@ -116,4 +116,61 @@ export default class HeightmapController {
 
 		Framebuffer.unbind();
 	}
+
+	getHeightMapData(): Float32Array {
+		const fb = gl.createFramebuffer();
+		gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+		gl.viewport(0, 0, this.size[0], this.size[1]);
+
+		const data = new Float32Array(this.size[0] * this.size[1]);
+		const texId = this.textures.heightMap.current().id;
+		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texId, 0);
+		gl.readPixels(0, 0, this.size[0], this.size[1], gl.RED, gl.FLOAT, data);
+
+		gl.deleteFramebuffer(fb);
+		Framebuffer.unbind();
+		return data;
+	}
+
+	getLayerWeightData(): [Float32Array, Float32Array] {
+		const fb = gl.createFramebuffer();
+		gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+		gl.viewport(0, 0, this.size[0], this.size[1]);
+
+		const data0 = new Float32Array(this.size[0] * this.size[1] * 4);
+		const data1 = new Float32Array(this.size[0] * this.size[1] * 4);
+
+		gl.framebufferTextureLayer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, this.textures.layers.weightMapCurrent, 0, 0);
+		gl.readPixels(0, 0, this.size[0], this.size[1], gl.RGBA, gl.FLOAT, data0);
+
+		gl.framebufferTextureLayer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, this.textures.layers.weightMapCurrent, 0, 1);
+		gl.readPixels(0, 0, this.size[0], this.size[1], gl.RGBA, gl.FLOAT, data1);
+
+		gl.deleteFramebuffer(fb);
+		Framebuffer.unbind();
+
+		return [data0, data1];
+	}
+
+	setHeightMapData(data: Float32Array) {
+		if (data.length !== this.size[0] * this.size[1]) {
+			throw new Error("setHeightMapData data is wrong size");
+		}
+		this.textures.heightMap.current().updateFloatRedData(this.size, data);
+
+		this.queuePass(this.shadowPass);
+	}
+
+	setLayerWeightData(data: [Float32Array, Float32Array]) {
+		if (data[0].length !== this.size[0] * this.size[1] * 4 ||
+			data[1].length !== this.size[0] * this.size[1] * 4) {
+			throw new Error("setLayerWeightData datas are wrong size");
+		}
+
+		gl.activeTexture(gl.TEXTURE0);
+		gl.bindTexture(gl.TEXTURE_2D_ARRAY, this.textures.layers.weightMapCurrent);
+
+		gl.texSubImage3D(gl.TEXTURE_2D_ARRAY, 0, 0, 0, 0, this.size[0], this.size[1], 1, gl.RGBA, gl.FLOAT, data[0]);
+		gl.texSubImage3D(gl.TEXTURE_2D_ARRAY, 0, 0, 0, 1, this.size[0], this.size[1], 1, gl.RGBA, gl.FLOAT, data[1]);
+	}
 }

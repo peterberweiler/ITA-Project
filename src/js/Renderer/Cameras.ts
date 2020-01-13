@@ -57,7 +57,7 @@ export class CameraController {
 
 	updateArcBall(translationDelta: vec3 | [number, number, number], angleDelta: [number, number], distanceDelta: number) {
 		this.distance += distanceDelta * this.distance;
-		this.distance = Math.max(0.0, this.distance);
+		this.distance = Math.min(Math.max(0.0, this.distance), 4000);
 
 		this.theta = Math.min(Math.max(this.theta + angleDelta[1], 0.0001), Math.PI - 0.0001);
 		this.phi += angleDelta[0];

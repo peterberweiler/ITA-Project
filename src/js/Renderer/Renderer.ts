@@ -161,7 +161,6 @@ export default class Renderer {
 			this.brushWorldSpacePosY,
 			this.brushWorldSpacePosX !== 0 || this.brushWorldSpacePosY !== 0,
 		);
-		// console.log(this.terrain.getMouseWorldSpacePos());
 	}
 
 	resized() {

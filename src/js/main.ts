@@ -51,7 +51,11 @@ function setupRenderer() {
 }
 
 function setupUI() {
-	// UI.on("debug0", () => {	});
+	UI.on("debug0", () => {
+		const fpsMode = !inputController.isFpsMode();
+		inputController.setFpsMode(fpsMode);
+		UI.wheelEnabled = fpsMode;
+	});
 
 	UI.on("debug1", () => editorController.invertHeightmap());
 	UI.on("debug2", () => editorController.randomHeightChange());

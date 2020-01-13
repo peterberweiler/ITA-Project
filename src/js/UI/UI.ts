@@ -155,7 +155,6 @@ class UIController extends EventEmitter {
 			if (this.wheelEnabled) {
 				const value = parseFloat(this.radiusInput.value) - (Math.sign(event.deltaY) * 10);
 				this.radiusInput.value = "" + value;
-				console.log(event.deltaY);
 				//@ts-ignore
 				this.radiusInput.oninput();
 			}
