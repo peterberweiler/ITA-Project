@@ -1,4 +1,5 @@
 import { mat4, vec3 } from "gl-matrix";
+import DecorationObjects from "../DecorationObjects";
 import { gl, TextureBundle } from "../Global";
 import Renderer from "../Renderer";
 import Skybox from "../Skybox";
@@ -12,6 +13,7 @@ export default class Terrain {
 	private clipMapMesh: TerrainClipMapMesh;
 	private uniformGridMesh: TerrainUniformGridMesh;
 	private skybox: Skybox;
+	private decorationObjects: DecorationObjects;
 	private materialsUBO: WebGLBuffer;
 	private fbo: WebGLFramebuffer | null;
 	private depthAttachment: Texture;
@@ -26,6 +28,7 @@ export default class Terrain {
 		this.clipMapMesh = new TerrainClipMapMesh();
 		this.uniformGridMesh = new TerrainUniformGridMesh();
 		this.skybox = new Skybox();
+		this.decorationObjects = new DecorationObjects();
 
 		let bufferId = gl.createBuffer();
 		if (!bufferId) { throw new Error("Couldn't create buffer!"); }
@@ -102,9 +105,15 @@ export default class Terrain {
 			//this.clipMapMesh.draw(terrainDrawParams);
 			this.uniformGridMesh.draw(terrainDrawParams);
 			//console.timeEnd("render");
+
 			let invViewProjection = mat4.create();
 			mat4.invert(invViewProjection, viewProjection);
 			this.skybox.draw(invViewProjection, sunDir);
+
+			gl.drawBuffers([gl.COLOR_ATTACHMENT0]);
+			console.time("draw trees");
+			this.decorationObjects.draw(viewProjection, this.texelSizeInMeters, this.heightScaleInMeters, camPos, sunDir, textures.heightMap.current().id);
+			console.timeEnd("draw trees");
 		}
 		Renderer.checkGLError();
 

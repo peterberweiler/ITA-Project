@@ -4,14 +4,9 @@
 import { mat4 } from "gl-matrix";
 import { Camera } from "./Cameras";
 import { gl, setGL } from "./Global";
-import { loadOBJ } from "./Loaders/SimpleOBJLoader";
 import HeightmapController from "./Terrain/HeightmapController";
 import Layers from "./Terrain/Layers";
 import Terrain from "./Terrain/Terrain";
-import Texture from "./Texture";
-
-const spruceBranchesOBJSource = require("../../data/spruce_tree/spruce_branches.obj").default;
-const spruceTrunkOBJSource = require("../../data/spruce_tree/spruce_trunk.obj").default;
 
 export default class Renderer {
 	private canvas: HTMLCanvasElement;
@@ -26,11 +21,6 @@ export default class Renderer {
 	private brushRadius: number = 20;
 	private layers: Layers;
 	public sunDir: [number, number, number] = [0, 0.5620833778521306, 0.8270805742745618];
-
-	private treeBranchesMesh: { vertexBuffer: number[]; indexBuffer: number[]; };
-	private treeTrunkMesh: { vertexBuffer: number[]; indexBuffer: number[]; };
-	private treeBranchesTexture: Texture;
-	private treeTrunkTexture: Texture;
 
 	constructor(canvas: HTMLCanvasElement, camera: Camera) {
 		const context = canvas.getContext("webgl2", { antialias: false });
@@ -99,14 +89,6 @@ export default class Renderer {
 
 		this.heightmapController = new HeightmapController(this.layers);
 		this.terrain = new Terrain();
-
-		// tree model
-		{
-			this.treeBranchesMesh = loadOBJ(spruceBranchesOBJSource, true, true);
-			this.treeTrunkMesh = loadOBJ(spruceTrunkOBJSource, true, true);
-			this.treeBranchesTexture = Texture.fromRGBAImage("/data/spruce_tree/spruce_branches.png");
-			this.treeTrunkTexture = Texture.fromRGBImage("/data/spruce_tree/spruce_trunk.png");
-		}
 
 		this.resized();
 	}

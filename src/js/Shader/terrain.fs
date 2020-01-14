@@ -72,12 +72,6 @@ vec3 accurateLinearToSRGB(in vec3 linearCol)
 	return sRGB;
 }
 
-vec3 minDiff(vec3 P, vec3 Pr, vec3 Pl) {
-    vec3 V1 = Pr - P;
-    vec3 V2 = P - Pl;
-    return (dot(V1, V1) < dot(V2, V2)) ? V1 : V2;
-}
-
 float DistributionGGX(vec3 N, vec3 H, float roughness) {
     float a2 = roughness*roughness;
     a2 *= a2;
@@ -180,9 +174,7 @@ void main(void) {
 	Pb.y = texture(uHeightmapTexture, Pb.xz  * uTexelSizeInMeters * texelSize).x * uHeightScaleInMeters;
 	Pt.y = texture(uHeightmapTexture, Pt.xz  * uTexelSizeInMeters * texelSize).x * uHeightScaleInMeters;
 
-	// Calculate tangent basis vectors using the minimum difference
-	// vec3 dPdu = minDiff(P, Pr, Pl);
-	// vec3 dPdv = minDiff(P, Pt, Pb);
+	// Calculate tangent basis vectors using the difference
 	vec3 dPdu =  Pr - Pl;
 	vec3 dPdv =  Pt - Pb;
 
