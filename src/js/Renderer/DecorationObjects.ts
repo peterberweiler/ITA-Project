@@ -2,7 +2,6 @@ import { mat4, vec3 } from "gl-matrix";
 import { gl } from "./Global";
 import { loadOBJ } from "./Loaders/SimpleOBJLoader";
 import Shader from "./Shader";
-import Texture from "./Texture";
 
 const fragSource = require("../Shader/decorationObjects.fs").default;
 const vertSource = require("../Shader/decorationObjects.vs").default;
@@ -29,8 +28,10 @@ export default class DecorationObjects {
 	private treeTrunkVertexOffset: number;
 	private treeTrunkIndexOffset: number;
 	private treeTrunkIndexCount: number;
-	private treeBranchesTexture: Texture;
-	private treeTrunkTexture: Texture;
+	//private treeBranchesTexture: Texture;
+	//private treeTrunkTexture: Texture;
+	private treeBranchesTexture2: WebGLTexture | null;
+	private treeTrunkTexture2: WebGLTexture | null;
 
 	private treeCount = 0;
 
@@ -136,8 +137,11 @@ export default class DecorationObjects {
 
 			gl.bindVertexArray(null);
 
-			this.treeBranchesTexture = Texture.fromRGBAImage("/data/spruce_tree/spruce_branches.png");
-			this.treeTrunkTexture = Texture.fromRGBImage("/data/spruce_tree/spruce_trunk.png");
+			//this.treeBranchesTexture = Texture.fromRGBAImage("/data/spruce_tree/spruce_branches.png");
+			//this.treeTrunkTexture = Texture.fromRGBImage("/data/spruce_tree/spruce_trunk.png");
+
+			this.treeBranchesTexture2 = this.loadTexture("/data/spruce_tree/spruce_branches.png");
+			this.treeTrunkTexture2 = this.loadTexture("/data/spruce_tree/spruce_trunk.jpeg");
 		}
 
 		let randomPositions: number[] = [];
@@ -168,12 +172,12 @@ export default class DecorationObjects {
 			gl.bindVertexArray(this.treeVao);
 
 			gl.activeTexture(gl.TEXTURE1);
-			gl.bindTexture(gl.TEXTURE_2D, this.treeBranchesTexture.id);
+			gl.bindTexture(gl.TEXTURE_2D, this.treeBranchesTexture2);
 
 			gl.drawElementsInstanced(gl.TRIANGLES, this.treeBranchesIndexCount, gl.UNSIGNED_INT, this.treeBranchesIndexOffset * 4, this.treeCount);
 
 			gl.activeTexture(gl.TEXTURE1);
-			gl.bindTexture(gl.TEXTURE_2D, this.treeTrunkTexture.id);
+			gl.bindTexture(gl.TEXTURE_2D, this.treeTrunkTexture2);
 
 			gl.drawElementsInstanced(gl.TRIANGLES, this.treeTrunkIndexCount, gl.UNSIGNED_INT, this.treeTrunkIndexOffset * 4, this.treeCount);
 
@@ -185,5 +189,61 @@ export default class DecorationObjects {
 		this.treeCount = positions.length / 2;
 		gl.bindBuffer(gl.ARRAY_BUFFER, this.treePositionsVbo);
 		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.DYNAMIC_DRAW);
+	}
+
+	//
+	// Initialize a texture and load an image.
+	// When the image finished loading copy it into the texture.
+	//
+	loadTexture(url: string) {
+		const texture = gl.createTexture();
+		gl.bindTexture(gl.TEXTURE_2D, texture);
+
+		// Because images have to be download over the internet
+		// they might take a moment until they are ready.
+		// Until then put a single pixel in the texture so we can
+		// use it immediately. When the image has finished downloading
+		// we'll update the texture with the contents of the image.
+		const level = 0;
+		const internalFormat = gl.RGBA;
+		const width = 1;
+		const height = 1;
+		const border = 0;
+		const srcFormat = gl.RGBA;
+		const srcType = gl.UNSIGNED_BYTE;
+		const pixel = new Uint8Array([0, 0, 255, 255]); // opaque blue
+		gl.texImage2D(gl.TEXTURE_2D, level, internalFormat,
+			width, height, border, srcFormat, srcType,
+			pixel);
+
+		const image = new Image();
+		image.onload = function () {
+			gl.bindTexture(gl.TEXTURE_2D, texture);
+			gl.texImage2D(gl.TEXTURE_2D, level, internalFormat,
+				srcFormat, srcType, image);
+
+			let isPowerOf2 = (value: number) => {
+				return (value & (value - 1)) === 0;
+			};
+
+			// WebGL1 has different requirements for power of 2 images
+			// vs non power of 2 images so check if the image is a
+			// power of 2 in both dimensions.
+			if (isPowerOf2(image.width) && isPowerOf2(image.height)) {
+				// Yes, it's a power of 2. Generate mips.
+				gl.generateMipmap(gl.TEXTURE_2D);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+			}
+			else {
+				// No, it's not a power of 2. Turn off mips and set
+				// wrapping to clamp to edge
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+			}
+		};
+		image.src = url;
+
+		return texture;
 	}
 }
