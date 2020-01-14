@@ -142,7 +142,7 @@ void main(void) {
 	lightingParams.N = normalize(vNormal);
 	lightingParams.V = normalize(uCamPos - vWorldPos);
 	lightingParams.metalness = 0.0;
-	lightingParams.roughness = 0.8;
+	lightingParams.roughness = 0.9;
 
 	vec3 color = cookTorranceSpecularBrdf(lightingParams, vec3(10.0), normalize(uLightDir));
 
