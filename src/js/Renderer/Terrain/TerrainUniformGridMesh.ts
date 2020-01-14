@@ -15,6 +15,7 @@ export default class TerrainUniformGridMesh {
 	private uHeightScaleInMetersLocation: WebGLUniformLocation;
 	private uGridResolutionLocation: WebGLUniformLocation;
 	private uCamPosLocation: WebGLUniformLocation;
+	private uLightDirLocation: WebGLUniformLocation;
 	private uCursorPosRadiusLocation: WebGLUniformLocation;
 	private uDrawCursorLocation: WebGLUniformLocation;
 	private uHeightmapTexture: WebGLUniformLocation;
@@ -33,6 +34,7 @@ export default class TerrainUniformGridMesh {
 		this.uHeightScaleInMetersLocation = this.terrainShader.getUniformLocation("uHeightScaleInMeters");
 		this.uGridResolutionLocation = this.terrainShader.getUniformLocation("uGridResolution");
 		this.uCamPosLocation = this.terrainShader.getUniformLocation("uCamPos");
+		this.uLightDirLocation = this.terrainShader.getUniformLocation("uLightDir");
 		this.uCursorPosRadiusLocation = this.terrainShader.getUniformLocation("uCursorPosRadius");
 		this.uDrawCursorLocation = this.terrainShader.getUniformLocation("uDrawCursor");
 		this.uHeightmapTexture = this.terrainShader.getUniformLocation("uHeightmapTexture");
@@ -58,6 +60,7 @@ export default class TerrainUniformGridMesh {
 		this.terrainShader.setUniformF(this.uTexelSizeInMetersLocation, drawParams.texelSizeInMeters);
 		this.terrainShader.setUniformF(this.uHeightScaleInMetersLocation, drawParams.heightScaleInMeters);
 		this.terrainShader.setUniformVec3(this.uCamPosLocation, drawParams.camPos);
+		this.terrainShader.setUniformVec3(this.uLightDirLocation, drawParams.lightDir);
 		this.terrainShader.setUniformVec3(this.uCursorPosRadiusLocation, drawParams.cursorPosRadius);
 		this.terrainShader.setUniformUi(this.uAlphaBlendingEnabledLocation, drawParams.enableAlphaBlending ? 1 : 0);
 		this.terrainShader.setUniformUi(this.uActiveLayersLocation, drawParams.activeLayers);

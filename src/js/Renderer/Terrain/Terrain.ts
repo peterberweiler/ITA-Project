@@ -84,6 +84,7 @@ export default class Terrain {
 			let terrainDrawParams = new TerrainDrawParams();
 			terrainDrawParams.viewProjection = viewProjection;
 			terrainDrawParams.camPos = camPos;
+			terrainDrawParams.lightDir = vec3.clone(sunDir);
 			terrainDrawParams.cursorPosRadius = [cursorX, cursorY, brushRadius] as unknown as vec3;
 			terrainDrawParams.drawCursor = drawCursor;
 			terrainDrawParams.texelSizeInMeters = this.texelSizeInMeters;
@@ -111,9 +112,9 @@ export default class Terrain {
 			this.skybox.draw(invViewProjection, sunDir);
 
 			gl.drawBuffers([gl.COLOR_ATTACHMENT0]);
-			console.time("draw trees");
+			//console.time("draw trees");
 			this.decorationObjects.draw(viewProjection, this.texelSizeInMeters, this.heightScaleInMeters, camPos, sunDir, textures.heightMap.current().id);
-			console.timeEnd("draw trees");
+			//console.timeEnd("draw trees");
 		}
 		Renderer.checkGLError();
 

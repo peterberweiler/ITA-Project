@@ -18,6 +18,7 @@ uniform sampler2DArray uLayerWeightTexture;
 uniform vec3 uColor;
 uniform vec3 uCamPos;
 uniform vec3 uCursorPosRadius;
+uniform vec3 uLightDir;
 uniform float uTexelSizeInMeters;
 uniform float uHeightScaleInMeters;
 uniform uint uActiveLayers;
@@ -219,7 +220,7 @@ void main(void) {
 	lightingParams.roughness = albedoRoughness.a;
 
 	float shadow = 1.0 - textureLod(uShadowmapTexture, texCoord, 0.0).x;
-	vec3 color = cookTorranceSpecularBrdf(lightingParams, vec3(10.0), normalize(vec3(0.0, 1.0, 0.5))) * shadow;
+	vec3 color = cookTorranceSpecularBrdf(lightingParams, vec3(10.0), normalize(uLightDir)) * shadow;
 
 	vec3 skyColor = pow(vec3(0.529, 0.808, 0.922), vec3(2.2));
 
