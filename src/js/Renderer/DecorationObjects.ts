@@ -32,8 +32,7 @@ export default class DecorationObjects {
 	private treeBranchesTexture: Texture;
 	private treeTrunkTexture: Texture;
 
-	private treeCount = 1024 * 32;
-	private randomPositions: number[] = [];
+	private treeCount = 0;
 
 	constructor() {
 		this.decorationObjectsShader = new Shader(vertSource, fragSource);
@@ -44,11 +43,6 @@ export default class DecorationObjects {
 		this.uCamPosLocation = this.decorationObjectsShader.getUniformLocation("uCamPos");
 		this.uLightDirLocation = this.decorationObjectsShader.getUniformLocation("uLightDir");
 		this.uAlbedoTextureLocation = this.decorationObjectsShader.getUniformLocation("uAlbedoTexture");
-
-		for (let i = 0; i < this.treeCount; ++i) {
-			this.randomPositions.push(Math.random() * 1024);
-			this.randomPositions.push(Math.random() * 1024);
-		}
 
 		const vertexSize = (3 + 3 + 2);
 
@@ -133,7 +127,7 @@ export default class DecorationObjects {
 
 			// positions buffer
 			gl.bindBuffer(gl.ARRAY_BUFFER, this.treePositionsVbo);
-			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.randomPositions), gl.STATIC_DRAW);
+			//gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.randomPositions), gl.DYNAMIC_DRAW);
 
 			// attribute
 			gl.enableVertexAttribArray(3);
@@ -145,6 +139,15 @@ export default class DecorationObjects {
 			this.treeBranchesTexture = Texture.fromRGBAImage("/data/spruce_tree/spruce_branches.png");
 			this.treeTrunkTexture = Texture.fromRGBImage("/data/spruce_tree/spruce_trunk.png");
 		}
+
+		let randomPositions: number[] = [];
+
+		for (let i = 0; i < 32 * 1024; ++i) {
+			randomPositions.push(Math.random() * 1024);
+			randomPositions.push(Math.random() * 1024);
+		}
+
+		this.updateTreePositions(randomPositions);
 	}
 
 	draw(viewProjection: mat4, texelSizeInMeters: number, heightScaleInMeters: number, camPos: vec3 | number[], sunDir: vec3 | number[], heightMap: WebGLTexture) {
@@ -161,18 +164,26 @@ export default class DecorationObjects {
 		gl.activeTexture(gl.TEXTURE0);
 		gl.bindTexture(gl.TEXTURE_2D, heightMap);
 
-		gl.bindVertexArray(this.treeVao);
+		if (this.treeCount !== 0) {
+			gl.bindVertexArray(this.treeVao);
 
-		gl.activeTexture(gl.TEXTURE1);
-		gl.bindTexture(gl.TEXTURE_2D, this.treeBranchesTexture.id);
+			gl.activeTexture(gl.TEXTURE1);
+			gl.bindTexture(gl.TEXTURE_2D, this.treeBranchesTexture.id);
 
-		gl.drawElementsInstanced(gl.TRIANGLES, this.treeBranchesIndexCount, gl.UNSIGNED_INT, this.treeBranchesIndexOffset * 4, this.treeCount);
+			gl.drawElementsInstanced(gl.TRIANGLES, this.treeBranchesIndexCount, gl.UNSIGNED_INT, this.treeBranchesIndexOffset * 4, this.treeCount);
 
-		gl.activeTexture(gl.TEXTURE1);
-		gl.bindTexture(gl.TEXTURE_2D, this.treeTrunkTexture.id);
+			gl.activeTexture(gl.TEXTURE1);
+			gl.bindTexture(gl.TEXTURE_2D, this.treeTrunkTexture.id);
 
-		gl.drawElementsInstanced(gl.TRIANGLES, this.treeTrunkIndexCount, gl.UNSIGNED_INT, this.treeTrunkIndexOffset * 4, this.treeCount);
+			gl.drawElementsInstanced(gl.TRIANGLES, this.treeTrunkIndexCount, gl.UNSIGNED_INT, this.treeTrunkIndexOffset * 4, this.treeCount);
 
-		gl.bindVertexArray(null);
+			gl.bindVertexArray(null);
+		}
+	}
+
+	updateTreePositions(positions: number[]) {
+		this.treeCount = positions.length / 2;
+		gl.bindBuffer(gl.ARRAY_BUFFER, this.treePositionsVbo);
+		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.DYNAMIC_DRAW);
 	}
 }
