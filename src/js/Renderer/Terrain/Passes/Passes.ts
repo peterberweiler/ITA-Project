@@ -2,7 +2,7 @@ import Framebuffer from "../../Framebuffer";
 import { gl, TextureBundle } from "../../Global";
 import Shader from "../../Shader";
 
-const fullscreenVSSource = require("../../../Shader/fullscreenPass.vs").default;
+const fullscreenVSSource = require("../../../Shader/fullscreenTriangle.vs").default;
 const invertFSSource = require("../../../Shader/invertPass.fs").default;
 
 //TODO: add framebuffer per Pass, only change gl.drawBuffers to change outputs
