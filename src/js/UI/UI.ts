@@ -219,10 +219,12 @@ class UIController extends EventEmitter {
 	updateBrushWindowSizeAndPos(top?: number) {
 		if (top === undefined) { top = this.brushWindow.offsetTop; }
 
-		const maxHeight = this.brushWindow.offsetParent!.clientHeight;
-		this.brushWindow.style.maxHeight = Math.floor(maxHeight * 0.9) + "px";
-		top = Math.min(top, maxHeight - this.brushWindow.clientHeight - 6);
-		this.brushWindow.style.top = top + "px";
+		if (this.brushWindow.offsetParent) {
+			const maxHeight = this.brushWindow.offsetParent.clientHeight;
+			this.brushWindow.style.maxHeight = Math.floor(maxHeight * 0.9) + "px";
+			top = Math.min(top, maxHeight - this.brushWindow.clientHeight - 6);
+			this.brushWindow.style.top = top + "px";
+		}
 	}
 
 	setupLayerList(layers: Layers) {
