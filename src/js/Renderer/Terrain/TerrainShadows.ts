@@ -141,7 +141,10 @@ export default class TerrainShadows {
 			gl.bindTexture(gl.TEXTURE_2D, heightMap);
 
 			Renderer.checkGLError();
-			gl.drawArrays(gl.TRIANGLES, 0, GRID_RESOLUTION * GRID_RESOLUTION * 6);
+			gl.enable(gl.CULL_FACE);
+			gl.cullFace(gl.FRONT);
+			gl.drawArrays(gl.TRIANGLES, 0, (GRID_RESOLUTION + 2) * (GRID_RESOLUTION + 2) * 6);
+			gl.disable(gl.CULL_FACE);
 			Renderer.checkGLError();
 			gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 		}

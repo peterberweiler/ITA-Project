@@ -21,7 +21,7 @@ float debugSineHills(vec2 uv)
 
 void main(void) {
 	int baseQuad = gl_VertexID / 6;
-	vec2 quadOffset = vec2(baseQuad % uGridResolution, baseQuad / uGridResolution);
+	vec2 quadOffset = vec2(baseQuad % (uGridResolution + 2), baseQuad / (uGridResolution + 2));
 	int index = gl_VertexID % 6;
 
 	vec2 positions[6] = vec2[](
@@ -34,9 +34,21 @@ void main(void) {
 	);
 
 	vec3 position = vec3(quadOffset + positions[index], 0.0).xzy;
+	position.xz -= 1.0;
 	position.xz = position.xz;
 	// position.y = debugSineHills(position.xz * 0.005);
-	position.y = texture(uHeightmapTexture, position.xz * uTexelSizeInMeters * (1.0 / vec2(textureSize(uHeightmapTexture, 0).xy))).r * uHeightScaleInMeters;
+
+	bool isSkirt = false;
+	if (position.x < 0.0 || position.z < 0.0) {
+		isSkirt = true;
+		position.xz += 1.0;
+	}
+	if (position.x >= float(uGridResolution) || position.z >= float(uGridResolution)) {
+		isSkirt = true;
+		position.xz -= 1.0;
+	}
+
+	position.y = isSkirt ? -500.0 : texture(uHeightmapTexture, position.xz * uTexelSizeInMeters * (1.0 / vec2(textureSize(uHeightmapTexture, 0).xy))).r * uHeightScaleInMeters;
 	vWorldSpacePos = position;
 	gl_Position = uTransform * vec4(position, 1.0);
 }

@@ -94,8 +94,8 @@ export default class TerrainUniformGridMesh {
 		Renderer.checkGLError();
 		gl.enable(gl.CULL_FACE);
 		gl.cullFace(gl.FRONT);
-		gl.drawArrays(drawMode, 0, GRID_RESOLUTION * GRID_RESOLUTION * 6);
-		gl.cullFace(gl.NONE);
+		gl.drawArrays(drawMode, 0, (GRID_RESOLUTION + 2) * (GRID_RESOLUTION + 2) * 6);
+		gl.disable(gl.CULL_FACE);
 		Renderer.checkGLError();
 	}
 }
