@@ -45,8 +45,6 @@ body {
     background-color: aqua;
 }
 
-// TODO: turn this into flex
-
 #menu {
     @include unselectable;
 

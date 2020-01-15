@@ -6,6 +6,8 @@ import Layers from "../Renderer/Terrain/Layers";
 import Settings from "../Settings";
 import UISelector from "./UISelector";
 
+type Route = "increase-brush" | "decrease-brush" | "flatten-brush" | "layer-brush" | "decoration-brush" | "layers" | "settings";
+
 declare interface UIController {
 	on(event: "debug0", listener: () => void): this;
 	on(event: "debug1", listener: () => void): this;
@@ -18,7 +20,8 @@ declare interface UIController {
 	on(event: "min-slope-changed", listener: (value: number) => void): this;
 	on(event: "max-slope-changed", listener: (value: number) => void): this;
 	on(event: "flatten-brush-type-changed", listener: (type: number) => void): this;
-	on(event: "menu-selected", listener: (menuIndex: number) => void): this;
+	on(event: "decoration-brush-type-changed", listener: (type: number) => void): this;
+	on(event: "menu-selected", listener: (route: Route) => void): this;
 	on(event: "layer-type-selected", listener: (index: number) => void): this;
 	on(event: "brush-type-selected", listener: (index: number) => void): this;
 	on(event: "sun-changed", listener: (pitch: number, yaw: number) => void): this;
@@ -63,6 +66,7 @@ class UIController extends EventEmitter {
 	public readonly cameraModeCheckbox = document.getElementById("camera-mode-input") as HTMLInputElement;
 
 	public readonly flattenBrushSelector = new UISelector("#flatten-brush-selector");
+	public readonly decorationBrushSelector = new UISelector("#decoration-brush-selector");
 
 	public wheelEnabled = true;
 
@@ -147,6 +151,10 @@ class UIController extends EventEmitter {
 			this.emit("flatten-brush-type-changed", i);
 		});
 
+		this.decorationBrushSelector.on("change", (i) => {
+			this.emit("decoration-brush-type-changed", i);
+		});
+
 		this.layerBrushTypeSelector.on("change", (i) => {
 			this.emit("layer-type-selected", i);
 		});
@@ -171,12 +179,14 @@ class UIController extends EventEmitter {
 		this.menuItems.forEach(item => item.removeAttribute("selected"));
 		this.menuItems[index].setAttribute("selected", "true");
 
-		//TODO: don't use numbered ids
-		switch (index) {
-			case 0:
-			case 1:
-			case 2:
-			case 3:
+		const route = this.menuItems[index].getAttribute("route") as Route;
+
+		switch (route) {
+			case "increase-brush":
+			case "decrease-brush":
+			case "flatten-brush":
+			case "layer-brush":
+			case "decoration-brush":
 				this.brushWindow.classList.add("slide-out");
 
 				setTimeout(() => {
@@ -184,12 +194,14 @@ class UIController extends EventEmitter {
 					hide(this.layersWindow, true);
 					hide(this.settingsWindow, true);
 
-					hide(this.brushTypeSelector, index !== 0 && index !== 1);
+					hide(this.brushTypeSelector, route !== "increase-brush" && route !== "decrease-brush");
 
-					this.layerBrushTypeSelector.hide(index !== 3);
-					hide(this.layerBrushOptions, index !== 3);
+					this.layerBrushTypeSelector.hide(route !== "layer-brush");
+					hide(this.layerBrushOptions, route !== "layer-brush");
 
-					this.flattenBrushSelector.hide(index !== 2);
+					this.flattenBrushSelector.hide(route !== "flatten-brush");
+					this.decorationBrushSelector.hide(route !== "decoration-brush");
+
 					this.brushWindowTitle.innerText = this.menuItems[index].getAttribute("title") || "";
 
 					const buttonTop = this.menuItems[index].offsetTop;
@@ -199,13 +211,13 @@ class UIController extends EventEmitter {
 				}, 100);
 				break;
 
-			case 4:
+			case "layers":
 				hide(this.brushWindow, true);
 				hide(this.layersWindow, false);
 				hide(this.settingsWindow, true);
 				break;
 
-			case 5:
+			case "settings":
 				hide(this.brushWindow, true);
 				hide(this.layersWindow, true);
 				hide(this.settingsWindow, false);
@@ -213,7 +225,7 @@ class UIController extends EventEmitter {
 		}
 
 		// emit event
-		this.emit("menu-selected", index);
+		this.emit("menu-selected", route);
 	}
 
 	updateBrushWindowSizeAndPos(top?: number) {

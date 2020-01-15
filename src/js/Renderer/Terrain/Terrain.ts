@@ -13,7 +13,7 @@ export default class Terrain {
 	private clipMapMesh: TerrainClipMapMesh;
 	private uniformGridMesh: TerrainUniformGridMesh;
 	private skybox: Skybox;
-	private decorationObjects: DecorationObjects;
+	public readonly decorationObjects: DecorationObjects;
 	private materialsUBO: WebGLBuffer;
 	private fbo: WebGLFramebuffer | null;
 	private depthAttachment: Texture;

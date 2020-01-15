@@ -1,3 +1,4 @@
+import Decorations from "./Decorations";
 import EditorController from "./EditorController";
 import * as ImportExport from "./ImportExport";
 import { Camera } from "./Renderer/Cameras";
@@ -14,6 +15,8 @@ let inputController: InputController;
 let heightmapController: HeightmapController;
 let editorController: EditorController;
 let layers: Layers;
+
+let decorationUpdateFrameCounter = 0;
 
 function setupRenderer() {
 	camera = new Camera(
@@ -72,28 +75,32 @@ function setupUI() {
 	UI.on("min-slope-changed", (value) => editorController.setValueForAllBrushes("minSlope", value));
 	UI.on("max-slope-changed", (value) => editorController.setValueForAllBrushes("maxSlope", value));
 
-	UI.on("menu-selected", (menuIndex) => {
-		switch (menuIndex) {
-			case 0: // height brush
+	UI.on("menu-selected", (route) => {
+		switch (route) {
+			case "increase-brush": // height brush
 				editorController.selectedBrush = editorController.brush.height;
 				editorController.brush.height.direction = 1;
 				break;
 
-			case 1: // height brush
+			case "decrease-brush": // height brush
 				editorController.selectedBrush = editorController.brush.height;
 				editorController.brush.height.direction = -1;
 				break;
 
-			case 2: // flatten brush
+			case "flatten-brush": // flatten brush
 				editorController.selectedBrush = editorController.brush.flatten;
 				break;
 
-			case 3: // Layer Brush
+			case "layer-brush": // Layer Brush
 				editorController.selectedBrush = editorController.brush.layer;
 				break;
 
-			case 4: // Layers
-			case 5: // Settings
+			case "decoration-brush": // Layer Brush
+				editorController.selectedBrush = editorController.brush.decoration;
+				break;
+
+			case "layers": // Layers
+			case "settings": // Settings
 				editorController.selectedBrush = null;
 				break;
 		}
@@ -107,9 +114,11 @@ function setupUI() {
 				UI.strengthOutput.value = editorController.selectedBrush.strength.toString();
 			}
 			if ("minSlope" in editorController.selectedBrush) {
+				//@ts-ignore
 				UI.minSlopeInput.value = editorController.selectedBrush.minSlope.toString();
 			}
 			if ("maxSlope" in editorController.selectedBrush) {
+				//@ts-ignore
 				UI.maxSlopeInput.value = editorController.selectedBrush.maxSlope.toString();
 			}
 		}
@@ -125,6 +134,10 @@ function setupUI() {
 
 	UI.on("flatten-brush-type-changed", (type: number) => {
 		editorController.brush.flatten.type = type;
+	});
+
+	UI.on("decoration-brush-type-changed", (type: number) => {
+		editorController.brush.decoration.remove = type !== 0;
 	});
 
 	UI.on("layer-order-changed", (order: number[]) => {
@@ -216,6 +229,23 @@ function update(now: number, deltaTime: number) {
 			inputController.mouse.terrain.last[1],
 			deltaTime
 		);
+	}
+
+	if (Decorations.hasChange()) {
+		++decorationUpdateFrameCounter;
+		if (decorationUpdateFrameCounter >= 5) { // update decoration data only every fifth frame
+			decorationUpdateFrameCounter = 0;
+
+			const trees = Decorations.getTrees();
+			const data = new Float32Array(trees.length * 2);
+			for (let i = 0, j = 0; i < trees.length; ++i, j += 2) {
+				data[j] = trees[i][0];
+				data[j + 1] = trees[i][1];
+			}
+			renderer.getTerrain().decorationObjects.updateTreePositions(data);
+
+			Decorations.clearChange();
+		}
 	}
 }
 

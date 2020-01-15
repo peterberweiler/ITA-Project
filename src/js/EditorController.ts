@@ -1,13 +1,28 @@
+import Decorations from "./Decorations";
 import HeightmapController from "./Renderer/Terrain/HeightmapController";
 import { HeightBrushPass } from "./Renderer/Terrain/Passes/HeightBrushPass";
 
 interface Brush {
 	radius: number,
 	strength: number,
-	direction: number,
+}
+
+interface TypedBrush extends Brush {
 	type: number,
+}
+
+interface HeightBrush extends TypedBrush {
+	direction: number,
+}
+
+interface LayerBrush extends TypedBrush {
 	minSlope: number,
 	maxSlope: number,
+}
+
+interface DecorationBrush extends Brush {
+	remove: boolean,
+	accumulator: number,
 }
 
 export default class EditorController {
@@ -19,19 +34,25 @@ export default class EditorController {
 			strength: 50, //1-100
 			direction: 1,
 			type: 0,
-		} as Brush,
+		} as HeightBrush,
 		flatten: {
 			radius: 100,
 			strength: 50, //1-100
 			type: 0
-		} as Brush,
+		} as TypedBrush,
 		layer: {
 			radius: 15,
 			strength: 50, //1-100
 			type: 0,
 			minSlope: 0, //0-1
 			maxSlope: 1, //0-1
-		} as Brush,
+		} as LayerBrush,
+		decoration: {
+			radius: 100,
+			strength: 50,
+			remove: false,
+			accumulator: 0,
+		} as DecorationBrush,
 	}
 
 	selectedBrush: Brush | null = this.brush.height;
@@ -76,6 +97,7 @@ export default class EditorController {
 				});
 
 				this.heightmapController.queuePass(this.heightmapController.heightBrushPass);
+				this.updateShadows();
 				break;
 			}
 
@@ -88,19 +110,20 @@ export default class EditorController {
 				});
 
 				this.heightmapController.queuePass(this.heightmapController.heightBrushPass);
+				this.updateShadows();
 				break;
 			}
 
 			case this.brush.layer: {
 				const value = (this.selectedBrush.strength - 1) / 99;
 
-				const minSlope = Math.min(this.selectedBrush.minSlope, this.selectedBrush.maxSlope);
-				const maxSlope = Math.max(this.selectedBrush.minSlope, this.selectedBrush.maxSlope);
+				const minSlope = Math.min(this.brush.layer.minSlope, this.brush.layer.maxSlope);
+				const maxSlope = Math.max(this.brush.layer.minSlope, this.brush.layer.maxSlope);
 
 				this.heightmapController.layerBrushPass.queueData({
 					points: [x, y, lastX, lastY],
-					type: this.selectedBrush.type,
-					radius: this.selectedBrush.radius,
+					type: this.brush.layer.type,
+					radius: this.brush.layer.radius,
 					value: value,
 					strength: deltaTime * 0.01,
 					minSlope,
@@ -111,10 +134,23 @@ export default class EditorController {
 				break;
 			}
 
-			default:
-				return;
+			case this.brush.decoration: {
+				this.brush.decoration.accumulator += 0.01 * deltaTime * this.brush.decoration.strength;
+
+				const count = Math.floor(this.brush.decoration.accumulator);
+				if (count >= 1) {
+					this.brush.decoration.accumulator -= count;
+
+					if (this.brush.decoration.remove) {
+						Decorations.removeTrees(count, [x, y], this.brush.decoration.radius);
+					}
+					else {
+						Decorations.addTrees(count, [x, y], this.brush.decoration.radius, 4);
+					}
+				}
+				break;
+			}
 		}
-		this.updateShadows();
 	}
 
 	updateShadows() {

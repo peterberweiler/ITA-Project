@@ -144,14 +144,7 @@ export default class DecorationObjects {
 			this.treeTrunkTexture2 = this.loadTexture("/data/spruce_tree/spruce_trunk.jpeg");
 		}
 
-		let randomPositions: number[] = [];
-
-		for (let i = 0; i < 32 * 1024; ++i) {
-			randomPositions.push(Math.random() * 1024);
-			randomPositions.push(Math.random() * 1024);
-		}
-
-		this.updateTreePositions(randomPositions);
+		this.updateTreePositions(new Float32Array());
 	}
 
 	draw(viewProjection: mat4, texelSizeInMeters: number, heightScaleInMeters: number, camPos: vec3 | number[], sunDir: vec3 | number[], heightMap: WebGLTexture) {
@@ -185,10 +178,10 @@ export default class DecorationObjects {
 		}
 	}
 
-	updateTreePositions(positions: number[]) {
+	updateTreePositions(positions: Float32Array) {
 		this.treeCount = positions.length / 2;
 		gl.bindBuffer(gl.ARRAY_BUFFER, this.treePositionsVbo);
-		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.DYNAMIC_DRAW);
+		gl.bufferData(gl.ARRAY_BUFFER, positions, gl.DYNAMIC_DRAW);
 	}
 
 	//

@@ -69,8 +69,10 @@
     }
 }
 
-#flatten-brush-selector {
+#flatten-brush-selector,
+#decoration-brush-selector {
     margin-top: 8px;
+    align-self: center;
 }
 
 #layers-window {
