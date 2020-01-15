@@ -111,13 +111,13 @@ export default class TerrainShadows {
 			let viewMatrix = mat4.create();
 			let lightPos = vec3.create();
 			let distance = texelSizeInMeters * GRID_RESOLUTION;
-			let center = vec3.clone([texelSizeInMeters * GRID_RESOLUTION * 0.5, texelSizeInMeters * GRID_RESOLUTION * 0.5, texelSizeInMeters * GRID_RESOLUTION * 0.5]);
+			let center = vec3.clone([texelSizeInMeters * GRID_RESOLUTION * 0.5, 0.0, texelSizeInMeters * GRID_RESOLUTION * 0.5]);
 			vec3.multiply(lightPos, lightDir, [distance, distance, distance]);
 			vec3.add(lightPos, lightPos, center);
 			mat4.lookAt(viewMatrix, lightPos, center, [0, 1, 0]);
 			let projectionMatrix = mat4.create();
 			let orthoExtent = texelSizeInMeters * GRID_RESOLUTION * 0.8;
-			mat4.ortho(projectionMatrix, -orthoExtent, orthoExtent, -orthoExtent, orthoExtent, 0.01, texelSizeInMeters * GRID_RESOLUTION * 3);
+			mat4.ortho(projectionMatrix, -orthoExtent, orthoExtent, -orthoExtent, orthoExtent, 0.01, texelSizeInMeters * GRID_RESOLUTION * 5);
 			mat4.multiply(this.shadowMatrix, projectionMatrix, viewMatrix);
 		}
 
@@ -127,7 +127,7 @@ export default class TerrainShadows {
 			gl.viewport(0, 0, SHADOW_MAP_RESOLUTION, SHADOW_MAP_RESOLUTION);
 			gl.drawBuffers([gl.COLOR_ATTACHMENT0]);
 			gl.clearBufferfv(gl.DEPTH, 0, [1.0]);
-			gl.clearBufferfv(gl.COLOR, 0, [0.0, 0.0, 0.0, 1.0]);
+			gl.clearBufferfv(gl.COLOR, 0, [1.0, 0.0, 0.0, 1.0]);
 
 			this.terrainShadowsShader.use();
 
@@ -174,7 +174,7 @@ export default class TerrainShadows {
 	}
 
 	getShadowMap() {
-		return this.shadowMapAttachment;
+		return this.shadowHeightMapAttachment;
 	}
 
 	getShadowMatrix() {

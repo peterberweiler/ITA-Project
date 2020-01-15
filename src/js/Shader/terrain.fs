@@ -10,7 +10,6 @@
 
 precision mediump float;
 precision highp sampler2DArray;
-precision highp sampler2DShadow;
 
 uniform sampler2D uHeightmapTexture;
 uniform sampler2D uSurfacemapTexture;
@@ -27,7 +26,6 @@ uniform uvec4 uLayerOrder[2];
 uniform uint uAlphaBlendingEnabled;
 uniform uint uDrawCursor;
 uniform float uTime;
-uniform mat4 uShadowMatrix;
 
 struct Material {
 	uint albedoRoughness;
@@ -221,18 +219,14 @@ void main(void) {
 	lightingParams.metalness = 0.0;
 	lightingParams.roughness = albedoRoughness.a;
 
-	vec4 shadowPos = uShadowMatrix * vec4(P, 1.0);
-	shadowPos.xyz = shadowPos.xyz * 0.5 + 0.5;
-	float shadowDepth = texture(uTerrainShadowTexture, shadowPos.xy).x;
-	float shadow2 = shadowDepth < shadowPos.z - 0.001 ? 0.0 : 1.0;
+	float terrainShadowHeight = texture(uTerrainShadowTexture, texCoord).x;
+	float currentHeight = P.y;
+	float penumbraZone = 25.0;
+	float distToShadowHeight = -clamp(currentHeight - terrainShadowHeight, -penumbraZone, 0.0);
+	float shadowAlpha = 1.0 - distToShadowHeight / penumbraZone;
+	float shadow = smoothstep(0.0, 1.0, shadowAlpha);
 
-	//float terrainShadowHeight = texture(uTerrainShadowTexture, texCoord).x;
-	//float currentHeight = P.y;
-	//float penumbraZone = 20.0;
-	//float distToShadowHeight = -clamp(currentHeight - terrainShadowHeight, -penumbraZone, 0.0);
-	//float shadow2 = smoothstep(1.0, 0.0, distToShadowHeight / penumbraZone);
-
-	vec3 color = cookTorranceSpecularBrdf(lightingParams, vec3(10.0), normalize(uLightDir)) * shadow2;
+	vec3 color = cookTorranceSpecularBrdf(lightingParams, vec3(10.0), normalize(uLightDir)) * shadow;
 
 	vec3 skyColor = pow(vec3(0.529, 0.808, 0.922), vec3(2.2));
 

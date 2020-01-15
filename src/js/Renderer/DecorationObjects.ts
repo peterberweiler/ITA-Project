@@ -17,7 +17,6 @@ export default class DecorationObjects {
 	private uCamPosLocation: WebGLUniformLocation;
 	private uLightDirLocation: WebGLUniformLocation;
 	private uAlbedoTextureLocation: WebGLUniformLocation;
-	private uShadowMatrixLocation: WebGLUniformLocation;
 	private uTerrainShadowTextureLocation: WebGLUniformLocation;
 	private treeVao: WebGLBuffer;
 	private treeVbo: WebGLBuffer;
@@ -46,7 +45,6 @@ export default class DecorationObjects {
 		this.uCamPosLocation = this.decorationObjectsShader.getUniformLocation("uCamPos");
 		this.uLightDirLocation = this.decorationObjectsShader.getUniformLocation("uLightDir");
 		this.uAlbedoTextureLocation = this.decorationObjectsShader.getUniformLocation("uAlbedoTexture");
-		this.uShadowMatrixLocation = this.decorationObjectsShader.getUniformLocation("uShadowMatrix");
 		this.uTerrainShadowTextureLocation = this.decorationObjectsShader.getUniformLocation("uTerrainShadowTexture");
 
 		const vertexSize = (3 + 3 + 2);
@@ -151,7 +149,7 @@ export default class DecorationObjects {
 		this.updateTreePositions(new Float32Array());
 	}
 
-	draw(viewProjection: mat4, shadowMatrix: mat4, texelSizeInMeters: number, heightScaleInMeters: number, camPos: vec3 | number[], sunDir: vec3 | number[], heightMap: WebGLTexture, terrainShadowMap: WebGLTexture) {
+	draw(viewProjection: mat4, texelSizeInMeters: number, heightScaleInMeters: number, camPos: vec3 | number[], sunDir: vec3 | number[], heightMap: WebGLTexture, terrainShadowMap: WebGLTexture) {
 		this.decorationObjectsShader.use();
 
 		this.decorationObjectsShader.setUniformMat4(this.uViewProjectionMatrixLocation, viewProjection);
@@ -161,7 +159,6 @@ export default class DecorationObjects {
 		this.decorationObjectsShader.setUniformVec3(this.uCamPosLocation, camPos);
 		this.decorationObjectsShader.setUniformVec3(this.uLightDirLocation, sunDir);
 		this.decorationObjectsShader.setUniformI(this.uAlbedoTextureLocation, 2);
-		this.decorationObjectsShader.setUniformMat4(this.uShadowMatrixLocation, shadowMatrix);
 		this.decorationObjectsShader.setUniformI(this.uTerrainShadowTextureLocation, 1);
 
 		gl.activeTexture(gl.TEXTURE0);

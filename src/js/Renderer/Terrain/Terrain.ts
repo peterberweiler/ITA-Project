@@ -89,7 +89,6 @@ export default class Terrain {
 		{
 			let terrainDrawParams = new TerrainDrawParams();
 			terrainDrawParams.viewProjection = viewProjection;
-			terrainDrawParams.shadowMatrix = this.terrainShadows.getShadowMatrix();
 			terrainDrawParams.camPos = camPos;
 			terrainDrawParams.lightDir = vec3.clone(sunDir);
 			terrainDrawParams.cursorPosRadius = [cursorX, cursorY, brushRadius] as unknown as vec3;
@@ -121,7 +120,7 @@ export default class Terrain {
 
 			gl.drawBuffers([gl.COLOR_ATTACHMENT0]);
 			//console.time("draw trees");
-			this.decorationObjects.draw(viewProjection, this.terrainShadows.getShadowMatrix(), this.texelSizeInMeters, this.heightScaleInMeters, camPos, sunDir, textures.heightMap.current().id, this.terrainShadows.getShadowMap().id);
+			this.decorationObjects.draw(viewProjection, this.texelSizeInMeters, this.heightScaleInMeters, camPos, sunDir, textures.heightMap.current().id, this.terrainShadows.getShadowMap().id);
 			//console.timeEnd("draw trees");
 		}
 		Renderer.checkGLError();

@@ -2,7 +2,6 @@ import { mat4, vec3 } from "gl-matrix";
 
 export default class TerrainDrawParams {
 	viewProjection: mat4 = mat4.create();
-	shadowMatrix: mat4 = mat4.create();
 	camPos: vec3 = vec3.create();
 	cursorPosRadius: vec3 = vec3.create();
 	lightDir: vec3 = vec3.create();

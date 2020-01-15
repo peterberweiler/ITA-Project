@@ -11,7 +11,6 @@ const vertSource = require("../../Shader/terrainGrid.vs").default;
 export default class TerrainUniformGridMesh {
 	private terrainShader: Shader;
 	private uTransformLocation: WebGLUniformLocation;
-	private uShadowMatrixLocation: WebGLUniformLocation;
 	private uTexelSizeInMetersLocation: WebGLUniformLocation;
 	private uHeightScaleInMetersLocation: WebGLUniformLocation;
 	private uGridResolutionLocation: WebGLUniformLocation;
@@ -31,7 +30,6 @@ export default class TerrainUniformGridMesh {
 	constructor() {
 		this.terrainShader = new Shader(vertSource, fragSource);
 		this.uTransformLocation = this.terrainShader.getUniformLocation("uTransform");
-		this.uShadowMatrixLocation = this.terrainShader.getUniformLocation("uShadowMatrix");
 		this.uTexelSizeInMetersLocation = this.terrainShader.getUniformLocation("uTexelSizeInMeters");
 		this.uHeightScaleInMetersLocation = this.terrainShader.getUniformLocation("uHeightScaleInMeters");
 		this.uGridResolutionLocation = this.terrainShader.getUniformLocation("uGridResolution");
@@ -59,7 +57,6 @@ export default class TerrainUniformGridMesh {
 		this.terrainShader.use();
 
 		this.terrainShader.setUniformMat4(this.uTransformLocation, drawParams.viewProjection);
-		this.terrainShader.setUniformMat4(this.uShadowMatrixLocation, drawParams.shadowMatrix);
 		this.terrainShader.setUniformF(this.uTexelSizeInMetersLocation, drawParams.texelSizeInMeters);
 		this.terrainShader.setUniformF(this.uHeightScaleInMetersLocation, drawParams.heightScaleInMeters);
 		this.terrainShader.setUniformVec3(this.uCamPosLocation, drawParams.camPos);
@@ -69,6 +66,10 @@ export default class TerrainUniformGridMesh {
 		this.terrainShader.setUniformUi(this.uActiveLayersLocation, drawParams.activeLayers);
 		this.terrainShader.setUniformUi(this.uDrawCursorLocation, drawParams.drawCursor ? 1 : 0);
 		this.terrainShader.setUniformF(this.uTimeLocation, drawParams.time);
+		this.terrainShader.setUniformI(this.uHeightmapTexture, 0);
+		this.terrainShader.setUniformI(this.uLayerWeightTexture, 1);
+		this.terrainShader.setUniformI(this.uTerrainShadowTextureLocation, 2);
+		this.terrainShader.setUniformI(this.uGridResolutionLocation, GRID_RESOLUTION);
 
 		for (let i: number = 0; i < MAX_LAYERS / 4; i += 1) {
 			let values: number[] = [];
@@ -86,20 +87,10 @@ export default class TerrainUniformGridMesh {
 		gl.activeTexture(gl.TEXTURE0);
 		gl.bindTexture(gl.TEXTURE_2D, drawParams.heightMap);
 		gl.activeTexture(gl.TEXTURE1);
-		gl.bindTexture(gl.TEXTURE_2D, drawParams.shadowMap);
-		gl.activeTexture(gl.TEXTURE2);
 		gl.bindTexture(gl.TEXTURE_2D_ARRAY, drawParams.weightMap);
-		gl.activeTexture(gl.TEXTURE3);
+		gl.activeTexture(gl.TEXTURE2);
 		gl.bindTexture(gl.TEXTURE_2D, drawParams.shadowMap2);
 
-		// gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-		// gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-		// gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-		// gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-		this.terrainShader.setUniformI(this.uHeightmapTexture, 0);
-		this.terrainShader.setUniformI(this.uLayerWeightTexture, 2);
-		this.terrainShader.setUniformI(this.uTerrainShadowTextureLocation, 3);
-		this.terrainShader.setUniformI(this.uGridResolutionLocation, GRID_RESOLUTION);
 		Renderer.checkGLError();
 		gl.drawArrays(drawMode, 0, GRID_RESOLUTION * GRID_RESOLUTION * 6);
 		Renderer.checkGLError();
