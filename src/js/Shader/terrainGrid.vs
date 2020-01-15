@@ -9,6 +9,7 @@ uniform float uHeightScaleInMeters;
 uniform sampler2D uHeightmapTexture;
 
 out vec3 vWorldSpacePos;
+out float vIsSkirt;
 
 // A very simple, regular procedural terrain for debugging cracks etc.
 float debugSineHills(vec2 uv)
@@ -50,5 +51,6 @@ void main(void) {
 
 	position.y = isSkirt ? -500.0 : texture(uHeightmapTexture, position.xz * uTexelSizeInMeters * (1.0 / vec2(textureSize(uHeightmapTexture, 0).xy))).r * uHeightScaleInMeters;
 	vWorldSpacePos = position;
+	vIsSkirt = isSkirt ? 1.0 : 0.0;
 	gl_Position = uTransform * vec4(position, 1.0);
 }

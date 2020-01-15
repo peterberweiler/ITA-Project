@@ -40,6 +40,7 @@ layout(std140) uniform MATERIAL_BUFFER
 } uMaterial;
 
 in vec3 vWorldSpacePos;
+in float vIsSkirt;
 
 layout(location = 0) out vec4 oColor;
 layout(location = 1) out vec4 oDepth;
@@ -156,6 +157,8 @@ vec4 unpackUnorm4x8(uint value){
 }
 
 void main(void) {
+	bool isSkirt = vIsSkirt != 0.0;
+
 	vec2 texelSize = (1.0 / vec2(textureSize(uHeightmapTexture, 0).xy));
 	vec2 texCoord = vWorldSpacePos.xz  * uTexelSizeInMeters * texelSize;
 
@@ -230,6 +233,8 @@ void main(void) {
 	vec3 ambientColor = mix(vec3(0.18), skyColor, vec3(N.y) * 0.5 + 0.5);
 	color += ambientColor * 2.0 * (1.0 / PI) * lightingParams.albedo;
 
+	color = isSkirt ? color * 0.1 : color;
+
 	// fog
 	float fogAlpha = exp(-0.66 * linearDepth(gl_FragCoord.z) / 10000.0);
 	color += mix(skyColor, color, clamp(fogAlpha * fogAlpha, 0.0, 1.0));
@@ -267,5 +272,5 @@ void main(void) {
 
 	//	
 	oColor = vec4(color, 1.0);
-	oDepth = vec4(vWorldSpacePos, 1.0);
+	oDepth = isSkirt ? vec4(0.0) : vec4(vWorldSpacePos, 1.0);
 }
