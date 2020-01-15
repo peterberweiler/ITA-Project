@@ -135,7 +135,7 @@ export default class EditorController {
 			}
 
 			case this.brush.decoration: {
-				const area = Math.max(500, this.brush.decoration.radius * this.brush.decoration.radius);
+				const area = Math.max(500, this.brush.decoration.radius * this.brush.decoration.radius * Math.PI);
 				this.brush.decoration.accumulator += 0.00000015 * deltaTime * this.brush.decoration.strength * area;
 
 				const count = Math.floor(this.brush.decoration.accumulator);
