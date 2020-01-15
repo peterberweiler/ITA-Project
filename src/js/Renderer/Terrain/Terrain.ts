@@ -5,14 +5,15 @@ import Renderer from "../Renderer";
 import Skybox from "../Skybox";
 import Texture from "../Texture";
 import Layers, { MAX_LAYERS } from "./Layers";
-import TerrainClipMapMesh from "./TerrainClipMapMesh";
 import TerrainDrawParams from "./TerrainDrawParams";
+import TerrainShadows from "./TerrainShadows";
 import TerrainUniformGridMesh from "./TerrainUniformGridMesh";
 
 export default class Terrain {
-	private clipMapMesh: TerrainClipMapMesh;
+	//private clipMapMesh: TerrainClipMapMesh;
 	private uniformGridMesh: TerrainUniformGridMesh;
 	private skybox: Skybox;
+	private terrainShadows: TerrainShadows;
 	public readonly decorationObjects: DecorationObjects;
 	private materialsUBO: WebGLBuffer;
 	private fbo: WebGLFramebuffer | null;
@@ -25,10 +26,11 @@ export default class Terrain {
 	private worldSpaceMousePos: vec3 = vec3.create();
 
 	constructor() {
-		this.clipMapMesh = new TerrainClipMapMesh();
+		//this.clipMapMesh = new TerrainClipMapMesh();
 		this.uniformGridMesh = new TerrainUniformGridMesh();
 		this.skybox = new Skybox();
 		this.decorationObjects = new DecorationObjects();
+		this.terrainShadows = new TerrainShadows();
 
 		let bufferId = gl.createBuffer();
 		if (!bufferId) { throw new Error("Couldn't create buffer!"); }
@@ -59,6 +61,10 @@ export default class Terrain {
 	}
 
 	draw(time: number, viewProjection: mat4, camPos: vec3, sunDir: vec3 | number[], textures: TextureBundle, layers: Layers, brushRadius: number, readMouseWorldSpacePos: boolean = false, mousePosX: number = 0, mousePosY: number = 0, cursorX: number, cursorY: number, drawCursor: boolean = false) {
+		//console.time("update shadows");
+		this.terrainShadows.update(viewProjection, this.texelSizeInMeters, this.heightScaleInMeters, vec3.clone(sunDir), textures.heightMap.current().id);
+		//console.timeEnd("update shadows");
+
 		gl.bindFramebuffer(gl.FRAMEBUFFER, this.fbo);
 		gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 		let buffers: number[] = [gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1];
@@ -83,6 +89,7 @@ export default class Terrain {
 		{
 			let terrainDrawParams = new TerrainDrawParams();
 			terrainDrawParams.viewProjection = viewProjection;
+			terrainDrawParams.shadowMatrix = this.terrainShadows.getShadowMatrix();
 			terrainDrawParams.camPos = camPos;
 			terrainDrawParams.lightDir = vec3.clone(sunDir);
 			terrainDrawParams.cursorPosRadius = [cursorX, cursorY, brushRadius] as unknown as vec3;
@@ -94,6 +101,7 @@ export default class Terrain {
 			terrainDrawParams.layerOrder = layers.layerOrder;
 			terrainDrawParams.heightMap = textures.heightMap.current().id;
 			terrainDrawParams.shadowMap = textures.shadowMap.id;
+			terrainDrawParams.shadowMap2 = this.terrainShadows.getShadowMap().id;
 			terrainDrawParams.weightMap = layers.weightMapCurrent;
 			terrainDrawParams.materialUBO = this.materialsUBO;
 
@@ -113,7 +121,7 @@ export default class Terrain {
 
 			gl.drawBuffers([gl.COLOR_ATTACHMENT0]);
 			//console.time("draw trees");
-			this.decorationObjects.draw(viewProjection, this.texelSizeInMeters, this.heightScaleInMeters, camPos, sunDir, textures.heightMap.current().id);
+			this.decorationObjects.draw(viewProjection, this.terrainShadows.getShadowMatrix(), this.texelSizeInMeters, this.heightScaleInMeters, camPos, sunDir, textures.heightMap.current().id, this.terrainShadows.getShadowMap().id);
 			//console.timeEnd("draw trees");
 		}
 		Renderer.checkGLError();

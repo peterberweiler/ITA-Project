@@ -18,6 +18,8 @@ in vec2 vTexCoord;
 uniform vec3 uCamPos;
 uniform vec3 uLightDir;
 uniform sampler2D uAlbedoTexture;
+uniform sampler2D uTerrainShadowTexture;
+uniform mat4 uShadowMatrix;
 
 struct LightingParams {
 	vec3 albedo;
@@ -144,7 +146,12 @@ void main(void) {
 	lightingParams.metalness = 0.0;
 	lightingParams.roughness = 0.9;
 
-	vec3 color = cookTorranceSpecularBrdf(lightingParams, vec3(10.0), normalize(uLightDir));
+	vec4 shadowPos = uShadowMatrix * vec4(vWorldPos, 1.0);
+	shadowPos.xyz = shadowPos.xyz * 0.5 + 0.5;
+	float shadowDepth = texture(uTerrainShadowTexture, shadowPos.xy).x;
+	float shadow2 = shadowDepth < shadowPos.z - 0.001 ? 0.0 : 1.0;
+
+	vec3 color = cookTorranceSpecularBrdf(lightingParams, vec3(10.0), normalize(uLightDir)) * shadow2;
 
 	vec3 skyColor = pow(vec3(0.529, 0.808, 0.922), vec3(2.2));
 

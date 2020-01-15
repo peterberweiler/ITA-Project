@@ -17,6 +17,8 @@ export default class DecorationObjects {
 	private uCamPosLocation: WebGLUniformLocation;
 	private uLightDirLocation: WebGLUniformLocation;
 	private uAlbedoTextureLocation: WebGLUniformLocation;
+	private uShadowMatrixLocation: WebGLUniformLocation;
+	private uTerrainShadowTextureLocation: WebGLUniformLocation;
 	private treeVao: WebGLBuffer;
 	private treeVbo: WebGLBuffer;
 	private treeIbo: WebGLBuffer;
@@ -44,6 +46,8 @@ export default class DecorationObjects {
 		this.uCamPosLocation = this.decorationObjectsShader.getUniformLocation("uCamPos");
 		this.uLightDirLocation = this.decorationObjectsShader.getUniformLocation("uLightDir");
 		this.uAlbedoTextureLocation = this.decorationObjectsShader.getUniformLocation("uAlbedoTexture");
+		this.uShadowMatrixLocation = this.decorationObjectsShader.getUniformLocation("uShadowMatrix");
+		this.uTerrainShadowTextureLocation = this.decorationObjectsShader.getUniformLocation("uTerrainShadowTexture");
 
 		const vertexSize = (3 + 3 + 2);
 
@@ -147,7 +151,7 @@ export default class DecorationObjects {
 		this.updateTreePositions(new Float32Array());
 	}
 
-	draw(viewProjection: mat4, texelSizeInMeters: number, heightScaleInMeters: number, camPos: vec3 | number[], sunDir: vec3 | number[], heightMap: WebGLTexture) {
+	draw(viewProjection: mat4, shadowMatrix: mat4, texelSizeInMeters: number, heightScaleInMeters: number, camPos: vec3 | number[], sunDir: vec3 | number[], heightMap: WebGLTexture, terrainShadowMap: WebGLTexture) {
 		this.decorationObjectsShader.use();
 
 		this.decorationObjectsShader.setUniformMat4(this.uViewProjectionMatrixLocation, viewProjection);
@@ -156,20 +160,25 @@ export default class DecorationObjects {
 		this.decorationObjectsShader.setUniformI(this.uHeightmapTextureLocation, 0);
 		this.decorationObjectsShader.setUniformVec3(this.uCamPosLocation, camPos);
 		this.decorationObjectsShader.setUniformVec3(this.uLightDirLocation, sunDir);
-		this.decorationObjectsShader.setUniformI(this.uAlbedoTextureLocation, 1);
+		this.decorationObjectsShader.setUniformI(this.uAlbedoTextureLocation, 2);
+		this.decorationObjectsShader.setUniformMat4(this.uShadowMatrixLocation, shadowMatrix);
+		this.decorationObjectsShader.setUniformI(this.uTerrainShadowTextureLocation, 1);
 
 		gl.activeTexture(gl.TEXTURE0);
 		gl.bindTexture(gl.TEXTURE_2D, heightMap);
 
+		gl.activeTexture(gl.TEXTURE1);
+		gl.bindTexture(gl.TEXTURE_2D, terrainShadowMap);
+
 		if (this.treeCount !== 0) {
 			gl.bindVertexArray(this.treeVao);
 
-			gl.activeTexture(gl.TEXTURE1);
+			gl.activeTexture(gl.TEXTURE2);
 			gl.bindTexture(gl.TEXTURE_2D, this.treeBranchesTexture2);
 
 			gl.drawElementsInstanced(gl.TRIANGLES, this.treeBranchesIndexCount, gl.UNSIGNED_INT, this.treeBranchesIndexOffset * 4, this.treeCount);
 
-			gl.activeTexture(gl.TEXTURE1);
+			gl.activeTexture(gl.TEXTURE2);
 			gl.bindTexture(gl.TEXTURE_2D, this.treeTrunkTexture2);
 
 			gl.drawElementsInstanced(gl.TRIANGLES, this.treeTrunkIndexCount, gl.UNSIGNED_INT, this.treeTrunkIndexOffset * 4, this.treeCount);
