@@ -6,6 +6,7 @@ import InputController from "./Renderer/InputController";
 import Renderer from "./Renderer/Renderer";
 import HeightmapController from "./Renderer/Terrain/HeightmapController";
 import Layers from "./Renderer/Terrain/Layers";
+import Terrain from "./Renderer/Terrain/Terrain";
 import Settings from "./Settings";
 import UI from "./UI/UI";
 
@@ -15,7 +16,7 @@ let inputController: InputController;
 let heightmapController: HeightmapController;
 let editorController: EditorController;
 let layers: Layers;
-
+let terrain: Terrain;
 let decorationUpdateFrameCounter = 0;
 
 function setupRenderer() {
@@ -34,6 +35,7 @@ function setupRenderer() {
 	inputController.setFpsMode(isFpsCameraMode);
 	UI.wheelEnabled = isFpsCameraMode;
 	renderer = new Renderer(canvas, camera);
+	terrain = renderer.getTerrain();
 	heightmapController = renderer.getHeightmapRenderer();
 	layers = heightmapController.textures.layers;
 
@@ -48,7 +50,6 @@ function setupRenderer() {
 	// dummy heightmap
 	heightmapController.queuePass(heightmapController.perlinPass);
 	heightmapController.queuePass(heightmapController.generateSurfacePass);
-	editorController.updateShadows();
 
 	requestAnimationFrame(main);
 }
@@ -60,8 +61,8 @@ function setupUI() {
 		UI.wheelEnabled = fpsMode;
 	});
 
-	UI.on("debug1", () => editorController.invertHeightmap());
-	UI.on("debug2", () => editorController.randomHeightChange());
+	// UI.on("debug1", () => {});
+	// UI.on("debug2", () => {});
 
 	UI.on("debug3", () => {
 		heightmapController.queuePass(heightmapController.generateSurfacePass);
@@ -168,8 +169,7 @@ function setupUI() {
 		];
 
 		renderer.sunDir = dir;
-		heightmapController.shadowPass.lightDir = dir;
-		editorController.updateShadows();
+		terrain.shadowsNeedUpdate = true;
 	});
 
 	UI.on("camera-mode-changed", (fpsMode: boolean) => {
@@ -204,6 +204,10 @@ function setupUI() {
 
 	UI.updateLayerBrushTypeSelector(layers);
 	UI.selectMenuIndex(0);
+
+	editorController.on("height-changed", () => {
+		terrain.shadowsNeedUpdate = true;
+	});
 }
 
 function update(now: number, deltaTime: number) {
@@ -218,7 +222,7 @@ function update(now: number, deltaTime: number) {
 		editorController.selectedBrush ? editorController.selectedBrush.radius || 0 : 0,
 	);
 
-	inputController.setTerrainMousePos(renderer.getTerrain().getMouseWorldSpacePos());
+	inputController.setTerrainMousePos(terrain.getMouseWorldSpacePos());
 
 	if (inputController.mouse.buttonDown && inputController.mouse.button === 0 && inputController.mouse.terrain.over) {
 		// left button down
@@ -242,7 +246,7 @@ function update(now: number, deltaTime: number) {
 				data[j] = trees[i][0];
 				data[j + 1] = trees[i][1];
 			}
-			renderer.getTerrain().decorationObjects.updateTreePositions(data);
+			terrain.decorationObjects.updateTreePositions(data);
 
 			Decorations.clearChange();
 		}

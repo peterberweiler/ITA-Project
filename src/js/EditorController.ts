@@ -1,3 +1,4 @@
+import { EventEmitter } from "events";
 import Decorations from "./Decorations";
 import HeightmapController from "./Renderer/Terrain/HeightmapController";
 import { HeightBrushPass } from "./Renderer/Terrain/Passes/HeightBrushPass";
@@ -25,7 +26,11 @@ interface DecorationBrush extends Brush {
 	accumulator: number,
 }
 
-export default class EditorController {
+declare interface UIController {
+	on(event: "height-changed", listener: () => void): this;
+}
+
+export default class EditorController extends EventEmitter {
 	private heightmapController: HeightmapController
 
 	public brush = {
@@ -58,24 +63,8 @@ export default class EditorController {
 	selectedBrush: Brush | null = this.brush.height;
 
 	constructor(heightmapController: HeightmapController) {
+		super();
 		this.heightmapController = heightmapController;
-	}
-
-	invertHeightmap() {
-		this.heightmapController.queuePass(this.heightmapController.invertPass);
-		this.updateShadows();
-	}
-
-	randomHeightChange() {
-		this.heightmapController.heightBrushPass.queueData({
-			points: [...Array(20)].map(() => Math.random() * 1024),
-			type: HeightBrushPass.FLATTEN,
-			radius: 50,
-			strength: 8,
-		});
-
-		this.heightmapController.queuePass(this.heightmapController.heightBrushPass);
-		this.updateShadows();
 	}
 
 	/**
@@ -97,7 +86,7 @@ export default class EditorController {
 				});
 
 				this.heightmapController.queuePass(this.heightmapController.heightBrushPass);
-				this.updateShadows();
+				this.emit("height-changed");
 				break;
 			}
 
@@ -110,7 +99,7 @@ export default class EditorController {
 				});
 
 				this.heightmapController.queuePass(this.heightmapController.heightBrushPass);
-				this.updateShadows();
+				this.emit("height-changed");
 				break;
 			}
 
@@ -135,8 +124,8 @@ export default class EditorController {
 			}
 
 			case this.brush.decoration: {
-				const area = Math.max(500, this.brush.decoration.radius * this.brush.decoration.radius * Math.PI);
-				this.brush.decoration.accumulator += 0.00000015 * deltaTime * this.brush.decoration.strength * area;
+				const area = Math.max(1500, this.brush.decoration.radius * this.brush.decoration.radius * Math.PI);
+				this.brush.decoration.accumulator += 0.000000048 * deltaTime * this.brush.decoration.strength * area;
 
 				const count = Math.floor(this.brush.decoration.accumulator);
 				if (count >= 1) {
@@ -152,10 +141,6 @@ export default class EditorController {
 				break;
 			}
 		}
-	}
-
-	updateShadows() {
-		this.heightmapController.queuePass(this.heightmapController.shadowPass);
 	}
 
 	setRadius(value: number) {

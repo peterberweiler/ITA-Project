@@ -7,7 +7,6 @@ import { HeightBrushPass } from "./Passes/HeightBrushPass";
 import { LayerBrushPass } from "./Passes/LayerBrushPass";
 import { InvertPass, Pass } from "./Passes/Passes";
 import { PerlinPass } from "./Passes/PerlinPass";
-import { ShadowPass } from "./Passes/ShadowPass";
 
 class FullscreenMesh {
 	vertexBuffer: WebGLBuffer;
@@ -58,7 +57,6 @@ export default class HeightmapController {
 	readonly invertPass: InvertPass;
 	readonly heightBrushPass: HeightBrushPass;
 	readonly layerBrushPass: LayerBrushPass;
-	readonly shadowPass: ShadowPass;
 	readonly generateSurfacePass: GenerateSurfacePass;
 
 	constructor(layers: Layers) {
@@ -76,7 +74,6 @@ export default class HeightmapController {
 		this.invertPass = new InvertPass();
 		this.heightBrushPass = new HeightBrushPass();
 		this.layerBrushPass = new LayerBrushPass();
-		this.shadowPass = new ShadowPass();
 		this.generateSurfacePass = new GenerateSurfacePass();
 
 		// force empty textures into correct format
@@ -157,8 +154,6 @@ export default class HeightmapController {
 			throw new Error("setHeightMapData data is wrong size");
 		}
 		this.textures.heightMap.current().updateFloatRedData(this.size, data);
-
-		this.queuePass(this.shadowPass);
 	}
 
 	setLayerWeightData(data: [Float32Array, Float32Array]) {

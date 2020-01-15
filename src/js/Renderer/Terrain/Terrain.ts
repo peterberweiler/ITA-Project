@@ -25,6 +25,8 @@ export default class Terrain {
 	private heightScaleInMeters: number = 1.0;
 	private worldSpaceMousePos: vec3 = vec3.create();
 
+	public shadowsNeedUpdate = true;
+
 	constructor() {
 		//this.clipMapMesh = new TerrainClipMapMesh();
 		this.uniformGridMesh = new TerrainUniformGridMesh();
@@ -61,9 +63,10 @@ export default class Terrain {
 	}
 
 	draw(time: number, viewProjection: mat4, camPos: vec3, sunDir: vec3 | number[], textures: TextureBundle, layers: Layers, brushRadius: number, readMouseWorldSpacePos: boolean = false, mousePosX: number = 0, mousePosY: number = 0, cursorX: number, cursorY: number, drawCursor: boolean = false) {
-		//console.time("update shadows");
-		this.terrainShadows.update(this.texelSizeInMeters, this.heightScaleInMeters, vec3.clone(sunDir), textures.heightMap.current().id);
-		//console.timeEnd("update shadows");
+		if (this.shadowsNeedUpdate) {
+			this.terrainShadows.update(this.texelSizeInMeters, this.heightScaleInMeters, vec3.clone(sunDir), textures.heightMap.current().id);
+			this.shadowsNeedUpdate = false;
+		}
 
 		gl.bindFramebuffer(gl.FRAMEBUFFER, this.fbo);
 		gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
