@@ -159,10 +159,6 @@ void main(void) {
 	vec2 texelSize = (1.0 / vec2(textureSize(uHeightmapTexture, 0).xy));
 	vec2 texCoord = vWorldSpacePos.xz  * uTexelSizeInMeters * texelSize;
 
-	if (texCoord.x > 1.0 || texCoord.y > 1.0 || texCoord.x < 0.0 || texCoord.y < 0.0){
-		discard;
-	}
-
 	vec3 P = vec3(vWorldSpacePos.x, texture(uHeightmapTexture, texCoord).x * uHeightScaleInMeters, vWorldSpacePos.z);
 	// Sample neighboring pixels
 	vec3 Pr = vWorldSpacePos + vec3(uTexelSizeInMeters, 0.0, 0.0);

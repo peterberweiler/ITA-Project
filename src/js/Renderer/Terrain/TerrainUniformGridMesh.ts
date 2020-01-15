@@ -92,7 +92,10 @@ export default class TerrainUniformGridMesh {
 		gl.bindTexture(gl.TEXTURE_2D, drawParams.shadowMap2);
 
 		Renderer.checkGLError();
+		gl.enable(gl.CULL_FACE);
+		gl.cullFace(gl.FRONT);
 		gl.drawArrays(drawMode, 0, GRID_RESOLUTION * GRID_RESOLUTION * 6);
+		gl.cullFace(gl.NONE);
 		Renderer.checkGLError();
 	}
 }
