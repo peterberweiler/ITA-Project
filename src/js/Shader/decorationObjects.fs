@@ -144,7 +144,7 @@ void main(void) {
 	lightingParams.N = normalize(vNormal);
 	lightingParams.V = normalize(uCamPos - vWorldPos);
 	lightingParams.metalness = 0.0;
-	lightingParams.roughness = 0.9;
+	lightingParams.roughness = 0.0;
 
 	vec4 shadowPos = uShadowMatrix * vec4(vWorldPos, 1.0);
 	shadowPos.xyz = shadowPos.xyz * 0.5 + 0.5;
