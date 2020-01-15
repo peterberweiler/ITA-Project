@@ -105,7 +105,7 @@ export default class TerrainShadows {
 		this.shadowMatrix = mat4.identity(mat4.create());
 	}
 
-	update(transform: mat4, texelSizeInMeters: number, heightScaleInMeters: number, lightDir: vec3, heightMap: WebGLTexture | null) {
+	update(texelSizeInMeters: number, heightScaleInMeters: number, lightDir: vec3, heightMap: WebGLTexture | null) {
 		// update shadow matrix
 		{
 			let viewMatrix = mat4.create();

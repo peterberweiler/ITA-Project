@@ -62,7 +62,7 @@ export default class Terrain {
 
 	draw(time: number, viewProjection: mat4, camPos: vec3, sunDir: vec3 | number[], textures: TextureBundle, layers: Layers, brushRadius: number, readMouseWorldSpacePos: boolean = false, mousePosX: number = 0, mousePosY: number = 0, cursorX: number, cursorY: number, drawCursor: boolean = false) {
 		//console.time("update shadows");
-		this.terrainShadows.update(viewProjection, this.texelSizeInMeters, this.heightScaleInMeters, vec3.clone(sunDir), textures.heightMap.current().id);
+		this.terrainShadows.update(this.texelSizeInMeters, this.heightScaleInMeters, vec3.clone(sunDir), textures.heightMap.current().id);
 		//console.timeEnd("update shadows");
 
 		gl.bindFramebuffer(gl.FRAMEBUFFER, this.fbo);
