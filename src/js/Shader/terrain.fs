@@ -156,23 +156,106 @@ vec4 unpackUnorm4x8(uint value){
 	return result;
 }
 
+float w0(float a)
+{
+	return (1.0/6.0)*(a*(a*(-a + 3.0) - 3.0) + 1.0);
+}
+
+float w1(float a)
+{
+	return (1.0/6.0)*(a*a*(3.0*a - 6.0) + 4.0);
+}
+
+float w2(float a)
+{
+	return (1.0/6.0)*(a*(a*(-3.0*a + 3.0) + 3.0) + 1.0);
+}
+
+float w3(float a)
+{
+	return (1.0/6.0)*(a*a*a);
+}
+
+// g0 and g1 are the two amplitude functions
+float g0(float a)
+{
+	return w0(a) + w1(a);
+}
+
+float g1(float a)
+{
+	return w2(a) + w3(a);
+}
+
+// h0 and h1 are the two offset functions
+float h0(float a)
+{
+	return -1.0 + w1(a) / (w0(a) + w1(a));
+}
+
+float h1(float a)
+{
+	return 1.0 + w3(a) / (w2(a) + w3(a));
+}
+
+vec4 textureBicubic(sampler2D tex, vec2 uv, vec2 res) {
+	uv = uv * res + 0.5;
+	vec2 iuv = floor(uv);
+	vec2 fuv = fract(uv);
+
+	float g0x = g0(fuv.x);
+	float g1x = g1(fuv.x);
+	float h0x = h0(fuv.x);
+	float h1x = h1(fuv.x);
+	float h0y = h0(fuv.y);
+	float h1y = h1(fuv.y);
+
+	vec2 p0 = (vec2(iuv.x + h0x, iuv.y + h0y) - 0.5) / res;
+	vec2 p1 = (vec2(iuv.x + h1x, iuv.y + h0y) - 0.5) / res;
+	vec2 p2 = (vec2(iuv.x + h0x, iuv.y + h1y) - 0.5) / res;
+	vec2 p3 = (vec2(iuv.x + h1x, iuv.y + h1y) - 0.5) / res;
+
+	return g0(fuv.y) * (g0x * texture(tex, p0) + g1x * texture(tex, p1)) + g1(fuv.y) * (g0x * texture(tex, p2) + g1x * texture(tex, p3));
+}
+
+vec4 textureBicubic(sampler2DArray tex, vec3 uv, vec2 res) {
+	uv.xy = uv.xy * res + 0.5;
+	vec2 iuv = floor(uv.xy);
+	vec2 fuv = fract(uv.xy);
+
+	float g0x = g0(fuv.x);
+	float g1x = g1(fuv.x);
+	float h0x = h0(fuv.x);
+	float h1x = h1(fuv.x);
+	float h0y = h0(fuv.y);
+	float h1y = h1(fuv.y);
+
+	vec2 p0 = (vec2(iuv.x + h0x, iuv.y + h0y) - 0.5) / res;
+	vec2 p1 = (vec2(iuv.x + h1x, iuv.y + h0y) - 0.5) / res;
+	vec2 p2 = (vec2(iuv.x + h0x, iuv.y + h1y) - 0.5) / res;
+	vec2 p3 = (vec2(iuv.x + h1x, iuv.y + h1y) - 0.5) / res;
+
+	return g0(fuv.y) * (g0x * texture(tex, vec3(p0, uv.z)) + g1x * texture(tex, vec3(p1, uv.z))) + g1(fuv.y) * (g0x * texture(tex, vec3(p2, uv.z)) + g1x * texture(tex, vec3(p3, uv.z)));
+}
+
 void main(void) {
 	bool isSkirt = vIsSkirt != 0.0;
 
-	vec2 texelSize = (1.0 / vec2(textureSize(uHeightmapTexture, 0).xy));
+	vec2 texSize = vec2(textureSize(uHeightmapTexture, 0).xy);
+	vec2 texelSize = (1.0 / texSize);
 	vec2 texCoord = vWorldSpacePos.xz  * uTexelSizeInMeters * texelSize;
 
-	vec3 P = vec3(vWorldSpacePos.x, texture(uHeightmapTexture, texCoord).x * uHeightScaleInMeters, vWorldSpacePos.z);
+	vec3 P = vec3(vWorldSpacePos.x, textureBicubic(uHeightmapTexture, texCoord, texSize).x * uHeightScaleInMeters, vWorldSpacePos.z);
 	// Sample neighboring pixels
 	vec3 Pr = vWorldSpacePos + vec3(uTexelSizeInMeters, 0.0, 0.0);
 	vec3 Pl = vWorldSpacePos + vec3(-uTexelSizeInMeters, 0.0, 0.0);
 	vec3 Pb = vWorldSpacePos + vec3(0.0, 0.0, uTexelSizeInMeters);
 	vec3 Pt = vWorldSpacePos + vec3(0.0, 0.0, -uTexelSizeInMeters);
 
-	Pr.y = texture(uHeightmapTexture, Pr.xz  * uTexelSizeInMeters * texelSize).x * uHeightScaleInMeters;
-	Pl.y = texture(uHeightmapTexture, Pl.xz  * uTexelSizeInMeters * texelSize).x * uHeightScaleInMeters;
-	Pb.y = texture(uHeightmapTexture, Pb.xz  * uTexelSizeInMeters * texelSize).x * uHeightScaleInMeters;
-	Pt.y = texture(uHeightmapTexture, Pt.xz  * uTexelSizeInMeters * texelSize).x * uHeightScaleInMeters;
+	Pr.y = textureBicubic(uHeightmapTexture, Pr.xz  * uTexelSizeInMeters * texelSize, texSize).x * uHeightScaleInMeters;
+	Pl.y = textureBicubic(uHeightmapTexture, Pl.xz  * uTexelSizeInMeters * texelSize, texSize).x * uHeightScaleInMeters;
+	Pb.y = textureBicubic(uHeightmapTexture, Pb.xz  * uTexelSizeInMeters * texelSize, texSize).x * uHeightScaleInMeters;
+	Pt.y = textureBicubic(uHeightmapTexture, Pt.xz  * uTexelSizeInMeters * texelSize, texSize).x * uHeightScaleInMeters;
 
 	// Calculate tangent basis vectors using the difference
 	vec3 dPdu =  Pr - Pl;
@@ -186,8 +269,8 @@ void main(void) {
 	float weightSum = 0.0;
 
 	vec4 weights[2];
-	weights[0] = texture(uLayerWeightTexture, vec3(texCoord, 0.0));
-	weights[1] = texture(uLayerWeightTexture, vec3(texCoord, 1.0));
+	weights[0] = textureBicubic(uLayerWeightTexture, vec3(texCoord, 0.0), vec2(textureSize(uLayerWeightTexture, 0).xy));
+	weights[1] = textureBicubic(uLayerWeightTexture, vec3(texCoord, 1.0), vec2(textureSize(uLayerWeightTexture, 0).xy));
 
 	for (uint i = 0u; i < uint(MAX_LAYERS); ++i) {
 		uint layerid = uLayerOrder[i / 4u][i % 4u];
@@ -250,9 +333,12 @@ void main(void) {
 	// color *= max(0.95, getGridValue(vWorldSpacePos, uCamPos, 8.0));
 
 	// color = min(max(color, 0.0), 1.0);
-	float currentColorBrightness = step(0.5, max(color.r, max(color.g, color.b)));
-	vec3 gridColor = -0.13 * vec3(currentColorBrightness - 0.5) * getGridValue(vWorldSpacePos, uCamPos, 8.0);
-	color += gridColor;
+	if (!isSkirt) {
+		float currentColorBrightness = step(0.5, max(color.r, max(color.g, color.b)));
+		vec3 gridColor = -0.13 * vec3(currentColorBrightness - 0.5) * getGridValue(vWorldSpacePos, uCamPos, 8.0);
+		color += gridColor;
+	}
+	
 
 	// mouse cursor
 	if (uDrawCursor != 0u)
