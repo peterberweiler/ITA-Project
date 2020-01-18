@@ -7,6 +7,7 @@ import Renderer from "./Renderer/Renderer";
 import HeightmapController from "./Renderer/Terrain/HeightmapController";
 import Layers from "./Renderer/Terrain/Layers";
 import Terrain from "./Renderer/Terrain/Terrain";
+import * as SaveLoad from "./SaveLoad";
 import Settings from "./Settings";
 import UI from "./UI/UI";
 
@@ -198,6 +199,15 @@ function setupUI() {
 				ImportExport.downloadPNGLayers16Bit(heightmapController);
 				break;
 		}
+	});
+
+	UI.on("save", () => {
+		SaveLoad.save(heightmapController, inputController, editorController, layers, renderer);
+	});
+
+	UI.on("load", () => {
+		const loadedData = SaveLoad.load();
+		renderer.sunDir = loadedData.sunDir;
 	});
 
 	UI.setupLayerList(layers);

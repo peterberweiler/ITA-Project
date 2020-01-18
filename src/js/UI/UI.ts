@@ -29,6 +29,8 @@ declare interface UIController {
 	on(event: "layer-changed", listener: (id: number, color: number[], roughness: number, active: boolean) => void): this;
 	on(event: "camera-mode-changed", listener: (fpsMode: boolean) => void): this;
 	on(event: "export", listener: (mode: number) => void): this;
+	on(event: "save", listener: () => void): this;
+	on(event: "load", listener: () => void): this;
 }
 
 class UIController extends EventEmitter {
@@ -172,6 +174,11 @@ class UIController extends EventEmitter {
 		exportButtons.forEach((button, i) => {
 			button.onclick = this.emit.bind(this, "export", i);
 		});
+
+		document.querySelector<HTMLButtonElement>("#save-button")!.onclick = this.emit.bind(this, "save");
+
+		document.querySelector<HTMLButtonElement>("#load-button")!.onclick = this.emit.bind(this, "load");
+
 	}
 
 	selectMenuIndex(index: number): void {
