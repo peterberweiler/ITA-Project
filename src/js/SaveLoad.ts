@@ -6,30 +6,29 @@ import InputController from "./Renderer/InputController";
 import Renderer from "./Renderer/Renderer";
 import HeightmapController from "./Renderer/Terrain/HeightmapController";
 import Layers from "./Renderer/Terrain/Layers";
-import Settings from "./Settings";
 
 const SIZE: [number, number] = [1024, 1024];
 
 export function save(heightmapController: HeightmapController, inputController: InputController, editorController: EditorController, layers: Layers, renderer: Renderer) {
 	/**
 	 * Data to save:
-	 * 		- Settings
-	 * 		- Brush: Size and Strength
-	 *  	- Layerbrush: Size and Strength
 	 * 		- Layers
 	 * 		- Trees
-	 * 		- Heightmap
+	 * 		- Heightmap: Heightmapdata und Layerweightdata
 	 */
 	var data = {
+		/*
 		'sundirection': [] as any,
 		'debugmode': false,
 		'fpsmode': false,
 		brush: [] as any,
+		*/
 		layers: [] as any,
 		trees: [] as any,
-		heightmap: ""
+		heightmap: { heightmapdata: "", Layerweightdata: { data0: "", data1: "" } }
 	};
 
+	/*
 	data.sundirection.push(renderer.sunDir);
 
 	//data.table.push({ id: 1, square: 2 });
@@ -38,6 +37,7 @@ export function save(heightmapController: HeightmapController, inputController: 
 	data.fpsmode = inputController.isFpsMode();
 
 	data.brush = editorController.brush;
+	*/
 
 	data.layers = layers;
 
@@ -47,7 +47,11 @@ export function save(heightmapController: HeightmapController, inputController: 
 	});
 
 	//data.heightmap = base64ArrayBuffer(heightmapController.getHeightMapData());
-	data.heightmap = _arrayBufferToBase64(heightmapController.getHeightMapData());
+	data.heightmap.heightmapdata = _arrayBufferToBase64(heightmapController.getHeightMapData());
+
+	let [data0, data1] = heightmapController.getLayerWeightData();
+	data.heightmap.Layerweightdata.data0 = _arrayBufferToBase64(data0);
+	data.heightmap.Layerweightdata.data1 = _arrayBufferToBase64(data1);
 
 	var jsondata = JSON.stringify(data);
 
@@ -69,8 +73,13 @@ export function load() {
 	const data = JSON.parse(<string>(<unknown>text));
 	console.log(data);
 
-	let heightmapData = _base64ToArrayBuffer(data.heightmap);
-	data.heightmap = heightmapData;
+	let decodedheightmapdata = _base64ToArrayBuffer(data.heightmap.heightmapdata);
+	data.heightmap.heightmapdata = decodedheightmapdata;
+
+	let decodeddata0 = _base64ToArrayBuffer(data.heightmapdata.Layerweightdata.data0);
+	let decodeddata1 = _base64ToArrayBuffer(data.heightmapdata.Layerweightdata.data1);
+	data.heightmapdata.Layerweightdata.data0 = decodeddata0;
+	data.heightmapdata.Layerweightdata.data1 = decodeddata1;
 
 	return data;
 }
