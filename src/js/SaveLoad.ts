@@ -24,9 +24,10 @@ export function save(heightmapController: HeightmapController, inputController: 
 		'sundirection': [] as any,
 		'debugmode': false,
 		'fpsmode': false,
-		brush: [] as any,//{ 'radius': 0, 'strength': 0 },
+		brush: [] as any,
 		layers: [] as any,
-		trees: [] as any
+		trees: [] as any,
+		heightmap: ""
 	};
 
 	data.sundirection.push(renderer.sunDir);
@@ -44,6 +45,9 @@ export function save(heightmapController: HeightmapController, inputController: 
 	trees.forEach((tree) => {
 		data.trees.push(tree);
 	});
+
+	//data.heightmap = base64ArrayBuffer(heightmapController.getHeightMapData());
+	data.heightmap = _arrayBufferToBase64(heightmapController.getHeightMapData());
 
 	var jsondata = JSON.stringify(data);
 
@@ -64,53 +68,30 @@ export function load() {
 
 	const data = JSON.parse(<string>(<unknown>text));
 	console.log(data);
+
+	let heightmapData = _base64ToArrayBuffer(data.heightmap);
+	data.heightmap = heightmapData;
+
 	return data;
 }
 
-export function createOBJ(hmData: Float32Array) {
-	let { indices, vertices } = createFlatMesh(SIZE[0], SIZE[1]);
-	let data = [];
-	for (let i = 0, m = 0; i < vertices.length; i += 3, m += 1) {
-		data.push("\nv", vertices[i] * SIZE[0], hmData[m], vertices[i + 2] * SIZE[1]);
+function _arrayBufferToBase64(buffer: Float32Array) {
+	// Quelle: https://stackoverflow.com/questions/9267899/arraybuffer-to-base64-encoded-string
+	var binary = '';
+	var bytes = new Uint8Array(buffer);
+	var len = bytes.byteLength;
+	for (var i = 0; i < len; i++) {
+		binary += String.fromCharCode(bytes[i]);
 	}
-	data.push("\n");
-	for (let i = 0; i < indices.length; i += 3) {
-		data.push("\nf", indices[i] + 1, indices[i + 1] + 1, indices[i + 2] + 1);
-	}
-	data.push("\n");
-	return data.join(" ");
+	return window.btoa(binary);
 }
 
-function createFlatMesh(resolutionX: number, resolutionY: number) {
-	let vertices = new Float32Array(resolutionX * resolutionY * 3);
-	let indices = new Uint32Array(((resolutionX - 1) * (resolutionY - 1) * 6));
-
-	for (let x = 0; x < resolutionX; ++x) {
-		for (let z = 0; z < resolutionY; ++z) {
-			const vindex = ((z * resolutionX) + x) * 3;
-
-			vertices[vindex] = x / (resolutionX - 1);
-			vertices[vindex + 1] = 0;
-			vertices[vindex + 2] = z / (resolutionY - 1);
-		}
+function _base64ToArrayBuffer(base64: string) {
+	var binary_string = window.atob(base64);
+	var len = binary_string.length;
+	var bytes = new Uint8Array(len);
+	for (var i = 0; i < len; i++) {
+		bytes[i] = binary_string.charCodeAt(i);
 	}
-
-	for (let x = 0; x < resolutionX - 1; ++x) {
-		for (let z = 0; z < resolutionY - 1; ++z) {
-			const index0 = ((z * resolutionX) + x);
-			const index1 = index0 + resolutionX;
-			const index2 = index0 + resolutionX + 1;
-			const index3 = index0 + 1;
-
-			// 2 triangles
-			const iindex = ((z * (resolutionX - 1)) + x) * 6;
-			indices[iindex + 0] = index0;
-			indices[iindex + 1] = index1;
-			indices[iindex + 2] = index2;
-			indices[iindex + 3] = index0;
-			indices[iindex + 4] = index2;
-			indices[iindex + 5] = index3;
-		}
-	}
-	return { vertices, indices };
+	return bytes.buffer;
 }
