@@ -51,6 +51,9 @@ function setupRenderer() {
 	// dummy heightmap
 	heightmapController.queuePass(heightmapController.perlinPass);
 	heightmapController.queuePass(heightmapController.generateSurfacePass);
+	//heightmapController.queuePass(heightmapController.erosionWaterFluxPass);
+	//heightmapController.queuePass(heightmapController.erosionSuspensionDepositionPass);
+	//heightmapController.queuePass(heightmapController.erosionSedimentAdvectionPass);
 
 	requestAnimationFrame(main);
 }

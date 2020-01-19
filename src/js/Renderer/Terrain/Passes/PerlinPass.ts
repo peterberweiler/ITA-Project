@@ -25,5 +25,10 @@ export class PerlinPass extends Pass {
 		this.shader.setUniformI(this.shader.getUniformLocation("uTexture"), 0);
 
 		framebuffer.setColorAttachment(textures.heightMap.next());
+		gl.drawBuffers([gl.COLOR_ATTACHMENT0]);
+	}
+
+	finalizePass(framebuffer: Framebuffer) {
+		framebuffer.unsetColorAttachment(0);
 	}
 }

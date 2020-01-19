@@ -64,6 +64,7 @@ export class GenerateSurfacePass extends Pass {
 	}
 
 	finalizePass(framebuffer: Framebuffer) {
+		framebuffer.unsetColorAttachment(0);
 		framebuffer.unsetColorAttachment(1);
 		gl.drawBuffers([gl.COLOR_ATTACHMENT0]);
 	}

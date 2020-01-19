@@ -56,6 +56,12 @@ export default class Texture {
 		gl.texImage2D(gl.TEXTURE_2D, 0, gl.R32F, size[0], size[1], 0, gl.RED, gl.FLOAT, data);
 	}
 
+	updateFloatRGData(size: Size, data: Float32Array | null) {
+		this.bind(0);
+		this.size = size;
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RG32F, size[0], size[1], 0, gl.RG, gl.FLOAT, data);
+	}
+
 	updateFloatRGBData(size: Size, data: Float32Array | null) {
 		this.bind(0);
 		this.size = size;

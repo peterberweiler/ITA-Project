@@ -16,5 +16,6 @@ export default class TerrainDrawParams {
 	shadowMap: WebGLTexture | null = null;
 	shadowMap2: WebGLTexture | null = null;
 	weightMap: WebGLTexture | null = null;
+	debugTexture: WebGLTexture | null = null;
 	materialUBO: WebGLBuffer | null = null;
 }

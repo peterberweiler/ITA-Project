@@ -1,5 +1,5 @@
 import Framebuffer from "../../Framebuffer";
-import { TextureBundle } from "../../Global";
+import { gl, TextureBundle } from "../../Global";
 import { Pass } from "./Passes";
 
 const heightBrushFSSource = require("../../../Shader/heightBrushPass.fs").default;
@@ -54,6 +54,11 @@ export class HeightBrushPass extends Pass {
 			this.shader.setUniformF(this.shader.getUniformLocation("uPointCount"), 0);
 		}
 		framebuffer.setColorAttachment(textures.heightMap.next());
+		gl.drawBuffers([gl.COLOR_ATTACHMENT0]);
+	}
+
+	finalizePass(framebuffer: Framebuffer) {
+		framebuffer.unsetColorAttachment(0);
 	}
 
 	queueData(data: HeightBrushPassData) {

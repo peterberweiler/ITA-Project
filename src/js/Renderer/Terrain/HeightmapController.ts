@@ -1,7 +1,11 @@
 import Framebuffer from "../Framebuffer";
 import { gl, TextureBundle } from "../Global";
+import Renderer from "../Renderer";
 import Texture, { PingPongTexture } from "../Texture";
 import Layers from "./Layers";
+import { ErosionSedimentAdvectionPass } from "./Passes/ErosionSedimentAdvectionPass";
+import { ErosionSuspensionDepositionPass } from "./Passes/ErosionSuspensionDepositionPass";
+import { ErosionWaterFluxPass } from "./Passes/ErosionWaterFluxPass";
 import { GenerateSurfacePass } from "./Passes/GenerateSurfacePass";
 import { HeightBrushPass } from "./Passes/HeightBrushPass";
 import { LayerBrushPass } from "./Passes/LayerBrushPass";
@@ -20,12 +24,19 @@ export default class HeightmapController {
 	readonly heightBrushPass: HeightBrushPass;
 	readonly layerBrushPass: LayerBrushPass;
 	readonly generateSurfacePass: GenerateSurfacePass;
+	readonly erosionWaterFluxPass: ErosionWaterFluxPass;
+	readonly erosionSuspensionDepositionPass: ErosionSuspensionDepositionPass;
+	readonly erosionSedimentAdvectionPass: ErosionSedimentAdvectionPass;
 
 	constructor(layers: Layers) {
 		this.framebuffer = new Framebuffer();
 
 		this.textures = {
 			heightMap: new PingPongTexture(),
+			waterHeightMap: new PingPongTexture(),
+			sedimentHardnessMap: new PingPongTexture(),
+			waterFluxMap: new PingPongTexture(),
+			waterVelocityMap: new Texture(),
 			shadowMap: new Texture(),
 			layers,
 			brushes: Texture.fromRGBAImage("/data/brushes/brushes.png"),
@@ -36,13 +47,21 @@ export default class HeightmapController {
 		this.heightBrushPass = new HeightBrushPass();
 		this.layerBrushPass = new LayerBrushPass();
 		this.generateSurfacePass = new GenerateSurfacePass();
+		this.erosionWaterFluxPass = new ErosionWaterFluxPass();
+		this.erosionSuspensionDepositionPass = new ErosionSuspensionDepositionPass();
+		this.erosionSedimentAdvectionPass = new ErosionSedimentAdvectionPass();
 
 		// force empty textures into correct format
 		this.textures.heightMap.initialize((tex) => tex.updateFloatRedData(this.size, null));
+		this.textures.waterHeightMap.initialize((tex) => tex.updateFloatRedData(this.size, null));
+		this.textures.sedimentHardnessMap.initialize((tex) => tex.updateFloatRGData(this.size, null));
+		this.textures.waterFluxMap.initialize((tex) => tex.updateFloatRGBAData(this.size, null));
+		this.textures.waterVelocityMap.updateFloatRGData(this.size, null);
 		this.textures.shadowMap.updateFloatRedData(this.size, null);
 
 		this.framebuffer.setColorAttachment(this.textures.heightMap.current());
 		Framebuffer.unbind();
+		Renderer.checkGLError();
 	}
 
 	queuePass(pass: Pass) {
@@ -50,14 +69,17 @@ export default class HeightmapController {
 	}
 
 	render() {
+		Renderer.checkGLError();
 		if (this.passQueue.length === 0) { return; }
+		gl.disable(gl.DEPTH_TEST);
 
 		this.framebuffer.bind();
-
+		Renderer.checkGLError();
 		let pass;
 		while ((pass = this.passQueue.shift())) {
-			gl.clear(gl.DEPTH_BUFFER_BIT);
-
+			Renderer.checkGLError();
+			//gl.clear(gl.DEPTH_BUFFER_BIT);
+			Renderer.checkGLError();
 			pass.shader.use();
 
 			pass.initalizePass(this.textures, this.framebuffer);
@@ -68,6 +90,7 @@ export default class HeightmapController {
 		}
 
 		Framebuffer.unbind();
+		gl.enable(gl.DEPTH_TEST);
 	}
 
 	getHeightMapData(): Float32Array {

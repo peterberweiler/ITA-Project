@@ -102,6 +102,7 @@ export default class Terrain {
 			terrainDrawParams.time = time;
 			terrainDrawParams.layerOrder = layers.layerOrder;
 			terrainDrawParams.heightMap = textures.heightMap.current().id;
+			terrainDrawParams.debugTexture = textures.waterHeightMap.current().id;
 			terrainDrawParams.shadowMap = textures.shadowMap.id;
 			terrainDrawParams.shadowMap2 = this.terrainShadows.getShadowMap().id;
 			terrainDrawParams.weightMap = layers.weightMapCurrent;

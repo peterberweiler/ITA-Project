@@ -19,6 +19,7 @@ export default class TerrainUniformGridMesh {
 	private uCursorPosRadiusLocation: WebGLUniformLocation;
 	private uDrawCursorLocation: WebGLUniformLocation;
 	private uHeightmapTexture: WebGLUniformLocation;
+	//private uErosionDebugTextureLocation: WebGLUniformLocation;
 	private uTerrainShadowTextureLocation: WebGLUniformLocation;
 	private uLayerWeightTexture: WebGLUniformLocation;
 	private uAlphaBlendingEnabledLocation: WebGLUniformLocation;
@@ -38,6 +39,7 @@ export default class TerrainUniformGridMesh {
 		this.uCursorPosRadiusLocation = this.terrainShader.getUniformLocation("uCursorPosRadius");
 		this.uDrawCursorLocation = this.terrainShader.getUniformLocation("uDrawCursor");
 		this.uHeightmapTexture = this.terrainShader.getUniformLocation("uHeightmapTexture");
+		//this.uErosionDebugTextureLocation = this.terrainShader.getUniformLocation("uErosionDebugTexture");
 		this.uTerrainShadowTextureLocation = this.terrainShader.getUniformLocation("uTerrainShadowTexture");
 		this.uLayerWeightTexture = this.terrainShader.getUniformLocation("uLayerWeightTexture");
 		this.uAlphaBlendingEnabledLocation = this.terrainShader.getUniformLocation("uAlphaBlendingEnabled");
@@ -69,6 +71,7 @@ export default class TerrainUniformGridMesh {
 		this.terrainShader.setUniformI(this.uHeightmapTexture, 0);
 		this.terrainShader.setUniformI(this.uLayerWeightTexture, 1);
 		this.terrainShader.setUniformI(this.uTerrainShadowTextureLocation, 2);
+		//this.terrainShader.setUniformI(this.uErosionDebugTextureLocation, 3);
 		this.terrainShader.setUniformI(this.uGridResolutionLocation, GRID_RESOLUTION);
 
 		for (let i: number = 0; i < MAX_LAYERS / 4; i += 1) {
@@ -90,6 +93,8 @@ export default class TerrainUniformGridMesh {
 		gl.bindTexture(gl.TEXTURE_2D_ARRAY, drawParams.weightMap);
 		gl.activeTexture(gl.TEXTURE2);
 		gl.bindTexture(gl.TEXTURE_2D, drawParams.shadowMap2);
+		gl.activeTexture(gl.TEXTURE3);
+		gl.bindTexture(gl.TEXTURE_2D, drawParams.debugTexture);
 
 		Renderer.checkGLError();
 		gl.enable(gl.CULL_FACE);

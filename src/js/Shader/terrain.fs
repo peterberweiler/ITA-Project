@@ -15,6 +15,7 @@ uniform sampler2D uHeightmapTexture;
 uniform sampler2D uSurfacemapTexture;
 uniform sampler2DArray uLayerWeightTexture;
 uniform sampler2D uTerrainShadowTexture;
+uniform sampler2D uErosionDebugTexture;
 uniform vec3 uColor;
 uniform vec3 uCamPos;
 uniform vec3 uCursorPosRadius;
@@ -328,6 +329,8 @@ void main(void) {
 	color *= whiteScale;
     // gamma correct
     color = accurateLinearToSRGB(color);//pow(color, vec3(1.0/2.2));
+
+	//color = texture(uErosionDebugTexture, texCoord).x == 0.0 ? vec3(1.0) : vec3(0.0);
 
 	// apply grid
 	// color *= max(0.95, getGridValue(vWorldSpacePos, uCamPos, 8.0));
