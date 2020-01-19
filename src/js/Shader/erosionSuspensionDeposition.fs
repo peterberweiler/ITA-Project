@@ -6,7 +6,7 @@ in vec2 vCoords;
 layout (location = 0) out vec4 oTerrainHeight;
 layout (location = 1) out vec4 oWaterHeight;
 layout (location = 2) out vec4 oVelocity;
-layout (location = 4) out vec4 oSedimentHardness;
+layout (location = 3) out vec4 oSedimentHardness;
 
 uniform sampler2D uTerrainHeightTexture;
 uniform sampler2D uWaterHeightTexture;
@@ -48,7 +48,8 @@ void main(void) {
 	// calculate sediment capacity of water
 	float lmax = clamp((uMaxErosionDepth - waterHeight) / uMaxErosionDepth, 0.0, 1.0);
 	float localTiltAngle = max(abs(N.y), 0.05);
-	float waterSedimentCapacity = uSedimentCapacity * localTiltAngle * length(velocity) * lmax;
+	float velocityLength = abs(velocity.x) > 0.0 && abs(velocity.y) > 0.0 ? length(velocity) : 0.0;
+	float waterSedimentCapacity = uSedimentCapacity * localTiltAngle * velocityLength * lmax;
 
 	float terrainHeight = texelFetch(uTerrainHeightTexture, ivec2(gl_FragCoord.xy), 0).x;
 	vec2 sedimentHardness = texelFetch(uSedimentHardnessTexture, ivec2(gl_FragCoord.xy), 0).xy;
