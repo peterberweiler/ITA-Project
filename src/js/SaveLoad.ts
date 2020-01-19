@@ -3,13 +3,13 @@ import Decorations from "./Decorations";
 import EditorController from "./EditorController";
 import * as HelperFunctions from "./HelperFunctions";
 import InputController from "./Renderer/InputController";
-import Renderer from "./Renderer/Renderer";
+//import Renderer from "./Renderer/Renderer";
 import HeightmapController from "./Renderer/Terrain/HeightmapController";
 import Layers from "./Renderer/Terrain/Layers";
 
 const SIZE: [number, number] = [1024, 1024];
 
-export function save(heightmapController: HeightmapController, inputController: InputController, editorController: EditorController, layers: Layers, renderer: Renderer) {
+export function save(heightmapController: HeightmapController, inputController: InputController, editorController: EditorController, layers: Layers/*, renderer: Renderer*/) {
 	/**
 	 * Data to save:
 	 * 		- Layers
@@ -67,7 +67,7 @@ export function load() {
 
 	reader.onload = function (event) {
 		text = event.target!.result;
-	}
+	};
 	reader.readAsText(selectedFile);
 
 	const data = JSON.parse(<string>(<unknown>text));
@@ -86,8 +86,8 @@ export function load() {
 
 function _arrayBufferToBase64(buffer: Float32Array) {
 	// Quelle: https://stackoverflow.com/questions/9267899/arraybuffer-to-base64-encoded-string
-	var binary = '';
-	var bytes = new Uint8Array(buffer);
+	var binary = "";
+	var bytes = new Uint8Array(buffer.buffer);
 	var len = bytes.byteLength;
 	for (var i = 0; i < len; i++) {
 		binary += String.fromCharCode(bytes[i]);
@@ -96,11 +96,11 @@ function _arrayBufferToBase64(buffer: Float32Array) {
 }
 
 function _base64ToArrayBuffer(base64: string) {
-	var binary_string = window.atob(base64);
-	var len = binary_string.length;
+	var binaryString = window.atob(base64);
+	var len = binaryString.length;
 	var bytes = new Uint8Array(len);
 	for (var i = 0; i < len; i++) {
-		bytes[i] = binary_string.charCodeAt(i);
+		bytes[i] = binaryString.charCodeAt(i);
 	}
 	return bytes.buffer;
 }

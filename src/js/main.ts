@@ -202,7 +202,7 @@ function setupUI() {
 	});
 
 	UI.on("save", () => {
-		SaveLoad.save(heightmapController, inputController, editorController, layers, renderer);
+		SaveLoad.save(heightmapController, inputController, editorController, layers/*, renderer*/);
 	});
 
 	UI.on("load", () => {

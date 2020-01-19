@@ -178,7 +178,6 @@ class UIController extends EventEmitter {
 		document.querySelector<HTMLButtonElement>("#save-button")!.onclick = this.emit.bind(this, "save");
 
 		document.querySelector<HTMLButtonElement>("#load-button")!.onclick = this.emit.bind(this, "load");
-
 	}
 
 	selectMenuIndex(index: number): void {
