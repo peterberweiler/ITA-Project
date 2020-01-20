@@ -252,5 +252,6 @@ void main(void) {
 	float alpha = max(dot(lightingParams.V, lightingParams.N), 0.0);
 	alpha *= alpha;
 	alpha *= alpha;
+	clamp(alpha, 0.0, 0.7);
 	oColor = vec4(color, 1.0 - alpha);
 }

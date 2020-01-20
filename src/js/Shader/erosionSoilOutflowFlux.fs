@@ -38,7 +38,7 @@ void main(void) {
 	maxHeightDiff = max(maxHeightDiff, max(max(crossHeightDiff.x, crossHeightDiff.y), max(crossHeightDiff.z, crossHeightDiff.w)));
 
 	float hardness = texelFetch(uSedimentHardnessTexture, ivec2(gl_FragCoord.xy), 0).y;
-	float soilVolume = uDeltaTime * maxHeightDiff * 0.5 * uCellSize * uCellSize * uThermalErosionRate;// * hardness;
+	float soilVolume = uDeltaTime * maxHeightDiff * 0.5 * uCellSize * uCellSize * uThermalErosionRate * hardness;
 
 	vec4 plusTanAngle = plusHeightDiff / uCellSize;
 	vec4 crossTanAngle = crossHeightDiff / length(vec2(uCellSize, uCellSize));
@@ -48,7 +48,7 @@ void main(void) {
 	vec4 plusK = mix(vec4(0.0), plusHeightDiff, greaterThan(plusTanAngle, vec4(theshold)));
 	vec4 crossK = mix(vec4(0.0), crossHeightDiff, greaterThan(crossTanAngle, vec4(theshold)));
 
-	float sumK = plusK.x + plusK.y + plusK.z + plusK.w;// + crossK.x + crossK.y + crossK.z + crossK.w;
+	float sumK = plusK.x + plusK.y + plusK.z + plusK.w + crossK.x + crossK.y + crossK.z + crossK.w;
 	vec4 plusOutFlux = sumK > 0.0 ? soilVolume * plusK / sumK : vec4(0.0);
 	vec4 crossOutFlux = sumK > 0.0 ? soilVolume * crossK / sumK : vec4(0.0);
 

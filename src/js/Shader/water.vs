@@ -31,7 +31,8 @@ void main(void) {
 
 	vec2 coord = position.xz * uTexelSizeInMeters * (1.0 / vec2(textureSize(uTerrainHeightTexture, 0).xy));
 	position.y = texture(uTerrainHeightTexture, coord).r * uHeightScaleInMeters;
-	position.y += texture(uWaterHeightTexture, coord).r * uHeightScaleInMeters - 0.5;
+	position.y += texture(uWaterHeightTexture, coord).r * uHeightScaleInMeters;// - 0.5;
 	vWorldSpacePos = position;
 	gl_Position = uTransform * vec4(position, 1.0);
+	gl_Position.z += 0.0005;
 }

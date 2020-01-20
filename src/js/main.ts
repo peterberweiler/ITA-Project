@@ -52,6 +52,7 @@ function setupRenderer() {
 	// dummy heightmap
 	heightmapController.queuePass(heightmapController.perlinPass);
 	heightmapController.queuePass(heightmapController.generateSurfacePass);
+	heightmapController.queuePass(heightmapController.generateHardnessPass);
 
 	requestAnimationFrame(main);
 }

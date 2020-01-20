@@ -8,6 +8,7 @@ import { ErosionSoilAdvectionPass } from "./Passes/ErosionSoilAdvectionPass";
 import { ErosionSoilFluxPass } from "./Passes/ErosionSoilFluxPass";
 import { ErosionSuspensionDepositionPass } from "./Passes/ErosionSuspensionDepositionPass";
 import { ErosionWaterFluxPass } from "./Passes/ErosionWaterFluxPass";
+import { GenerateHardnessPass } from "./Passes/GenerateHardnessPass";
 import { GenerateSurfacePass } from "./Passes/GenerateSurfacePass";
 import { HeightBrushPass } from "./Passes/HeightBrushPass";
 import { LayerBrushPass } from "./Passes/LayerBrushPass";
@@ -31,6 +32,7 @@ export default class HeightmapController {
 	readonly erosionSedimentAdvectionPass: ErosionSedimentAdvectionPass;
 	readonly erosionSoilFluxPass: ErosionSoilFluxPass;
 	readonly erosionSoilAdvectionPass: ErosionSoilAdvectionPass;
+	readonly generateHardnessPass: GenerateHardnessPass;
 
 	constructor(layers: Layers) {
 		this.framebuffer = new Framebuffer();
@@ -58,6 +60,7 @@ export default class HeightmapController {
 		this.erosionSedimentAdvectionPass = new ErosionSedimentAdvectionPass();
 		this.erosionSoilFluxPass = new ErosionSoilFluxPass();
 		this.erosionSoilAdvectionPass = new ErosionSoilAdvectionPass();
+		this.generateHardnessPass = new GenerateHardnessPass();
 
 		// force empty textures into correct format
 		this.textures.heightMap.initialize((tex) => tex.updateFloatRedData(this.size, null));
