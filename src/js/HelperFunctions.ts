@@ -7,6 +7,10 @@ export function hide(element: HTMLElement, hide: boolean = true) {
 	}
 }
 
+export function show(element: HTMLElement, show: boolean = true) {
+	hide(element, !show);
+}
+
 // color is an array with values between 0-1
 export function hex2color(hex: string): number[] {
 	const matches = hex.match(/[A-Za-z0-9]{2}/g);
