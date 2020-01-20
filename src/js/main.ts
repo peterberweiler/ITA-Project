@@ -224,6 +224,8 @@ function setupUI() {
 
 	editorController.on("height-changed", () => {
 		terrain.shadowsNeedUpdate = true;
+		heightmapController.generateHardnessPass.updateValues = true; // GenerateHardnessPass will reset this to false after the next execution
+		heightmapController.queuePass(heightmapController.generateHardnessPass);
 	});
 }
 

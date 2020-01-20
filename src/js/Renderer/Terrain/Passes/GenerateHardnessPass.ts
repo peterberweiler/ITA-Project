@@ -35,7 +35,7 @@ export class GenerateHardnessPass extends Pass {
 
 		Renderer.checkGLError();
 		textures.heightMap.current().bind(0);
-		textures.sedimentHardnessMap.current.bind(1);
+		textures.sedimentHardnessMap.current().bind(1);
 
 		Renderer.checkGLError();
 		framebuffer.setColorAttachment(textures.sedimentHardnessMap.next(), 0);

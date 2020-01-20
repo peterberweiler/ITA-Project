@@ -66,7 +66,6 @@ void main(void) {
 	terrainHeight -= sedimentDelta;
 	sediment += sedimentDelta;
 	waterHeight += sedimentDelta;
-	waterHeight = max(waterHeight, 0.0);
 
 	// soften terrain, if soil was deposed
 	hardness = deposeSoil
