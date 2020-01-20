@@ -30,8 +30,8 @@ void main(void) {
 	inflowingFlux.z = texelFetch(uWaterOutflowFluxTexture, ivec2(gl_FragCoord.xy) + ivec2( 0, 1), 0).w;
 	inflowingFlux.w = texelFetch(uWaterOutflowFluxTexture, ivec2(gl_FragCoord.xy) + ivec2( 0,-1), 0).z;
 	vec4 outflowingFlux = texelFetch(uWaterOutflowFluxTexture, ivec2(gl_FragCoord.xy), 0);
-	float inflowingWater = dot(inflowingFlux, vec4(1.0));
-	float outflowingWater = dot(outflowingFlux, vec4(1.0));
+	float inflowingWater = inflowingFlux.x + inflowingFlux.y + inflowingFlux.z + inflowingFlux.w;
+	float outflowingWater = outflowingFlux.x + outflowingFlux.y + outflowingFlux.z + outflowingFlux.w;
 	float waterHeightChange = uDeltaTime * (inflowingWater - outflowingWater);
 
 	// update water height with in/out-flowing water
@@ -47,8 +47,8 @@ void main(void) {
 
 	// calculate sediment capacity of water
 	float lmax = clamp((uMaxErosionDepth - waterHeight) / uMaxErosionDepth, 0.0, 1.0);
-	float localTiltAngle = max(abs(N.y), 0.05);
-	float velocityLength = abs(velocity.x) > 0.0 && abs(velocity.y) > 0.0 ? length(velocity) : 0.0;
+	float localTiltAngle = min(abs(N.y), 0.05);
+	float velocityLength = dot(velocity, velocity) > 1e-7 ? length(velocity) : 0.0;
 	float waterSedimentCapacity = uSedimentCapacity * localTiltAngle * velocityLength * lmax;
 
 	float terrainHeight = texelFetch(uTerrainHeightTexture, ivec2(gl_FragCoord.xy), 0).x;

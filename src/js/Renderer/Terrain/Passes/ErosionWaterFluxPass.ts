@@ -37,15 +37,13 @@ export class ErosionWaterFluxPass extends Pass {
 		textures.waterHeightMap.current().bind(1);
 		textures.waterFluxMap.current().bind(2);
 
-		framebuffer.setColorAttachment(textures.heightMap.next(), 0);
-		framebuffer.setColorAttachment(textures.waterHeightMap.next(), 1);
-		framebuffer.setColorAttachment(textures.waterFluxMap.next(), 2);
-		gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1, gl.COLOR_ATTACHMENT2]);
+		framebuffer.setColorAttachment(textures.waterHeightMap.next(), 0);
+		framebuffer.setColorAttachment(textures.waterFluxMap.next(), 1);
+		gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1]);
 	}
 
 	finalizePass(_framebuffer: Framebuffer) {
 		_framebuffer.unsetColorAttachment(0);
 		_framebuffer.unsetColorAttachment(1);
-		_framebuffer.unsetColorAttachment(2);
 	}
 }
