@@ -52,41 +52,14 @@ export default class HeightmapController {
 		this.erosionSedimentAdvectionPass = new ErosionSedimentAdvectionPass();
 
 		// force empty textures into correct format
-		this.textures.heightMap.initialize((tex) => {
-			tex.updateFloatRedData(this.size, null);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-		});
-
-		this.textures.waterHeightMap.initialize((tex) => {
-			tex.updateFloatRedData(this.size, null);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-		});
-
-		this.textures.sedimentHardnessMap.initialize((tex) => {
-			tex.updateFloatRGData(this.size, null);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-		});
-
-		this.textures.waterFluxMap.initialize((tex) => {
-			tex.updateFloatRGBAData(this.size, null);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-		});
-
+		this.textures.heightMap.initialize((tex) => tex.updateFloatRedData(this.size, null));
+		this.textures.waterHeightMap.initialize((tex) => tex.updateFloatRedData(this.size, null));
+		this.textures.sedimentHardnessMap.initialize((tex) => tex.updateFloatRGData(this.size, null));
+		this.textures.waterFluxMap.initialize((tex) => tex.updateFloatRGBAData(this.size, null));
 		this.textures.waterVelocityMap.updateFloatRGData(this.size, null);
-		this.textures.waterVelocityMap.bind(0);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
 		this.textures.shadowMap.updateFloatRedData(this.size, null);
-		this.textures.shadowMap.bind(0);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
 		this.framebuffer.setColorAttachment(this.textures.heightMap.current());
+
 		Framebuffer.unbind();
 		Renderer.checkGLError();
 	}
