@@ -4,9 +4,10 @@ import sortable from "html5sortable/dist/html5sortable.es";
 import { color2hex, hex2color, hide } from "../HelperFunctions";
 import Layers from "../Renderer/Terrain/Layers";
 import Settings, { InitData } from "../Settings";
+import { AlertType, showAlert } from "./Alert";
 import UISelector from "./UISelector";
 
-type Route = "none" | "increase-brush" | "decrease-brush" | "flatten-brush" | "layer-brush" | "decoration-brush" | "layers" | "settings";
+type Route = "none" | "increase-brush" | "decrease-brush" | "flatten-brush" | "layer-brush" | "decoration-brush" | "layers" | "settings" | "generation-tools";
 
 declare interface UIController {
 	on(event: "debug0", listener: () => void): this;
@@ -32,6 +33,7 @@ declare interface UIController {
 	on(event: "save", listener: () => void): this;
 	on(event: "file-opened", listener: (file: File) => void): this;
 	on(event: "init", listener: (initData: InitData) => void): this
+	on(event: "seed-generation", listener: (seed: string) => void): this
 }
 
 class UIController extends EventEmitter {
@@ -59,6 +61,8 @@ class UIController extends EventEmitter {
 	public readonly sunPitch = document.getElementById("sun-pitch") as HTMLInputElement
 	public readonly sunYaw = document.getElementById("sun-yaw") as HTMLInputElement
 
+	public readonly generationWindow = document.getElementById("generation-window") as HTMLDivElement
+
 	public readonly layerBrushTypeSelector = new UISelector("#layer-type-selector", "div");
 	public readonly layerBrushOptions = document.getElementById("layer-brush-options") as HTMLDivElement;
 
@@ -78,6 +82,7 @@ class UIController extends EventEmitter {
 	public readonly initSelects = document.querySelectorAll<HTMLInputElement>("#init-window select");
 
 	public wheelEnabled = true;
+	private generationToolsWarningDisplayed = false;
 
 	constructor() {
 		super();
@@ -209,6 +214,11 @@ class UIController extends EventEmitter {
 				this.emit("file-opened", this.filePicker.files[0]);
 			}
 		};
+
+		document.getElementById("seed-generation-button")!.onclick = () => {
+			const seed = (<HTMLInputElement>document.getElementById("seed-input")).value;
+			this.emit("seed-generation", seed);
+		};
 	}
 
 	selectMenuIndex(index: number): void {
@@ -221,6 +231,11 @@ class UIController extends EventEmitter {
 
 		const route = index < 0 ? "none" : this.menuItems[index].getAttribute("route") as Route;
 
+		hide(this.brushWindow, true);
+		hide(this.layersWindow, true);
+		hide(this.settingsWindow, true);
+		hide(this.generationWindow, true);
+
 		switch (route) {
 			case "increase-brush":
 			case "decrease-brush":
@@ -231,8 +246,6 @@ class UIController extends EventEmitter {
 
 				setTimeout(() => {
 					hide(this.brushWindow, false);
-					hide(this.layersWindow, true);
-					hide(this.settingsWindow, true);
 
 					hide(this.brushTypeSelector, route !== "increase-brush" && route !== "decrease-brush");
 
@@ -252,15 +265,19 @@ class UIController extends EventEmitter {
 				break;
 
 			case "layers":
-				hide(this.brushWindow, true);
 				hide(this.layersWindow, false);
-				hide(this.settingsWindow, true);
 				break;
 
 			case "settings":
-				hide(this.brushWindow, true);
-				hide(this.layersWindow, true);
 				hide(this.settingsWindow, false);
+				break;
+
+			case "generation-tools":
+				if (!this.generationToolsWarningDisplayed) {
+					showAlert("Be cautious. These Tools will override the complete heightmap.", AlertType.Ok);
+					this.generationToolsWarningDisplayed = true;
+				}
+				hide(this.generationWindow, false);
 				break;
 		}
 

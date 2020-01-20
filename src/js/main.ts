@@ -1,6 +1,7 @@
 import Decorations from "./Decorations";
 import EditorController from "./EditorController";
 import * as ImportExport from "./ImportExport";
+import { createRandom } from "./Random";
 import { Camera } from "./Renderer/Cameras";
 import InputController from "./Renderer/InputController";
 import Renderer from "./Renderer/Renderer";
@@ -222,11 +223,36 @@ function setupUI() {
 	UI.updateLayerBrushTypeSelector(layers);
 	UI.selectMenuIndex(-1);
 
-	editorController.on("height-changed", () => {
-		terrain.shadowsNeedUpdate = true;
-		heightmapController.generateHardnessPass.updateValues = true; // GenerateHardnessPass will reset this to false after the next execution
-		heightmapController.queuePass(heightmapController.generateHardnessPass);
+	UI.on("seed-generation", (seed) => {
+		const random = createRandom(seed);
+		const amplitudes = [512, 128, 64, 32, 16, 8, 1, 0.5];
+		const scales = [512, 256, 128, 64, 32, 16, 8, 2];
+		const seeds = [];
+		const offsets = [];
+		const ridgeFactor = [];
+
+		for (let i = 0; i < 6; ++i) {
+			// amplitudes[i] = random() * Math.pow(2, 10 - i);
+			// scales[i] = random() * Math.pow(2, 10 - i);
+			seeds[i] = random() * 100000;
+
+			offsets[(i * 2)] = random() * 100000;
+			offsets[(i * 2) + 1] = random() * 100000;
+			ridgeFactor[i] = 1 - Math.round(Math.pow(random(), (8 - i)));
+		}
+
+		heightmapController.perlinPass.seeds = seeds;
+		heightmapController.perlinPass.amplitudes = amplitudes;
+		heightmapController.perlinPass.scales = scales;
+		heightmapController.perlinPass.offsets = offsets;
+		heightmapController.perlinPass.ridgeFactor = ridgeFactor;
+
+		heightmapController.queuePass(heightmapController.perlinPass);
+		heightmapController.queuePass(heightmapController.generateSurfacePass);
+		heightChanged();
 	});
+
+	editorController.on("height-changed", heightChanged);
 }
 
 function update(now: number, deltaTime: number) {
@@ -298,6 +324,16 @@ function initialize(initData: InitData) {
 	console.log(initData);
 }
 
+function heightChanged() {
+	terrain.shadowsNeedUpdate = true;
+	heightmapController.generateHardnessPass.updateValues = true; // GenerateHardnessPass will reset this to false after the next execution
+	heightmapController.queuePass(heightmapController.generateHardnessPass);
+}
+
 setupRenderer();
 setupUI();
+
+if (Settings.getDebugMode()) {
+	initialize(Settings.getInitData());
+}
 

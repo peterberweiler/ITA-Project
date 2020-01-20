@@ -84,8 +84,8 @@ export default class InputController {
 	keyboardChange(isDown: boolean, event: KeyboardEvent) {
 		if (event.keyCode in CONTROL_KEYS) {
 			this.keyDown[event.keyCode] = isDown;
-			event.stopPropagation();
-			event.preventDefault();
+			// event.stopPropagation();
+			// event.preventDefault();
 		}
 		if (!isDown && event.keyCode === R_KEY) {
 			this.isRunning = !this.isRunning;

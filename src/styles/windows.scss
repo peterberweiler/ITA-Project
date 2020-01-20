@@ -295,3 +295,33 @@
     }
 
 }
+
+
+#generation-window {
+
+    button,
+    input {
+        padding: 2px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        background-color: rgba(255, 255, 255, 0.1);
+        color: white;
+        border-radius: 4px;
+        -moz-appearance: textfield;
+        margin: 1px 3px;
+        width: 200px;
+
+
+        &::-webkit-inner-spin-button,
+        &::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            appearance: none;
+            margin: 0;
+        }
+
+        &:enabled:focus,
+        &:enabled:hover {
+            border-color: $theme-color;
+        }
+    }
+
+}
