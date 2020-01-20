@@ -1,106 +1,85 @@
-//@ts-ignore
-import Decorations from "./Decorations";
-import EditorController from "./EditorController";
-import * as HelperFunctions from "./HelperFunctions";
-import InputController from "./Renderer/InputController";
-//import Renderer from "./Renderer/Renderer";
+import Decorations, { Decoration } from "./Decorations";
+import { downloadBlob } from "./HelperFunctions";
 import HeightmapController from "./Renderer/Terrain/HeightmapController";
-import Layers from "./Renderer/Terrain/Layers";
+import Layers, { SerializedLayers } from "./Renderer/Terrain/Layers";
 
-const SIZE: [number, number] = [1024, 1024];
+interface SaveData {
+	layers: SerializedLayers,
+	trees: number[],
+	heightmap: string,
+	layerWeightmaps: string[],
+}
 
-export function save(heightmapController: HeightmapController, inputController: InputController, editorController: EditorController, layers: Layers/*, renderer: Renderer*/) {
-	/**
-	 * Data to save:
-	 * 		- Layers
-	 * 		- Trees
-	 * 		- Heightmap: Heightmapdata und Layerweightdata
-	 */
-	var data = {
-		/*
-		'sundirection': [] as any,
-		'debugmode': false,
-		'fpsmode': false,
-		brush: [] as any,
-		*/
-		layers: [] as any,
-		trees: [] as any,
-		heightmap: { heightmapdata: "", Layerweightdata: { data0: "", data1: "" } }
-	};
+export function save(heightmapController: HeightmapController, layers: Layers) {
+	var data = {} as SaveData;
 
-	/*
-	data.sundirection.push(renderer.sunDir);
+	// TODO: serialize layers
+	// data.layers = layers;
 
-	//data.table.push({ id: 1, square: 2 });
-	data.debugmode = Settings.getDebugMode();
-
-	data.fpsmode = inputController.isFpsMode();
-
-	data.brush = editorController.brush;
-	*/
-
-	data.layers = layers;
-
+	data.trees = [];
 	const trees = Decorations.getTrees();
 	trees.forEach((tree) => {
-		data.trees.push(tree);
+		data.trees.push(tree[0], tree[1]);
 	});
+	data.heightmap = float32ArrayToBase64(heightmapController.getHeightMapData());
 
-	//data.heightmap = base64ArrayBuffer(heightmapController.getHeightMapData());
-	data.heightmap.heightmapdata = _arrayBufferToBase64(heightmapController.getHeightMapData());
+	data.layerWeightmaps = heightmapController.getLayerWeightData().map(float32ArrayToBase64);
 
-	let [data0, data1] = heightmapController.getLayerWeightData();
-	data.heightmap.Layerweightdata.data0 = _arrayBufferToBase64(data0);
-	data.heightmap.Layerweightdata.data1 = _arrayBufferToBase64(data1);
+	data.layers = layers.serialize();
 
-	var jsondata = JSON.stringify(data);
-
-	//navigator.msSaveOrOpenBlob(new Blob([jsondata], { type: "application/json" }), "TerrainEditorSession.json");
-	HelperFunctions.downloadBlob("TerrainEditorSave.json", new Blob([jsondata]));
+	const jsondata = JSON.stringify(data);
+	downloadBlob("terrain.json", new Blob([jsondata]));
 }
 
-export function load() {
-	const selectedFile = document.querySelector<HTMLInputElement>("#file-picker")!.files![0];
-	var reader = new FileReader();
+export function load(file: File, heightmapController: HeightmapController, layers: Layers) {
+	const reader = new FileReader();
 
-	let text;
+	reader.onload = (event) => {
+		if (!event.target) { return; }
+		const text = event.target.result as string;
+		const data = JSON.parse(text) as SaveData;
 
-	reader.onload = function (event) {
-		text = event.target!.result;
+		const heightmapData = base64ToFloat32Array(data.heightmap);
+		const layerWeightData = data.layerWeightmaps.map(base64ToFloat32Array) as [Float32Array, Float32Array];
+
+		heightmapController.setHeightMapData(heightmapData);
+		heightmapController.setLayerWeightData(layerWeightData);
+
+		const trees: Decoration[] = [];
+		for (let i = 0; i < data.trees.length; i += 2) {
+			trees.push([
+				data.trees[i],
+				data.trees[i + 1],
+			]);
+		}
+		Decorations.setTrees(trees);
+
+		layers.deserialize(data.layers);
 	};
-	reader.readAsText(selectedFile);
-
-	const data = JSON.parse(<string>(<unknown>text));
-	console.log(data);
-
-	let decodedheightmapdata = _base64ToArrayBuffer(data.heightmap.heightmapdata);
-	data.heightmap.heightmapdata = decodedheightmapdata;
-
-	let decodeddata0 = _base64ToArrayBuffer(data.heightmapdata.Layerweightdata.data0);
-	let decodeddata1 = _base64ToArrayBuffer(data.heightmapdata.Layerweightdata.data1);
-	data.heightmapdata.Layerweightdata.data0 = decodeddata0;
-	data.heightmapdata.Layerweightdata.data1 = decodeddata1;
-
-	return data;
+	reader.onerror = (error) => {
+		console.error(error);
+		reader.abort();
+	};
+	reader.readAsText(file);
 }
 
-function _arrayBufferToBase64(buffer: Float32Array) {
+function float32ArrayToBase64(array: Float32Array) {
 	// Quelle: https://stackoverflow.com/questions/9267899/arraybuffer-to-base64-encoded-string
-	var binary = "";
-	var bytes = new Uint8Array(buffer.buffer);
-	var len = bytes.byteLength;
-	for (var i = 0; i < len; i++) {
+	let binary = "";
+	let bytes = new Uint8Array(array.buffer);
+	let len = bytes.byteLength;
+	for (let i = 0; i < len; i++) {
 		binary += String.fromCharCode(bytes[i]);
 	}
 	return window.btoa(binary);
 }
 
-function _base64ToArrayBuffer(base64: string) {
-	var binaryString = window.atob(base64);
-	var len = binaryString.length;
-	var bytes = new Uint8Array(len);
-	for (var i = 0; i < len; i++) {
+function base64ToFloat32Array(base64: string) {
+	let binaryString = window.atob(base64);
+	let len = binaryString.length;
+	let bytes = new Uint8Array(len);
+	for (let i = 0; i < len; i++) {
 		bytes[i] = binaryString.charCodeAt(i);
 	}
-	return bytes.buffer;
+	return new Float32Array(bytes.buffer);
 }

@@ -30,7 +30,7 @@ declare interface UIController {
 	on(event: "camera-mode-changed", listener: (fpsMode: boolean) => void): this;
 	on(event: "export", listener: (mode: number) => void): this;
 	on(event: "save", listener: () => void): this;
-	on(event: "load", listener: () => void): this;
+	on(event: "file-opened", listener: (file: File) => void): this;
 }
 
 class UIController extends EventEmitter {
@@ -69,6 +69,8 @@ class UIController extends EventEmitter {
 
 	public readonly flattenBrushSelector = new UISelector("#flatten-brush-selector");
 	public readonly decorationBrushSelector = new UISelector("#decoration-brush-selector");
+
+	public readonly filePicker = document.getElementById("file-picker") as HTMLInputElement;
 
 	public wheelEnabled = true;
 
@@ -177,7 +179,15 @@ class UIController extends EventEmitter {
 
 		document.querySelector<HTMLButtonElement>("#save-button")!.onclick = this.emit.bind(this, "save");
 
-		document.querySelector<HTMLButtonElement>("#load-button")!.onclick = this.emit.bind(this, "load");
+		this.filePicker.oninput = () => {
+			if (this.filePicker.files && this.filePicker.files.length >= 1) {
+				this.emit("file-opened", this.filePicker.files[0]);
+			}
+		};
+
+		document.querySelectorAll<HTMLButtonElement>(".load-save-file-button").forEach((btn) => {
+			btn.onclick = () => { this.filePicker.click(); };
+		});
 	}
 
 	selectMenuIndex(index: number): void {

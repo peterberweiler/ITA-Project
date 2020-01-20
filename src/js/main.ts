@@ -202,12 +202,11 @@ function setupUI() {
 	});
 
 	UI.on("save", () => {
-		SaveLoad.save(heightmapController, inputController, editorController, layers/*, renderer*/);
+		SaveLoad.save(heightmapController, layers);
 	});
 
-	UI.on("load", () => {
-		const loadedData = SaveLoad.load();
-		renderer.sunDir = loadedData.sunDir;
+	UI.on("file-opened", (file) => {
+		SaveLoad.load(file, heightmapController, layers);
 	});
 
 	UI.setupLayerList(layers);
@@ -279,3 +278,4 @@ function main(now: number) {
 
 setupRenderer();
 setupUI();
+

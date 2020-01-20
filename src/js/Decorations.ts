@@ -1,6 +1,6 @@
 import { vec2 } from "gl-matrix";
 
-type Decoration = [number, number];
+export type Decoration = [number, number];
 
 const SIZE = [1024, 1024];
 

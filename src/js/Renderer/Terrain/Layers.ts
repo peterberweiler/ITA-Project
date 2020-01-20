@@ -3,6 +3,12 @@ import { gl } from "../Global";
 export const MAX_LAYERS: number = 8;
 const WEIGHT_MAP_RESOLUTION: number = 1024;
 
+export interface SerializedLayers {
+	layerOrder: number[]
+	layerMaterials: number[]
+	activeLayers: boolean[]
+}
+
 export class Material {
 	albedoRoughness: number = 0x7F;
 
@@ -29,6 +35,14 @@ export class Material {
 
 	getRoughness() {
 		return (this.albedoRoughness & 0xFF) / 255.0;
+	}
+
+	serialize(): number {
+		return this.albedoRoughness;
+	}
+
+	deserialize(data: number) {
+		this.albedoRoughness = data;
 	}
 }
 
@@ -85,5 +99,21 @@ export default class Layers {
 
 	getLayerActive(layerId: number) {
 		return this.activeLayers[layerId];
+	}
+
+	serialize(): SerializedLayers {
+		return {
+			layerOrder: this.layerOrder,
+			activeLayers: this.activeLayers,
+			layerMaterials: this.layerMaterials.map((mat) => mat.serialize()),
+		};
+	}
+
+	deserialize(data: SerializedLayers) {
+		this.layerOrder = data.layerOrder;
+		this.activeLayers = data.activeLayers;
+		for (let i = 0; i < MAX_LAYERS; i++) {
+			this.layerMaterials[i].deserialize(data.layerMaterials[i]);
+		}
 	}
 }
