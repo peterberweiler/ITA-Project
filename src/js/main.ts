@@ -94,16 +94,20 @@ function setupUI() {
 				editorController.brush.height.direction = -1;
 				break;
 
-			case "flatten-brush": // flatten brush
+			case "flatten-brush":
 				editorController.selectedBrush = editorController.brush.flatten;
 				break;
 
-			case "layer-brush": // Layer Brush
+			case "layer-brush":
 				editorController.selectedBrush = editorController.brush.layer;
 				break;
 
-			case "decoration-brush": // Layer Brush
+			case "decoration-brush":
 				editorController.selectedBrush = editorController.brush.decoration;
+				break;
+
+			case "erosion-brush":
+				editorController.selectedBrush = editorController.brush.erosion;
 				break;
 
 			case "layers": // Layers

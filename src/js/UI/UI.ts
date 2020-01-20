@@ -7,7 +7,7 @@ import Settings, { InitData } from "../Settings";
 import { AlertType, showAlert } from "./Alert";
 import UISelector from "./UISelector";
 
-type Route = "none" | "increase-brush" | "decrease-brush" | "flatten-brush" | "layer-brush" | "decoration-brush" | "layers" | "settings" | "generation-tools";
+type Route = "none" | "increase-brush" | "decrease-brush" | "flatten-brush" | "layer-brush" | "decoration-brush" | "erosion-brush" | "layers" | "settings" | "generation-tools";
 
 declare interface UIController {
 	on(event: "debug0", listener: () => void): this;
@@ -242,6 +242,7 @@ class UIController extends EventEmitter {
 			case "flatten-brush":
 			case "layer-brush":
 			case "decoration-brush":
+			case "erosion-brush":
 				this.brushWindow.classList.add("slide-out");
 
 				setTimeout(() => {

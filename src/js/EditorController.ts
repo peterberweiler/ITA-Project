@@ -58,6 +58,10 @@ export default class EditorController extends EventEmitter {
 			remove: false,
 			accumulator: 0,
 		} as DecorationBrush,
+		erosion: {
+			radius: 100,
+			strength: 50, //1-100
+		} as Brush,
 	}
 
 	selectedBrush: Brush | null = this.brush.height;
@@ -138,6 +142,11 @@ export default class EditorController extends EventEmitter {
 						Decorations.addTrees(count, [x, y], this.brush.decoration.radius, 4);
 					}
 				}
+				break;
+			}
+
+			case this.brush.erosion: {
+				//TODO:
 				break;
 			}
 		}
