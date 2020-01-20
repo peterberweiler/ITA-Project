@@ -48,6 +48,11 @@ void main(void) {
 	vec4 plusK = mix(vec4(0.0), plusHeightDiff, greaterThan(plusTanAngle, vec4(theshold)));
 	vec4 crossK = mix(vec4(0.0), crossHeightDiff, greaterThan(crossTanAngle, vec4(theshold)));
 
+	if (int(gl_FragCoord.x) == 0) plusK.x = 0.0; crossK.x = 0.0;
+	if (int(gl_FragCoord.y) == 0) plusK.w = 0.0; crossK.w = 0.0;
+	if (int(gl_FragCoord.x) == int(textureSize(uTerrainHeightTexture, 0).x) - 1) plusK.y = 0.0; crossK.y = 0.0;
+	if (int(gl_FragCoord.y) == int(textureSize(uTerrainHeightTexture, 0).y) - 1) plusK.z = 0.0; crossK.z = 0.0;
+
 	float sumK = plusK.x + plusK.y + plusK.z + plusK.w + crossK.x + crossK.y + crossK.z + crossK.w;
 	vec4 plusOutFlux = sumK > 0.0 ? soilVolume * plusK / sumK : vec4(0.0);
 	vec4 crossOutFlux = sumK > 0.0 ? soilVolume * crossK / sumK : vec4(0.0);

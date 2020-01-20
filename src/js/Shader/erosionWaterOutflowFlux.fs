@@ -43,9 +43,9 @@ void main(void) {
 	waterOutflowFlux = max(vec4(0.0), waterOutflowFlux + uDeltaTime * uPipeCrossSectionArea * (g * heightDiff) * invPipelength);
 
 	if (int(gl_FragCoord.x) == 0) waterOutflowFlux.x = 0.0;
-	if (int(gl_FragCoord.y) == 0) waterOutflowFlux.z = 0.0;
+	if (int(gl_FragCoord.y) == 0) waterOutflowFlux.w = 0.0;
 	if (int(gl_FragCoord.x) == int(textureSize(uTerrainHeightTexture, 0).x) - 1) waterOutflowFlux.y = 0.0;
-	if (int(gl_FragCoord.y) == int(textureSize(uTerrainHeightTexture, 0).y) - 1) waterOutflowFlux.w = 0.0;
+	if (int(gl_FragCoord.y) == int(textureSize(uTerrainHeightTexture, 0).y) - 1) waterOutflowFlux.z = 0.0;
 
 	float outfluxSum = waterOutflowFlux.x + waterOutflowFlux.y + waterOutflowFlux.z + waterOutflowFlux.w;
 	waterOutflowFlux *= outfluxSum > 0.0 ? min(1.0, (waterHeight * uPipeLength * uPipeLength) / (outfluxSum * uDeltaTime)) : 1.0;
