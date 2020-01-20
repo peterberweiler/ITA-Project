@@ -238,3 +238,60 @@
         }
     }
 }
+
+#init-window {
+    left: 50%;
+    top: 50%;
+    bottom: unset;
+    right: unset;
+    width: auto;
+    height: auto;
+    transform: translate(-50%, -50%);
+    padding: 1.5rem;
+
+
+    span {
+        display: inline-block;
+        width: 130px;
+        text-align: right;
+        margin: 3px 5px;
+
+        &.unit {
+            text-align: left;
+            width: auto;
+        }
+    }
+
+    input[type=number],
+    select {
+        width: 90px;
+        text-align: center;
+        text-align-last: center;
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        background-color: rgba(255, 255, 255, 0.9);
+        color: rgb(0, 0, 0);
+        border-radius: 4px;
+        padding: 1px;
+        // padding-right: 10px;
+        // -moz-appearance: textfield;
+    }
+
+    button {
+        display: block;
+        margin: auto;
+        padding: 5px;
+        width: 160px;
+        font-size: 15px;
+    }
+
+    &>div {
+        margin: 7px 0;
+
+        label {
+            margin-left: 6px;
+            font-size: 75%;
+        }
+
+    }
+
+}

@@ -94,7 +94,7 @@ body {
         background-color: rgb(73, 73, 73);
         color: $theme-color;
         border-radius: 100%;
-
+        border: 1px solid transparentize($theme-color, .7);
         cursor: pointer;
 
         @include transition(0.2s);
@@ -226,4 +226,10 @@ input[type=range] {
 .muted {
     font-size: 75%;
     opacity: .7;
+}
+
+.centered {
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }

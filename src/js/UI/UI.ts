@@ -3,7 +3,7 @@ import { EventEmitter } from "events";
 import sortable from "html5sortable/dist/html5sortable.es";
 import { color2hex, hex2color, hide } from "../HelperFunctions";
 import Layers from "../Renderer/Terrain/Layers";
-import Settings from "../Settings";
+import Settings, { InitData } from "../Settings";
 import UISelector from "./UISelector";
 
 type Route = "increase-brush" | "decrease-brush" | "flatten-brush" | "layer-brush" | "decoration-brush" | "layers" | "settings";
@@ -31,6 +31,7 @@ declare interface UIController {
 	on(event: "export", listener: (mode: number) => void): this;
 	on(event: "save", listener: () => void): this;
 	on(event: "file-opened", listener: (file: File) => void): this;
+	on(event: "init", listener: (initData: InitData) => void): this
 }
 
 class UIController extends EventEmitter {
@@ -72,6 +73,9 @@ class UIController extends EventEmitter {
 
 	public readonly filePicker = document.getElementById("file-picker") as HTMLInputElement;
 
+	public readonly initInputs = document.querySelectorAll<HTMLInputElement>("#init-window input");
+	public readonly initSelects = document.querySelectorAll<HTMLInputElement>("#init-window select");
+
 	public wheelEnabled = true;
 
 	constructor() {
@@ -84,6 +88,26 @@ class UIController extends EventEmitter {
 		document.querySelector<HTMLButtonElement>("#debugButton4")!.onclick = this.emit.bind(this, "debug4");
 		document.querySelector<HTMLButtonElement>("#debugButton5")!.onclick = this.emit.bind(this, "debug5");
 
+		// setup init window
+		const initData = Settings.getInitData();
+		this.initSelects[0].value = initData.size.toString();
+		this.initInputs[0].value = initData.scale.toString();
+		this.initInputs[1].value = initData.maxHeight.toString();
+		this.initInputs[2].value = initData.minHeight.toString();
+
+		document.querySelector<HTMLButtonElement>("#init-button")!.onclick = () => {
+			const size = parseFloat(this.initSelects[0].value);
+			const scale = parseFloat(this.initInputs[0].value);
+			const maxHeight = parseFloat(this.initInputs[1].value);
+			const minHeight = parseFloat(this.initInputs[2].value);
+
+			const initData = { size, scale, maxHeight, minHeight };
+			Settings.setInitData(initData);
+			this.emit("init", initData);
+			hide(document.getElementById("init-window")!, true);
+		};
+
+		//
 		this.radiusInput.oninput = () => {
 			this.radiusOutput.value = this.radiusInput.value;
 			this.emit("radius-changed", parseFloat(this.radiusInput.value));

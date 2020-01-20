@@ -1,11 +1,11 @@
-import Decorations, { Decoration } from "./Decorations";
+import Decorations from "./Decorations";
 import { downloadBlob } from "./HelperFunctions";
 import HeightmapController from "./Renderer/Terrain/HeightmapController";
 import Layers, { SerializedLayers } from "./Renderer/Terrain/Layers";
 
 interface SaveData {
 	layers: SerializedLayers,
-	trees: number[],
+	trees: ArrayLike<number>,
 	heightmap: string,
 	layerWeightmaps: string[],
 }
@@ -13,19 +13,13 @@ interface SaveData {
 export function save(heightmapController: HeightmapController, layers: Layers) {
 	var data = {} as SaveData;
 
-	// TODO: serialize layers
-	// data.layers = layers;
+	data.layers = layers.serialize();
 
-	data.trees = [];
-	const trees = Decorations.getTrees();
-	trees.forEach((tree) => {
-		data.trees.push(tree[0], tree[1]);
-	});
+	data.trees = Decorations.serializeTrees();
+
 	data.heightmap = float32ArrayToBase64(heightmapController.getHeightMapData());
 
 	data.layerWeightmaps = heightmapController.getLayerWeightData().map(float32ArrayToBase64);
-
-	data.layers = layers.serialize();
 
 	const jsondata = JSON.stringify(data);
 	downloadBlob("terrain.json", new Blob([jsondata]));
@@ -45,14 +39,7 @@ export function load(file: File, heightmapController: HeightmapController, layer
 		heightmapController.setHeightMapData(heightmapData);
 		heightmapController.setLayerWeightData(layerWeightData);
 
-		const trees: Decoration[] = [];
-		for (let i = 0; i < data.trees.length; i += 2) {
-			trees.push([
-				data.trees[i],
-				data.trees[i + 1],
-			]);
-		}
-		Decorations.setTrees(trees);
+		Decorations.deserializeTrees(data.trees);
 
 		layers.deserialize(data.layers);
 	};

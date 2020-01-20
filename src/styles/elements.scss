@@ -1,25 +1,26 @@
 @import "./global.scss";
 
 
+$element-radius: 4px;
+$element-background: rgba(100, 100, 100, 0.4);
+$element-border: 1px solid rgba(255, 255, 255, 0.6);
+
 .selector {
     word-spacing: 0;
     white-space: 0;
     border-spacing: 0;
     display: flex;
 
-    $border: 1px solid rgba(255, 255, 255, 0.6);
-    $radius: 4px;
-
     span,
     img,
     div,
     a {
         display: block;
-        border: $border;
+        border: $element-border;
         border-right: none;
         margin: 0;
         padding: 4px;
-        background-color: rgba(255, 255, 255, 0.15);
+        background-color: $element-background;
         cursor: pointer;
 
         &[selected] {
@@ -34,14 +35,28 @@
         }
 
         &:first-child {
-            border-top-left-radius: $radius;
-            border-bottom-left-radius: $radius;
+            border-top-left-radius: $element-radius;
+            border-bottom-left-radius: $element-radius;
         }
 
         &:last-child {
-            border-top-right-radius: $radius;
-            border-bottom-right-radius: $radius;
-            border-right: $border;
+            border-top-right-radius: $element-radius;
+            border-bottom-right-radius: $element-radius;
+            border-right: $element-border;
         }
+    }
+}
+
+
+button {
+    border: $element-border;
+    background-color: $element-background;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+
+    &:hover {
+        background-color: rgba(255, 255, 255, 0.9);
+        color: black;
     }
 }

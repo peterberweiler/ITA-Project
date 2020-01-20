@@ -185,8 +185,48 @@
 			</span>
 		</div>
 		<br>
-
 	</div>
+	<div id="init-window" class="window">
+		<h1>Initialize New Terrain</h1>
+		<span>Terrain Texel Size:</span>
+		<select>
+			<option>128</option>
+			<option>256</option>
+			<option>512</option>
+			<option>1024</option>
+			<option>2048</option>
+			<option>4096</option>
+		</select>
+		<span class="unit">Texel</span>
+		<br>
+		<span>Terrain Scale</span>
+		<input type="number" min="0.01" max="100" step="0.01" />
+		<span class="unit">Meter/Texel</span>
+		<br>
+		<span>Max height:</span>
+		<input type="number" min="-6000" max="6000" />
+		<span class="unit">Meter</span>
+		<br>
+		<span>Min Height:</span>
+		<input type="number" min="-6000" max="6000" />
+		<span class="unit">Meter</span>
+		<br>
+		<!-- <div class="centered">
+			<input type="checkbox" id="keep-init-checkbox" />
+			<label for="keep-init-checkbox">
+				Keep these Settings for next time.<br>You can always reset them in the Options.
+			</label>
+			<br>
+		</div> -->
+		<br>
+		<button id="init-button">Initialize</button>
+		<br>
+		<br>
+		<h1>Load from Save</h1>
+		<button class="load-save-file-button">Choose Save File</button>
+	</div>
+
+	<input type="file" id="file-picker" accept=".json"></input>
 </body>
 
 </html>

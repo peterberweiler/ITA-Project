@@ -79,6 +79,28 @@ class DecorationsController {
 		this.trees = trees;
 		this.changed = true;
 	}
+
+	serializeTrees(): Float32Array {
+		const data = new Float32Array(this.trees.length);
+
+		for (let i = 0; i < this.trees.length; ++i) {
+			const tree = this.trees[i];
+			data[i * 2] = tree[0];
+			data[(i * 2) + 1] = tree[1];
+		}
+
+		return data;
+	}
+
+	deserializeTrees(data: ArrayLike<number>) {
+		this.trees = [];
+		for (let i = 0; i < data.length; i += 2) {
+			this.trees.push([
+				data[i],
+				data[i + 1],
+			]);
+		}
+	}
 }
 
 const Decorations = new DecorationsController();
