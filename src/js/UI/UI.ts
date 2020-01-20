@@ -6,7 +6,7 @@ import Layers from "../Renderer/Terrain/Layers";
 import Settings, { InitData } from "../Settings";
 import UISelector from "./UISelector";
 
-type Route = "increase-brush" | "decrease-brush" | "flatten-brush" | "layer-brush" | "decoration-brush" | "layers" | "settings";
+type Route = "none" | "increase-brush" | "decrease-brush" | "flatten-brush" | "layer-brush" | "decoration-brush" | "layers" | "settings";
 
 declare interface UIController {
 	on(event: "debug0", listener: () => void): this;
@@ -36,6 +36,7 @@ declare interface UIController {
 
 class UIController extends EventEmitter {
 	public readonly canvas = document.getElementById("canvas") as HTMLCanvasElement;
+	public readonly menu = document.getElementById("menu") as HTMLDivElement;
 	public readonly menuItems = document.querySelectorAll<HTMLDivElement>("#menu .menu-item");
 	public readonly layerList = document.querySelector<HTMLDivElement>("#layers-window .sortable")!;
 	public readonly layerListTemplate = document.querySelector<HTMLTemplateElement>("#layers-window template")!;
@@ -104,7 +105,6 @@ class UIController extends EventEmitter {
 			const initData = { size, scale, maxHeight, minHeight };
 			Settings.setInitData(initData);
 			this.emit("init", initData);
-			hide(document.getElementById("init-window")!, true);
 		};
 
 		//
@@ -201,25 +201,25 @@ class UIController extends EventEmitter {
 			button.onclick = this.emit.bind(this, "export", i);
 		});
 
-		document.querySelector<HTMLButtonElement>("#save-button")!.onclick = this.emit.bind(this, "save");
+		document.getElementById("save-button")!.onclick = this.emit.bind(this, "save");
+		document.getElementById("load-button")!.onclick = () => { this.filePicker.click(); };
 
 		this.filePicker.oninput = () => {
 			if (this.filePicker.files && this.filePicker.files.length >= 1) {
 				this.emit("file-opened", this.filePicker.files[0]);
 			}
 		};
-
-		document.querySelectorAll<HTMLButtonElement>(".load-save-file-button").forEach((btn) => {
-			btn.onclick = () => { this.filePicker.click(); };
-		});
 	}
 
 	selectMenuIndex(index: number): void {
 		// make element selected
-		this.menuItems.forEach(item => item.removeAttribute("selected"));
-		this.menuItems[index].setAttribute("selected", "true");
+		if (index >= 0) {
+			this.menuItems.forEach(item => item.removeAttribute("selected"));
+			this.menuItems[index].setAttribute("selected", "true");
+		}
+		hide(this.menu, index < 0);
 
-		const route = this.menuItems[index].getAttribute("route") as Route;
+		const route = index < 0 ? "none" : this.menuItems[index].getAttribute("route") as Route;
 
 		switch (route) {
 			case "increase-brush":
@@ -354,6 +354,14 @@ class UIController extends EventEmitter {
 	setExportFileInfo(min?: number, max?: number) {
 		document.getElementById("export-info")!.innerText =
 			(min && max) ? "Minimum Height: " + min + "\nMaximum Height: " + max : "";
+	}
+
+	setTerrainInfo(text: string) {
+		document.getElementById("terrain-info")!.innerText = text;
+	}
+
+	hideInitWindow() {
+		hide(document.getElementById("init-window")!, true);
 	}
 }
 

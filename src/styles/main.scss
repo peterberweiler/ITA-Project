@@ -265,3 +265,12 @@ input[type=range] {
 }
 
 //
+
+#terrain-info {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    color: rgb(63, 63, 63);
+    font-size: .75rem;
+    padding-left: .75rem;
+}

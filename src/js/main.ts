@@ -8,7 +8,7 @@ import HeightmapController from "./Renderer/Terrain/HeightmapController";
 import Layers from "./Renderer/Terrain/Layers";
 import Terrain from "./Renderer/Terrain/Terrain";
 import * as SaveLoad from "./SaveLoad";
-import Settings from "./Settings";
+import Settings, { InitData } from "./Settings";
 import UI from "./UI/UI";
 
 let renderer: Renderer;
@@ -19,6 +19,7 @@ let editorController: EditorController;
 let layers: Layers;
 let terrain: Terrain;
 let decorationUpdateFrameCounter = 0;
+let currentInitData: InitData | null = null;
 
 function setupRenderer() {
 	camera = new Camera(
@@ -71,10 +72,7 @@ function setupUI() {
 	// UI.on("debug4", () => renderer.getTerrain().surface.loadDefault());
 	UI.on("debug5", () => heightmapController.textures.heightMap.current().updateFloatRedData([1024, 1024], new Float32Array(1024 * 1024)));
 
-	UI.on("init", (initData) => {
-		// TODO
-		console.log(initData);
-	});
+	UI.on("init", initialize);
 
 	UI.on("radius-changed", (value) => editorController.setRadius(value));
 	UI.on("strength-changed", (value) => editorController.setStrength(value));
@@ -207,17 +205,21 @@ function setupUI() {
 	});
 
 	UI.on("save", () => {
-		SaveLoad.save(heightmapController, layers);
+		if (currentInitData) {
+			SaveLoad.save(heightmapController, layers, currentInitData);
+		}
 	});
 
 	UI.on("file-opened", (file) => {
-		SaveLoad.load(file, heightmapController, layers);
+		SaveLoad.load(file, heightmapController, layers, (data) => {
+			initialize(data.initData);
+		});
 	});
 
 	UI.setupLayerList(layers);
 
 	UI.updateLayerBrushTypeSelector(layers);
-	UI.selectMenuIndex(0);
+	UI.selectMenuIndex(-1);
 
 	editorController.on("height-changed", () => {
 		terrain.shadowsNeedUpdate = true;
@@ -279,6 +281,18 @@ function main(now: number) {
 
 	requestAnimationFrame(main);
 	Renderer.checkGLError();
+}
+
+function initialize(initData: InitData) {
+	if (currentInitData) { return; }
+	currentInitData = initData;
+
+	UI.selectMenuIndex(0);
+
+	UI.setTerrainInfo(`${initData.size}x${initData.size}, ${initData.scale}, ${initData.minHeight}, ${initData.maxHeight}`);
+	UI.hideInitWindow();
+	// TODO
+	console.log(initData);
 }
 
 setupRenderer();

@@ -20,7 +20,7 @@
 		<button id="debugButton4">Load Surface Textures</button>
 		<button id="debugButton5">Flatten Heightmap</button>
 	</div>
-	<div id="menu">
+	<div id="menu" hidden>
 		<div class="menu-text">Brushes</div>
 		<div class="menu-item" title="Increase Height" route="increase-brush">
 			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000">
@@ -177,11 +177,10 @@
 			<br>
 			<span id="export-info"></span>
 		</div>
-		<h2>Save and Load</h2>
+		<h2>Save Terrain</h2>
 		<div id="save-load-box">
 			<span>
-				<button id="save-button">Save Terrain</button><br>
-				<button class="load-save-file-button">Load Terrain</button>
+				<button id="save-button">Save Terrain as JSON</button><br>
 			</span>
 		</div>
 		<br>
@@ -223,7 +222,7 @@
 		<br>
 		<br>
 		<h1>Load from Save</h1>
-		<button class="load-save-file-button">Choose Save File</button>
+		<button id="load-button">Choose Save File</button>
 	</div>
 	<div id="alert" hidden>
 		<span></span>
@@ -235,7 +234,8 @@
 		</div>
 	</div>
 
-	<input type="file" id="file-picker" accept=".json"></input>
+	<div id="terrain-info"></div>
+	<input type="file" id="file-picker" accept=".json" style="display: none;"></input>
 </body>
 
 </html>

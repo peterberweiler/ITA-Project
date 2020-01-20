@@ -2,30 +2,30 @@ import Decorations from "./Decorations";
 import { downloadBlob } from "./HelperFunctions";
 import HeightmapController from "./Renderer/Terrain/HeightmapController";
 import Layers, { SerializedLayers } from "./Renderer/Terrain/Layers";
+import { InitData } from "./Settings";
 
 interface SaveData {
 	layers: SerializedLayers,
 	trees: ArrayLike<number>,
 	heightmap: string,
 	layerWeightmaps: string[],
+	initData: InitData,
 }
 
-export function save(heightmapController: HeightmapController, layers: Layers) {
-	var data = {} as SaveData;
-
-	data.layers = layers.serialize();
-
-	data.trees = Decorations.serializeTrees();
-
-	data.heightmap = float32ArrayToBase64(heightmapController.getHeightMapData());
-
-	data.layerWeightmaps = heightmapController.getLayerWeightData().map(float32ArrayToBase64);
+export function save(heightmapController: HeightmapController, layers: Layers, initData: InitData) {
+	var data: SaveData = {
+		initData,
+		layers: layers.serialize(),
+		trees: Decorations.serializeTrees(),
+		heightmap: float32ArrayToBase64(heightmapController.getHeightMapData()),
+		layerWeightmaps: heightmapController.getLayerWeightData().map(float32ArrayToBase64),
+	};
 
 	const jsondata = JSON.stringify(data);
 	downloadBlob("terrain.json", new Blob([jsondata]));
 }
 
-export function load(file: File, heightmapController: HeightmapController, layers: Layers) {
+export function load(file: File, heightmapController: HeightmapController, layers: Layers, callback: (data: SaveData) => void) {
 	const reader = new FileReader();
 
 	reader.onload = (event) => {
@@ -42,6 +42,10 @@ export function load(file: File, heightmapController: HeightmapController, layer
 		Decorations.deserializeTrees(data.trees);
 
 		layers.deserialize(data.layers);
+
+		if (callback) {
+			callback(data);
+		}
 	};
 	reader.onerror = (error) => {
 		console.error(error);
