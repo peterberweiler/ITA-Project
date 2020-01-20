@@ -8,10 +8,12 @@ import Layers, { MAX_LAYERS } from "./Layers";
 import TerrainDrawParams from "./TerrainDrawParams";
 import TerrainShadows from "./TerrainShadows";
 import TerrainUniformGridMesh from "./TerrainUniformGridMesh";
+import WaterGridMesh from "./WaterGridMesh";
 
 export default class Terrain {
 	//private clipMapMesh: TerrainClipMapMesh;
 	private uniformGridMesh: TerrainUniformGridMesh;
+	private waterGridMesh: WaterGridMesh;
 	private skybox: Skybox;
 	private terrainShadows: TerrainShadows;
 	public readonly decorationObjects: DecorationObjects;
@@ -30,6 +32,7 @@ export default class Terrain {
 	constructor() {
 		//this.clipMapMesh = new TerrainClipMapMesh();
 		this.uniformGridMesh = new TerrainUniformGridMesh();
+		this.waterGridMesh = new WaterGridMesh();
 		this.skybox = new Skybox();
 		this.decorationObjects = new DecorationObjects();
 		this.terrainShadows = new TerrainShadows();
@@ -123,6 +126,7 @@ export default class Terrain {
 			this.skybox.draw(invViewProjection, sunDir);
 
 			gl.drawBuffers([gl.COLOR_ATTACHMENT0]);
+			this.waterGridMesh.draw(terrainDrawParams);
 			//console.time("draw trees");
 			this.decorationObjects.draw(viewProjection, this.texelSizeInMeters, this.heightScaleInMeters, camPos, sunDir, textures.heightMap.current().id, this.terrainShadows.getShadowMap().id);
 			//console.timeEnd("draw trees");
