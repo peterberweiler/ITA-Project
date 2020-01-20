@@ -123,8 +123,10 @@ export default class Renderer {
 
 	render(_currentTime: number, _deltaTime: number) {
 		this.heightmapController.queuePass(this.heightmapController.erosionWaterFluxPass);
+		this.heightmapController.queuePass(this.heightmapController.erosionSoilFluxPass);
 		this.heightmapController.queuePass(this.heightmapController.erosionSuspensionDepositionPass);
 		this.heightmapController.queuePass(this.heightmapController.erosionSedimentAdvectionPass);
+		this.heightmapController.queuePass(this.heightmapController.erosionSoilAdvectionPass);
 		this.heightmapController.render();
 
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);

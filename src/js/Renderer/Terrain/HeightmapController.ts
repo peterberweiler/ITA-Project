@@ -4,6 +4,8 @@ import Renderer from "../Renderer";
 import Texture, { PingPongTexture } from "../Texture";
 import Layers from "./Layers";
 import { ErosionSedimentAdvectionPass } from "./Passes/ErosionSedimentAdvectionPass";
+import { ErosionSoilAdvectionPass } from "./Passes/ErosionSoilAdvectionPass";
+import { ErosionSoilFluxPass } from "./Passes/ErosionSoilFluxPass";
 import { ErosionSuspensionDepositionPass } from "./Passes/ErosionSuspensionDepositionPass";
 import { ErosionWaterFluxPass } from "./Passes/ErosionWaterFluxPass";
 import { GenerateSurfacePass } from "./Passes/GenerateSurfacePass";
@@ -27,6 +29,8 @@ export default class HeightmapController {
 	readonly erosionWaterFluxPass: ErosionWaterFluxPass;
 	readonly erosionSuspensionDepositionPass: ErosionSuspensionDepositionPass;
 	readonly erosionSedimentAdvectionPass: ErosionSedimentAdvectionPass;
+	readonly erosionSoilFluxPass: ErosionSoilFluxPass;
+	readonly erosionSoilAdvectionPass: ErosionSoilAdvectionPass;
 
 	constructor(layers: Layers) {
 		this.framebuffer = new Framebuffer();
@@ -37,6 +41,8 @@ export default class HeightmapController {
 			sedimentHardnessMap: new PingPongTexture(),
 			waterFluxMap: new PingPongTexture(),
 			waterVelocityMap: new Texture(),
+			soilFluxPlusMap: new Texture(),
+			soilFluxCrossMap: new Texture(),
 			shadowMap: new Texture(),
 			layers,
 			brushes: Texture.fromRGBAImage("/data/brushes/brushes.png"),
@@ -50,6 +56,8 @@ export default class HeightmapController {
 		this.erosionWaterFluxPass = new ErosionWaterFluxPass();
 		this.erosionSuspensionDepositionPass = new ErosionSuspensionDepositionPass();
 		this.erosionSedimentAdvectionPass = new ErosionSedimentAdvectionPass();
+		this.erosionSoilFluxPass = new ErosionSoilFluxPass();
+		this.erosionSoilAdvectionPass = new ErosionSoilAdvectionPass();
 
 		// force empty textures into correct format
 		this.textures.heightMap.initialize((tex) => tex.updateFloatRedData(this.size, null));
@@ -57,6 +65,8 @@ export default class HeightmapController {
 		this.textures.sedimentHardnessMap.initialize((tex) => tex.updateFloatRGData(this.size, null));
 		this.textures.waterFluxMap.initialize((tex) => tex.updateFloatRGBAData(this.size, null));
 		this.textures.waterVelocityMap.updateFloatRGData(this.size, null);
+		this.textures.soilFluxPlusMap.updateFloatRGBAData(this.size, null);
+		this.textures.soilFluxCrossMap.updateFloatRGBAData(this.size, null);
 		this.textures.shadowMap.updateFloatRedData(this.size, null);
 		this.framebuffer.setColorAttachment(this.textures.heightMap.current());
 

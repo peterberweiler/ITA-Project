@@ -11,6 +11,8 @@ export type TextureBundle = {
 	sedimentHardnessMap: PingPongTexture;
 	waterFluxMap: PingPongTexture;
 	waterVelocityMap: Texture;
+	soilFluxPlusMap: Texture;
+	soilFluxCrossMap: Texture;
 	shadowMap: Texture,
 	layers: Layers,
 	brushes: Texture,
