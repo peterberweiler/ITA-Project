@@ -1,10 +1,12 @@
 #version 300 es
 
 precision highp float;
+precision highp sampler2DArray;
 
 in vec2 vCoords;
 
 uniform sampler2D uHeightmapTexture;
+uniform sampler2DArray uSurfaceMapTexture;
 
 uniform float uTexelSizeInMeters;
 uniform float uHeightScaleInMeters;
@@ -14,10 +16,22 @@ uniform float uMaxSlopes[8];
 uniform float uMinHeights[8];
 uniform float uMaxHeights[8];
 
+uniform vec2 uPoints[16];
+uniform int uPointCount;
+uniform float uRadius;
+uniform float uStrength;
+
 layout (location = 0) out vec4 oSurfaceMap0;
 layout (location = 1) out vec4 oSurfaceMap1;
 
-//TODO: turn this into a brush
+float linePointDist(vec2 a, vec2 b, vec2 p) {
+	vec2 n = b - a;
+	float t = dot(p - a, n) / dot(n, n);
+	t = min(max(t, 0.0), 1.0);
+
+	vec2 s = a + t * n;
+	return distance(s, p);
+}
 
 float peak(float x)
 {
@@ -27,6 +41,26 @@ float peak(float x)
 float peak(float minVal, float maxVal, float value)
 {
 	return peak((value - minVal)/(maxVal - minVal));
+}
+
+float getBrushWeight() 
+{
+	vec2 terrainSize = vec2(textureSize(uHeightmapTexture, 0));
+	vec2 fragmentPosition = vCoords * terrainSize;
+	float radius = uRadius;
+
+	float minDist = 10000000.0;
+
+	// find minimum distance to path
+	for (int i = 0; i < uPointCount - 1; ++i) {
+		vec2 fromPoint = uPoints[i];
+		vec2 toPoint = uPoints[i + 1];
+
+		float dist = linePointDist(fromPoint, toPoint, fragmentPosition);
+		minDist = min(minDist, dist);
+	}
+
+	return uStrength * smoothstep(radius, 0.0, minDist);	
 }
 
 vec4 calculateSurfaceMap(int surfaceMapIndex, float height, float slope)
@@ -78,6 +112,14 @@ void main(void) {
 	// calculate slope
 	float slope = max(0.0, dot(vec3(0.0, 1.0, 0.0), normal));	
 
-	oSurfaceMap0 = calculateSurfaceMap(0, height, slope);
-	oSurfaceMap1 = calculateSurfaceMap(1, height, slope);
+
+	if (uPointCount == 0){
+		oSurfaceMap0 = calculateSurfaceMap(0, height, slope);
+		oSurfaceMap1 = calculateSurfaceMap(1, height, slope);
+	}else{
+		float weight = clamp(getBrushWeight(), 0.0, 1.0);	
+		
+		oSurfaceMap0 = mix(texture(uSurfaceMapTexture, vec3(vCoords, 0.0)), calculateSurfaceMap(0, height, slope), weight);
+		oSurfaceMap1 = mix(texture(uSurfaceMapTexture, vec3(vCoords, 1.0)), calculateSurfaceMap(1, height, slope), weight);
+	}	
 }

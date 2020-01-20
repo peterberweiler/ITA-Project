@@ -34,6 +34,9 @@ declare interface UIController {
 	on(event: "file-opened", listener: (file: File) => void): this;
 	on(event: "init", listener: (initData: InitData) => void): this
 	on(event: "seed-generation", listener: (seed: string) => void): this
+	on(event: "layer-generation", listener: () => void): this
+	on(event: "smart-layer-state-changed", listener: (state: boolean) => void): this
+
 }
 
 class UIController extends EventEmitter {
@@ -49,6 +52,7 @@ class UIController extends EventEmitter {
 	public readonly strengthOutput = document.getElementById("strength-output") as HTMLInputElement;
 	public readonly minSlopeInput = document.getElementById("min-slope-input") as HTMLInputElement;
 	public readonly maxSlopeInput = document.getElementById("max-slope-input") as HTMLInputElement;
+	public readonly smartLayerBrushInput = document.getElementById("smart-layer-brush-input")! as HTMLInputElement;
 
 	public readonly windows = document.querySelectorAll<HTMLDivElement>(".window");
 	public readonly brushWindow = document.getElementById("brush-window") as HTMLDivElement
@@ -127,6 +131,16 @@ class UIController extends EventEmitter {
 		};
 		this.maxSlopeInput.oninput = () => {
 			this.emit("max-slope-changed", parseFloat(this.maxSlopeInput.value));
+		};
+
+		this.smartLayerBrushInput.checked = false;
+		this.smartLayerBrushInput.onchange = (event) => {
+			//@ts-ignore
+			const smartState = event.target.checked;
+			this.emit("smart-layer-state-changed", smartState);
+			this.minSlopeInput.disabled = smartState;
+			this.maxSlopeInput.disabled = smartState;
+			this.layerBrushTypeSelector.hide(smartState);
 		};
 
 		this.sunYaw.oninput = this.sunPitch.oninput = () => {
@@ -215,6 +229,10 @@ class UIController extends EventEmitter {
 			}
 		};
 
+		document.getElementById("layer-generation-button")!.onclick = () => {
+			this.emit("layer-generation");
+		};
+
 		document.getElementById("seed-generation-button")!.onclick = () => {
 			const seed = (<HTMLInputElement>document.getElementById("seed-input")).value;
 			this.emit("seed-generation", seed);
@@ -250,7 +268,7 @@ class UIController extends EventEmitter {
 
 					hide(this.brushTypeSelector, route !== "increase-brush" && route !== "decrease-brush");
 
-					this.layerBrushTypeSelector.hide(route !== "layer-brush");
+					this.layerBrushTypeSelector.hide(route !== "layer-brush" || this.smartLayerBrushInput.checked);
 					hide(this.layerBrushOptions, route !== "layer-brush");
 
 					this.flattenBrushSelector.hide(route !== "flatten-brush");

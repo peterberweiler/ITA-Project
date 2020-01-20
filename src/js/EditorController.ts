@@ -19,6 +19,7 @@ interface HeightBrush extends TypedBrush {
 interface LayerBrush extends TypedBrush {
 	minSlope: number,
 	maxSlope: number,
+	smart: boolean
 }
 
 interface DecorationBrush extends Brush {
@@ -51,6 +52,7 @@ export default class EditorController extends EventEmitter {
 			type: 0,
 			minSlope: 0, //0-1
 			maxSlope: 1, //0-1
+			smart: false,
 		} as LayerBrush,
 		decoration: {
 			radius: 100,
@@ -110,22 +112,33 @@ export default class EditorController extends EventEmitter {
 			}
 
 			case this.brush.layer: {
-				const value = (this.selectedBrush.strength - 1) / 99;
+				if (this.brush.layer.smart) { // smart layer brush
+					this.heightmapController.generateSurfacePass.queueData({
+						points: [x, y, lastX, lastY],
+						radius: this.brush.layer.radius,
+						strength: deltaTime * 0.03,
+					});
 
-				const minSlope = Math.min(this.brush.layer.minSlope, this.brush.layer.maxSlope);
-				const maxSlope = Math.max(this.brush.layer.minSlope, this.brush.layer.maxSlope);
+					this.heightmapController.queuePass(this.heightmapController.generateSurfacePass);
+				}
+				else { // normal layer brush
+					const value = (this.selectedBrush.strength - 1) / 99;
 
-				this.heightmapController.layerBrushPass.queueData({
-					points: [x, y, lastX, lastY],
-					type: this.brush.layer.type,
-					radius: this.brush.layer.radius,
-					value: value,
-					strength: deltaTime * 0.01,
-					minSlope,
-					maxSlope,
-				});
+					const minSlope = Math.min(this.brush.layer.minSlope, this.brush.layer.maxSlope);
+					const maxSlope = Math.max(this.brush.layer.minSlope, this.brush.layer.maxSlope);
 
-				this.heightmapController.queuePass(this.heightmapController.layerBrushPass);
+					this.heightmapController.layerBrushPass.queueData({
+						points: [x, y, lastX, lastY],
+						type: this.brush.layer.type,
+						radius: this.brush.layer.radius,
+						value: value,
+						strength: deltaTime * 0.01,
+						minSlope,
+						maxSlope,
+					});
+
+					this.heightmapController.queuePass(this.heightmapController.layerBrushPass);
+				}
 				break;
 			}
 

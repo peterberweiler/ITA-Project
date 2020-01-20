@@ -318,10 +318,14 @@
             margin: 0;
         }
 
-        &:enabled:focus,
         &:enabled:hover {
             border-color: $theme-color;
         }
     }
 
+}
+
+
+#smart-layer-brush-input {
+    margin-top: 8px;
 }

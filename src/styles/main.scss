@@ -213,6 +213,15 @@ input[type=range] {
         outline: none;
     }
 
+    &:disabled {
+        background: rgba(255, 255, 255, 0.1);
+
+        &::-webkit-slider-thumb,
+        &::-moz-range-thumb {
+            background: rgba(255, 255, 255, 0.5);
+        }
+    }
+
     &::-moz-range-thumb {
         width: 16px;
         height: 16px;

@@ -81,6 +81,7 @@ function setupUI() {
 
 	UI.on("min-slope-changed", (value) => editorController.setValueForAllBrushes("minSlope", value));
 	UI.on("max-slope-changed", (value) => editorController.setValueForAllBrushes("maxSlope", value));
+	UI.on("smart-layer-state-changed", (smartState) => { editorController.brush.layer.smart = smartState; });
 
 	UI.on("menu-selected", (route) => {
 		switch (route) {
@@ -226,6 +227,10 @@ function setupUI() {
 
 	UI.updateLayerBrushTypeSelector(layers);
 	UI.selectMenuIndex(-1);
+
+	UI.on("layer-generation", () => {
+		heightmapController.queuePass(heightmapController.generateSurfacePass);
+	});
 
 	UI.on("seed-generation", (seed) => {
 		const random = createRandom(seed);

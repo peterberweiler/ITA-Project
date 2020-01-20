@@ -62,7 +62,7 @@ export class LayerBrushPass extends Pass {
 			this.shader.setUniformF(this.uMaxSlope, data.maxSlope);
 		}
 		else {
-			this.shader.setUniformF(this.shader.getUniformLocation("uPointCount"), 0);
+			this.shader.setUniformI(this.shader.getUniformLocation("uPointCount"), 0);
 		}
 		gl.framebufferTextureLayer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, textures.layers.weightMapNext, 0, 0);
 		gl.framebufferTextureLayer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT1, textures.layers.weightMapNext, 0, 1);
