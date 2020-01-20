@@ -87,6 +87,7 @@ export default class EditorController extends EventEmitter {
 					type: HeightBrushPass.NORMAL + this.brush.height.type,
 					radius: this.brush.height.radius,
 					strength: this.brush.height.strength * this.brush.height.direction * deltaTime * 0.001,
+					water: false,
 				});
 
 				this.heightmapController.queuePass(this.heightmapController.heightBrushPass);
@@ -100,6 +101,7 @@ export default class EditorController extends EventEmitter {
 					type: HeightBrushPass.FLATTEN + this.brush.flatten.type,
 					radius: this.brush.flatten.radius,
 					strength: this.brush.flatten.strength * deltaTime * 0.001,
+					water: false,
 				});
 
 				this.heightmapController.queuePass(this.heightmapController.heightBrushPass);
@@ -146,7 +148,14 @@ export default class EditorController extends EventEmitter {
 			}
 
 			case this.brush.erosion: {
-				//TODO:
+				this.heightmapController.heightBrushPass.queueData({
+					points: [x, y, lastX, lastY],
+					type: HeightBrushPass.NORMAL + 1,
+					radius: this.brush.erosion.radius,
+					strength: this.brush.erosion.strength * deltaTime * 0.002,
+					water: true,
+				});
+				this.heightmapController.queuePass(this.heightmapController.heightBrushPass);
 				break;
 			}
 		}

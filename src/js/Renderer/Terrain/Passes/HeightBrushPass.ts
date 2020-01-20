@@ -9,6 +9,7 @@ export type HeightBrushPassData = {
 	type: number,
 	radius: number,
 	strength: number,
+	water: boolean
 }
 
 export class HeightBrushPass extends Pass {
@@ -35,7 +36,6 @@ export class HeightBrushPass extends Pass {
 	}
 
 	initalizePass(textures: TextureBundle, framebuffer: Framebuffer) {
-		textures.heightMap.current().bind(0);
 		this.shader.setUniformI(this.uTexture, 0);
 		textures.brushes.bind(1);
 		this.shader.setUniformI(this.uBrushesTexture, 1);
@@ -44,6 +44,15 @@ export class HeightBrushPass extends Pass {
 			if (data.points.length >= 100) {
 				console.error("Too much points for HeightBrushPass");
 			}
+			if (data.water) {
+				textures.waterHeightMap.current().bind(0);
+				framebuffer.setColorAttachment(textures.waterHeightMap.next());
+			}
+			else {
+				textures.heightMap.current().bind(0);
+				framebuffer.setColorAttachment(textures.heightMap.next());
+			}
+
 			this.shader.setUniformVec2(this.uPoints, data.points);
 			this.shader.setUniformI(this.uPointCount, data.points.length / 2);
 			this.shader.setUniformI(this.uType, data.type);
@@ -53,7 +62,6 @@ export class HeightBrushPass extends Pass {
 		else {
 			this.shader.setUniformF(this.shader.getUniformLocation("uPointCount"), 0);
 		}
-		framebuffer.setColorAttachment(textures.heightMap.next());
 		gl.drawBuffers([gl.COLOR_ATTACHMENT0]);
 	}
 
