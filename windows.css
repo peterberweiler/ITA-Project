@@ -1,0 +1,273 @@
+#layer-type-selector {
+  margin-top: 16px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+  padding: 7px;
+  overflow-y: auto;
+  max-height: 304px;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+  scrollbar-width: thin;
+}
+#layer-type-selector::-webkit-scrollbar {
+  width: 6px;
+}
+#layer-type-selector::-webkit-scrollbar-track {
+  background: transparent;
+}
+#layer-type-selector::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.7);
+}
+#layer-type-selector div {
+  display: flex;
+  height: 32px;
+  border-radius: 3px;
+  background-color: rgba(255, 255, 255, 0.1);
+  margin-bottom: 4px;
+  align-items: center;
+  cursor: pointer;
+}
+#layer-type-selector div span:first-child {
+  height: 32px;
+  width: 32px;
+  flex-grow: 0;
+  border-radius: 3px;
+}
+#layer-type-selector div span:last-child {
+  flex-grow: 1;
+  text-align: center;
+}
+#layer-type-selector div[selected] {
+  color: #212529;
+  background-color: rgba(255, 255, 255, 0.6);
+}
+#layer-type-selector div[selected] span:first-child {
+  border: 1px solid #e2a42f;
+}
+
+#brush-type-selector {
+  margin-top: 16px;
+}
+#brush-type-selector img {
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+  border-radius: 2px;
+  border-width: 2px;
+  border-radius: 4px;
+  margin-top: 4px;
+  border: 1px solid #a3a3a3;
+}
+#brush-type-selector img[selected] {
+  background-color: black;
+  border-color: #e2a42f;
+}
+
+#flatten-brush-selector,
+#decoration-brush-selector {
+  margin-top: 8px;
+  align-self: center;
+}
+
+#layers-window {
+  width: 480px;
+  height: auto;
+  max-height: 540px;
+  bottom: 7px;
+}
+#layers-window .sortable {
+  margin: 16px 0;
+  padding: 0;
+}
+#layers-window .sortable > div {
+  display: flex;
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+  padding: 4px;
+  margin-left: 0;
+  margin-bottom: 8px;
+  height: 50px;
+  align-items: center;
+}
+#layers-window .sortable > div.sortable-placeholder {
+  border: none;
+  background-color: transparent;
+}
+#layers-window .sortable > div .title {
+  margin: 0 32px;
+}
+#layers-window .sortable > div button,
+#layers-window .sortable > div input {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+  border-radius: 4px;
+  -moz-appearance: textfield;
+}
+#layers-window .sortable > div button:disabled,
+#layers-window .sortable > div input:disabled {
+  border-color: rgba(0, 0, 0, 0.2);
+  background-color: rgba(0, 0, 0, 0.1);
+}
+#layers-window .sortable > div button::-webkit-inner-spin-button, #layers-window .sortable > div button::-webkit-outer-spin-button,
+#layers-window .sortable > div input::-webkit-inner-spin-button,
+#layers-window .sortable > div input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  appearance: none;
+  margin: 0;
+}
+#layers-window .sortable > div button:enabled:focus, #layers-window .sortable > div button:enabled:hover,
+#layers-window .sortable > div input:enabled:focus,
+#layers-window .sortable > div input:enabled:hover {
+  border-color: #e2a42f;
+}
+#layers-window .sortable > div button {
+  height: 40px;
+  width: 60px;
+  padding: 0;
+}
+#layers-window .sortable > div input[type=color] {
+  margin: 0 8px;
+  height: 40px;
+  width: 50px;
+}
+#layers-window .sortable > div input[type=number] {
+  margin: 0 8px;
+  height: 40px;
+  width: 160px;
+  text-align: center;
+}
+#layers-window .sortable > div[disabled] {
+  background-color: rgba(0, 0, 0, 0.15);
+  color: black;
+}
+#layers-window .sortable > div[disabled] .disable-button {
+  display: none;
+}
+#layers-window .sortable > div:not([disabled]) .enable-button {
+  display: none;
+}
+#layers-window .sortable > div .anchor {
+  height: 26px;
+  width: 26px;
+  text-align: center;
+  cursor: pointer;
+}
+#layers-window .sortable > div .anchor svg {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+#settings-window > span {
+  display: inline-block;
+  width: 150px;
+  margin-left: 20px;
+}
+#settings-window > h2 {
+  margin: 0;
+  margin-top: 32px;
+  font-size: 14px;
+  text-transform: uppercase;
+}
+#settings-window > h2:first-of-type {
+  margin-top: 0;
+}
+#settings-window #sun-setting-box > span {
+  display: inline-block;
+  margin-left: 20px;
+  width: 50px;
+}
+#settings-window #sun-setting-box > input {
+  max-width: 200px;
+}
+#settings-window #export-box {
+  margin-left: 20px;
+}
+#settings-window button {
+  margin-top: 4px;
+  min-height: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+  border-radius: 4px;
+  -moz-appearance: textfield;
+}
+#settings-window button:disabled {
+  border-color: rgba(0, 0, 0, 0.2);
+  background-color: rgba(0, 0, 0, 0.1);
+}
+#settings-window button:enabled:focus, #settings-window button:enabled:hover {
+  border-color: #e2a42f;
+}
+
+#init-window {
+  left: 50%;
+  top: 50%;
+  bottom: unset;
+  right: unset;
+  width: auto;
+  height: auto;
+  transform: translate(-50%, -50%);
+  padding: 1.5rem;
+}
+#init-window span {
+  display: inline-block;
+  width: 130px;
+  text-align: right;
+  margin: 3px 5px;
+}
+#init-window span.unit {
+  text-align: left;
+  width: auto;
+}
+#init-window input[type=number],
+#init-window select {
+  width: 90px;
+  text-align: center;
+  text-align-last: center;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  background-color: rgba(255, 255, 255, 0.9);
+  color: black;
+  border-radius: 4px;
+  padding: 1px;
+}
+#init-window button {
+  display: block;
+  margin: auto;
+  padding: 5px;
+  width: 160px;
+  font-size: 15px;
+}
+#init-window > div {
+  margin: 7px 0;
+}
+#init-window > div label {
+  margin-left: 6px;
+  font-size: 75%;
+}
+
+#generation-window button,
+#generation-window input {
+  padding: 2px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+  border-radius: 4px;
+  -moz-appearance: textfield;
+  margin: 1px 3px;
+  width: 200px;
+}
+#generation-window button::-webkit-inner-spin-button, #generation-window button::-webkit-outer-spin-button,
+#generation-window input::-webkit-inner-spin-button,
+#generation-window input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  appearance: none;
+  margin: 0;
+}
+#generation-window button:enabled:hover,
+#generation-window input:enabled:hover {
+  border-color: #e2a42f;
+}
+
+#smart-layer-brush-input {
+  margin-top: 8px;
+}
