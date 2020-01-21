@@ -139,11 +139,8 @@ export default class DecorationObjects {
 
 			gl.bindVertexArray(null);
 
-			//this.treeBranchesTexture = Texture.fromRGBAImage("/data/spruce_tree/spruce_branches.png");
-			//this.treeTrunkTexture = Texture.fromRGBImage("/data/spruce_tree/spruce_trunk.png");
-
-			this.treeBranchesTexture2 = this.loadTexture("/data/spruce_tree/spruce_branches.png");
-			this.treeTrunkTexture2 = this.loadTexture("/data/spruce_tree/spruce_trunk.jpeg");
+			this.treeBranchesTexture2 = this.loadTexture("data/spruce_tree/spruce_branches.png");
+			this.treeTrunkTexture2 = this.loadTexture("data/spruce_tree/spruce_trunk.jpeg");
 		}
 
 		this.updateTreePositions(new Float32Array());

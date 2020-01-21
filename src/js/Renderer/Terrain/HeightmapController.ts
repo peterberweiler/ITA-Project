@@ -47,7 +47,7 @@ export default class HeightmapController {
 			soilFluxCrossMap: new Texture(),
 			shadowMap: new Texture(),
 			layers,
-			brushes: Texture.fromRGBAImage("/data/brushes/brushes.png"),
+			brushes: Texture.fromRGBAImage("data/brushes/brushes.png"),
 		};
 
 		this.perlinPass = new PerlinPass();
