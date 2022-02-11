@@ -65,7 +65,7 @@ export default class Terrain {
 		Renderer.checkGLError();
 	}
 
-	draw(time: number, viewProjection: mat4, camPos: vec3, sunDir: vec3 | number[], textures: TextureBundle, layers: Layers, brushRadius: number, readMouseWorldSpacePos: boolean = false, mousePosX: number = 0, mousePosY: number = 0, cursorX: number, cursorY: number, drawCursor: boolean = false) {
+	draw(time: number, viewProjection: mat4, camPos: vec3, sunDir: vec3, textures: TextureBundle, layers: Layers, brushRadius: number, readMouseWorldSpacePos: boolean = false, mousePosX: number = 0, mousePosY: number = 0, cursorX: number, cursorY: number, drawCursor: boolean = false) {
 		if (this.shadowsNeedUpdate) {
 			this.terrainShadows.update(this.texelSizeInMeters, this.heightScaleInMeters, vec3.clone(sunDir), textures.heightMap.current().id);
 			this.shadowsNeedUpdate = false;

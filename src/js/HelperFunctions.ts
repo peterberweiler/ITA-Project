@@ -52,20 +52,15 @@ export function openInNewTab(url: string) {
 }
 
 export function downloadBlob(filename: string, blob: Blob) {
-	if (navigator.msSaveOrOpenBlob) {
-		navigator.msSaveOrOpenBlob(blob, filename);
-	}
-	else {
-		const a = document.createElement("a");
-		a.download = filename;
-		a.style.display = "none";
-		document.body.appendChild(a);
-		const url = URL.createObjectURL(blob);
-		a.href = url;
-		a.onclick = () => requestAnimationFrame(() => URL.revokeObjectURL(url));
-		a.click();
-		document.body.removeChild(a);
-	}
+	const a = document.createElement("a");
+	a.download = filename;
+	a.style.display = "none";
+	document.body.appendChild(a);
+	const url = URL.createObjectURL(blob);
+	a.href = url;
+	a.onclick = () => requestAnimationFrame(() => URL.revokeObjectURL(url));
+	a.click();
+	document.body.removeChild(a);
 }
 
 export function uriToBlob(uri: string) {
@@ -84,26 +79,21 @@ export function uriToBlob(uri: string) {
  * @param {string} uri
  */
 export function downloadURI(filename: string, uri: string) {
-	if (navigator.msSaveOrOpenBlob) {
-		navigator.msSaveOrOpenBlob(uriToBlob(uri), filename);
+	const a = document.createElement("a");
+	a.download = filename;
+	a.style.display = "none";
+	document.body.appendChild(a);
+	try {
+		const blob = uriToBlob(uri);
+		const url = URL.createObjectURL(blob);
+		a.href = url;
+		a.onclick = () => requestAnimationFrame(() => URL.revokeObjectURL(url));
 	}
-	else {
-		const a = document.createElement("a");
-		a.download = filename;
-		a.style.display = "none";
-		document.body.appendChild(a);
-		try {
-			const blob = uriToBlob(uri);
-			const url = URL.createObjectURL(blob);
-			a.href = url;
-			a.onclick = () => requestAnimationFrame(() => URL.revokeObjectURL(url));
-		}
-		catch (_) {
-			a.href = uri;
-		}
-		a.click();
-		document.body.removeChild(a);
+	catch (_) {
+		a.href = uri;
 	}
+	a.click();
+	document.body.removeChild(a);
 }
 
 export function arrayMinMax(array: ArrayLike<number>) {

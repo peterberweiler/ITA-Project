@@ -58,7 +58,7 @@ body {
     background-color: $menu-background;
 
     $item-size: 52px;
-    $item-margin: ($menu-bar-width - $item-size)/2;
+    $item-margin: calc(($menu-bar-width - $item-size)/2);
 
     overflow-y: scroll;
     overflow-x: hidden;
