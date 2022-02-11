@@ -5,6 +5,7 @@
 #endif // PI
 
 precision mediump float;
+precision highp sampler2DArray;
 
 uniform vec3 uCamPos;
 uniform vec3 uLightDir;
